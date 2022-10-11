@@ -4,7 +4,7 @@ initialize()
 	initializeSLiMModelType("nonWF");
 	
 	//set mutation rate
-	initializeMutationRate(1e-7);
+	initializeMutationRate(0.000005);
 	
 	// m1 mutation type: beneficial
 	initializeMutationType("m1", 0.5, "f", 0.005);
@@ -16,14 +16,14 @@ initialize()
 	initializeGenomicElementType("g1", c(m1, m2), c(0.1, 0.9));
 	
 	// uniform chromosome of length 10 kb with uniform recombination
-	initializeGenomicElement(g1, 0, 9999);
-	initializeRecombinationRate(1e-8);
+	initializeGenomicElement(g1, 0, 999);
+	initializeRecombinationRate(0.000005);
 	
 	//set global population parameters
-	defineConstant("K", 1000); // carrying-capacity density
-	defineConstant("n_demes", 100); //number of demes
-	defineConstant("mig_rate", 0.1); //mig rate
-	defineConstant("r", 0.05); //growth rate
+	defineConstant("K", 100); // carrying-capacity density
+	//defineConstant("n_demes", 1000); //number of demes
+	defineConstant("mig_rate", 0.05); //mig rate
+	defineConstant("r", log(2)); //growth rate
 }
 
 1 first()
@@ -33,7 +33,7 @@ initialize()
 		sim.addSubpop(i, K);
 }
 
-1:1000 early()
+1:10000 early()
 {
 	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
 	for (i in 1:5)
@@ -88,29 +88,31 @@ initialize()
 }
 
 //open up other populations after 10k generations
-1001 first()
+10001 first()
 {
-	i = 5;
-	
 	//rescale fitness to 1 (only at edge pop??)
-	sim.subpopulations[i - 1].fitnessScaling = sim.subpopulations[i - 1].individualCount / mean(sim.subpopulations[i - 1].cachedFitness(NULL));
+	sim.subpopulations[1 - 1].fitnessScaling = 1 / mean(sim.subpopulations[1 - 1].cachedFitness(NULL));
+	sim.subpopulations[2 - 1].fitnessScaling = 1 / mean(sim.subpopulations[2 - 1].cachedFitness(NULL));
+	sim.subpopulations[3 - 1].fitnessScaling = 1 / mean(sim.subpopulations[3 - 1].cachedFitness(NULL));
+	sim.subpopulations[4 - 1].fitnessScaling = 1 / mean(sim.subpopulations[4 - 1].cachedFitness(NULL));
+	sim.subpopulations[5 - 1].fitnessScaling = 1 / mean(sim.subpopulations[5 - 1].cachedFitness(NULL));
 	
 	//initialize rest of demes at 0
-	for (i in 6:n_demes)
+	for (i in 6:20)
 		sim.addSubpop(i, 0);
 }
 
-1001:2000 early()
+10001:20000 early()
 {
 	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
-	for (i in 1:n_demes)
+	for (i in 1:size(sim.subpopulations))
 	{
 		inds = sim.subpopulations[i - 1].individuals;
 		inds[inds.age > 0].fitnessScaling = 0.0;
 	}
 	
 	//forward mig
-	for (i in 1:(n_demes - 1))
+	for (i in 1:(size(sim.subpopulations) - 1))
 	{
 		nIndividuals = sim.subpopulations[i - 1].individualCount;
 		if (nIndividuals > 0){		
@@ -132,7 +134,7 @@ initialize()
 	}
 	
 	//reverse mig
-	for (i in 2:n_demes)
+	for (i in 2:size(sim.subpopulations))
 	{
 		nIndividuals = sim.subpopulations[i - 1].individualCount;
 		if (nIndividuals > 0){
@@ -155,7 +157,7 @@ initialize()
 }
 
 //set reproduction
-2:1000 reproduction()
+2:10000 reproduction()
 {
 	//logistic growth
 	for (i in 1:5)
@@ -174,10 +176,10 @@ initialize()
 	self.active = 0;
 }
 
-1001:2000 reproduction()
+10001:20000 reproduction()
 {
 	//logistic growth
-	for (i in 1:n_demes)
+	for (i in 1:size(sim.subpopulations))
 	{
 		N_star = (exp(r) * sim.subpopulations[i - 1].individualCount) / (1 + ((exp(r) - 1) * sim.subpopulations[i - 1].individualCount / K));
 		if (N_star > 0){
@@ -193,8 +195,16 @@ initialize()
 	self.active = 0;
 }
 
+10002:20000 late()
+{
+	if (sim.subpopulations[size(sim.subpopulations)-6].individualCount > 0){
+		for (i in (size(sim.subpopulations)+1):(size(sim.subpopulations)+10))
+			sim.addSubpop(i, 0);
+	}
+}
+
 // output some metrics after 10k generations
-2000 late()
+20000 late()
 {
 	i = 100;
 	fitness = sim.subpopulations[i - 1].cachedFitness(NULL);
