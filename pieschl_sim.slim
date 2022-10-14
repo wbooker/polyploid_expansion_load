@@ -24,6 +24,7 @@ initialize()
 	//defineConstant("n_demes", 1000); //number of demes
 	defineConstant("mig_rate", 0.05); //mig rate
 	defineConstant("r", log(2)); //growth rate
+	defineGlobal("previous_deme", 0);
 }
 
 1 first()
@@ -91,15 +92,14 @@ initialize()
 10001 first()
 {
 	//rescale fitness to 1 (only at edge pop??)
-	sim.subpopulations[1 - 1].fitnessScaling = 1 / mean(sim.subpopulations[1 - 1].cachedFitness(NULL));
-	sim.subpopulations[2 - 1].fitnessScaling = 1 / mean(sim.subpopulations[2 - 1].cachedFitness(NULL));
-	sim.subpopulations[3 - 1].fitnessScaling = 1 / mean(sim.subpopulations[3 - 1].cachedFitness(NULL));
-	sim.subpopulations[4 - 1].fitnessScaling = 1 / mean(sim.subpopulations[4 - 1].cachedFitness(NULL));
-	sim.subpopulations[5 - 1].fitnessScaling = 1 / mean(sim.subpopulations[5 - 1].cachedFitness(NULL));
+	//sim.subpopulations[1 - 1].fitnessScaling = 1 / mean(sim.subpopulations[1 - 1].cachedFitness(NULL));
+	//sim.subpopulations[2 - 1].fitnessScaling = 1 / mean(sim.subpopulations[2 - 1].cachedFitness(NULL));
+	//sim.subpopulations[3 - 1].fitnessScaling = 1 / mean(sim.subpopulations[3 - 1].cachedFitness(NULL));
+	//sim.subpopulations[4 - 1].fitnessScaling = 1 / mean(sim.subpopulations[4 - 1].cachedFitness(NULL));
+	//sim.subpopulations[5 - 1].fitnessScaling = 1 / mean(sim.subpopulations[5 - 1].cachedFitness(NULL));
 	
 	//initialize rest of demes at 0
-	for (i in 6:20)
-		sim.addSubpop(i, 0);
+		sim.addSubpop(6, 0);
 }
 
 10001:20000 early()
@@ -167,8 +167,8 @@ initialize()
 			N_prime = rpois(1, N_star);
 			inds = sim.subpopulations[i - 1].individuals;
 			fitness = sim.subpopulations[i - 1].cachedFitness(NULL);
-			parents1 = sample(inds, N_prime, replace=T, weights=fitness);
-			parents2 = sample(inds, N_prime, replace=T, weights=fitness);
+			parents1 = sample(inds, N_prime, replace=T);
+			parents2 = sample(inds, N_prime, replace=T);
 			for (j in seqLen(N_prime))
 				sim.subpopulations[i - 1].addCrossed(parents1[j], parents2[j]);
 			}
@@ -186,8 +186,8 @@ initialize()
 			N_prime = rpois(1, N_star);
 			inds = sim.subpopulations[i - 1].individuals;
 			fitness = sim.subpopulations[i - 1].cachedFitness(NULL);
-			parents1 = sample(inds, N_prime, replace=T, weights=fitness);
-			parents2 = sample(inds, N_prime, replace=T, weights=fitness);
+			parents1 = sample(inds, N_prime, replace=T);
+			parents2 = sample(inds, N_prime, replace=T);
 			for (j in seqLen(N_prime))
 				sim.subpopulations[i - 1].addCrossed(parents1[j], parents2[j]);
 		}
@@ -197,16 +197,21 @@ initialize()
 
 10002:20000 late()
 {
-	if (sim.subpopulations[size(sim.subpopulations)-6].individualCount > 0){
-		for (i in (size(sim.subpopulations)+1):(size(sim.subpopulations)+10))
-			sim.addSubpop(i, 0);
+	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
+		sim.addSubpop(size(sim.subpopulations)+1, 0);
 	}
 }
 
-// output some metrics after 10k generations
-20000 late()
+10001:20001late()
 {
-	i = 100;
-	fitness = sim.subpopulations[i - 1].cachedFitness(NULL);
-	print(fitness);
+	current_deme = (size(sim.subpopulations)-5);
+	speed = (current_deme - previous_deme) / 50;
+	output_ticks = seq(from=10001,to=20001,by=50);
+	if(match(community.tick, output_ticks) >= 0){
+		defineGlobal("previous_deme", current_deme);
+		fitness_start = mean(sim.subpopulations[0].cachedFitness(NULL));
+		fitness_mid = mean(sim.subpopulations[round((size(sim.subpopulations)-1)/2)].cachedFitness(NULL));
+		fitness_edge = mean(sim.subpopulations[size(sim.subpopulations)-2].cachedFitness(NULL));
+		print("tick: " + community.tick + " start: " + fitness_start + " mid: " + fitness_mid + " edge: " + fitness_edge + " demes: " + current_deme + " speed: " + speed);
+		}
 }
