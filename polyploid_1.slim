@@ -17,10 +17,10 @@ initialize()
 	
 	// uniform chromosome of length 10 kb with uniform recombination
 	initializeGenomicElement(g1, 0, 999);
-	initializeRecombinationRate(0.000005);
+	initializeRecombinationRate(0.0000005);
 	
 	//set global population parameters
-	defineConstant("K", 10); // carrying-capacity density
+	defineConstant("K", 25); // carrying-capacity density
 	//defineConstant("n_demes", 1000); //number of demes
 	defineConstant("mig_rate", 0.05); //mig rate
 	defineConstant("r", log(2)); //growth rate
@@ -30,6 +30,7 @@ initialize()
 
 1 first()
 {
+	print("k: " + K +  " r: " + r + " m: " + mig_rate);
 	//first deme holds extra chromosomes of every individual. individuals don't migrate from or into here
 	sim.addSubpop(1, K*5);
 
@@ -61,60 +62,6 @@ survival(p1) {
  return NULL;
 }
 
-1:10000 early()
-{
-	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
-	for (i in 1:size(sim.subpopulations))
-	{
-		inds = sim.subpopulations[i - 1].individuals;
-		inds[inds.age > 0].fitnessScaling = 0.0;
-	}
-	//inds = sim.subpopulations[0].individuals;
-	//inds[inds.age == 0].fitnessScaling = 1000.0;
-	//forward mig
-	for (i in 2:5)
-	{
-		nIndividuals = sim.subpopulations[i - 1].individualCount;
-		if (nIndividuals > 0){		
-			nMigrants = rpois(1, nIndividuals * mig_rate);
-			if (nMigrants >= 1){
-				mig_inds = sim.subpopulations[i - 1].individuals;
-				if (size(mig_inds) >= 1){
-					if(nMigrants > size(mig_inds))
-						nMigrants = size(mig_inds);
-					migrants = sample(mig_inds, nMigrants);
-					for (migrant in migrants)
-					{
-						dest = i;
-						sim.subpopulations[dest].takeMigrants(migrant);
-					}
-				}
-			}
-		}
-	}
-	
-	//reverse mig
-	for (i in 3:6)
-	{
-		nIndividuals = sim.subpopulations[i - 1].individualCount;
-		if (nIndividuals > 0){
-			nMigrants = rpois(1, nIndividuals * mig_rate);
-			if (nMigrants >= 1){
-				mig_inds = sim.subpopulations[i - 1].individuals;
-				if (size(mig_inds) >= 1){
-					if(nMigrants > size(mig_inds))
-						nMigrants = size(mig_inds);
-					migrants = sample(mig_inds, nMigrants);
-					for (migrant in migrants)
-					{
-						dest = i - 2;
-						sim.subpopulations[dest].takeMigrants(migrant);
-					}
-				}
-			}
-		}	
-	}
-}
 
 //open up other populations after 10k generations
 10001 first()
@@ -123,10 +70,10 @@ survival(p1) {
 		sim.addSubpop(7, 0);
 }
 
-10001:20000 early()
+1:20000 early()
 {
 	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
-	for (i in 2:size(sim.subpopulations))
+	for (i in 1:size(sim.subpopulations))
 	{
 		inds = sim.subpopulations[i - 1].individuals;
 		inds[inds.age > 0].fitnessScaling = 0.0;
@@ -178,10 +125,10 @@ survival(p1) {
 }
 
 //set reproduction
-1:10000 reproduction()
+1:20000 reproduction()
 {
 	//logistic growth
-	for (i in 2:6)
+	for (i in 2:size(sim.subpopulations))
 	{
 		N_star = (exp(r) * sim.subpopulations[i - 1].individualCount) / (1 + ((exp(r) - 1) * sim.subpopulations[i - 1].individualCount / K));
 		if (N_star > 0)
@@ -213,41 +160,6 @@ survival(p1) {
 	self.active = 0;
 }
 
-10001:20000 reproduction()
-{
-	//logistic growth
-	for (i in 2:size(sim.subpopulations))
-	{
-		N_star = (exp(r) * sim.subpopulations[i - 1].individualCount) / (1 + ((exp(r) - 1) * sim.subpopulations[i - 1].individualCount / K));
-		if (N_star > 0){
-			N_prime = rpois(1, N_star);
-			inds = sim.subpopulations[i - 1].individuals;
-			fitness = sim.subpopulations[i - 1].cachedFitness(NULL);
-			parents1 = sample(inds, N_prime, replace=T);
-			parents2 = sample(inds, N_prime, replace=T);
-			for (j in seqLen(N_prime))
-			{
-				p1_chroms = c(parents1[j].genomes, sim.subpopulations[0].individuals[parents1[j].tag].genomes);
-				p2_chroms = c(parents2[j].genomes, sim.subpopulations[0].individuals[parents2[j].tag].genomes);
-				sim.subpopulations[i - 1].addCrossed(parents1[j], parents2[j]);
-				p1_order = sample(seqLen(4), 4);
-				p2_order = sample(seqLen(4), 4);
-				breakpoints1 = sim.chromosome.drawBreakpoints();
-				breakpoints2 = sim.chromosome.drawBreakpoints();
-				offspring = sim.subpopulations[i - 1].addRecombinant(p1_chroms[p1_order[0]], p1_chroms[p1_order[1]], breakpoints1,
-					p2_chroms[p2_order[0]], p2_chroms[pa_order[1]], breakpoints2);
-				breakpoints1 = sim.chromosome.drawBreakpoints();
-				breakpoints2 = sim.chromosome.drawBreakpoints();
-				other = sim.subpopulations[0].addRecombinant(p1_chroms[p1_order[2]], p1_chroms[p1_order[3]], breakpoints1,
-					p2_chroms[p2_order[2]], p2_chroms[p2_order[3]], breakpoints2);
-				defineGlobal("c_tag", (c_tag+1));
-				offspring.tagF = c_tag;
-				other.tagF = c_tag;
-			}
-		}
-	}
-	self.active = 0;
-}
 
 10002:20000 late()
 {
@@ -255,17 +167,40 @@ survival(p1) {
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
 	}
 }
+ 
+mutationEffect(m1){
+	if(individual.subpopulation == p1){
+		return 1.0;
+	}
+	h = c(0.0, 0.25, 0.5, 0.75, 1.0);
+	other = sim.subpopulations[0].individuals[match(individual.tagF, sim.subpopulations[0].individuals.tagF)];
+	n = sum(individual.genomes.containsMutations(mut)) + sum(other.genomes.containsMutations(mut));
+	return 1 + h[n] * mut.selectionCoeff;
+}
+
+mutationEffect(m2){
+	if(individual.subpopulation == p1){
+		return 1.0;
+	}
+	h = c(0.0, 0.25, 0.5, 0.75, 1.0);
+	other = sim.subpopulations[0].individuals[match(individual.tagF, sim.subpopulations[0].individuals.tagF)];
+	n = sum(individual.genomes.containsMutations(mut)) + sum(other.genomes.containsMutations(mut));
+	return 1 + h[n] * mut.selectionCoeff;
+}
 
 10001:20001late()
 {
-	current_deme = (size(sim.subpopulations)-6);
-	speed = (current_deme - previous_deme) / 50;
-	output_ticks = seq(from=10001,to=20001,by=50);
+	output_ticks = seq(from=10001,to=200001,by=50);
 	if(match(community.tick, output_ticks) >= 0){
+		current_deme = (size(sim.subpopulations)-1);
+		while(isNULL(mean(sim.subpopulations[current_deme].cachedFitness(NULL)))){
+			current_deme = current_deme - 1;
+		}
+		speed = (current_deme - previous_deme) / 50;
 		defineGlobal("previous_deme", current_deme);
-		fitness_start = mean(sim.subpopulations[0].cachedFitness(NULL));
-		fitness_mid = mean(sim.subpopulations[round((size(sim.subpopulations)-1)/2)].cachedFitness(NULL));
-		fitness_edge = mean(sim.subpopulations[size(sim.subpopulations)-2].cachedFitness(NULL));
-		print("tick: " + community.tick + " start: " + fitness_start + " mid: " + fitness_mid + " edge: " + fitness_edge + " demes: " + current_deme + " speed: " + speed);
+		fitness_start = mean(sim.subpopulations[1].cachedFitness(NULL));
+		fitness_mid = mean(sim.subpopulations[round((current_deme-1)/2)].cachedFitness(NULL));
+		fitness_edge = mean(sim.subpopulations[current_deme].cachedFitness(NULL));
+		print("tick: " + community.tick + " time: " + time() + " start: " + fitness_start + " mid: " + fitness_mid + " edge: " + fitness_edge + " demes: " + current_deme + " speed: " + speed);
 		}
 }
