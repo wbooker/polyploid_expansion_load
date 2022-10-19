@@ -30,7 +30,7 @@ initialize()
 
 1 first()
 {
-	print("autopolyploid");
+	print("allopolyploid");
 	print("k: " + K +  " r: " + r + " m: " + mig_rate);
 	//first deme holds extra chromosomes of every individual. individuals don't migrate from or into here
 	sim.addSubpop(1, K*5);
@@ -143,15 +143,13 @@ survival(p1) {
 			{
 				p1_chroms = c(parents1[j].genomes, sim.subpopulations[0].individuals[match(parents1[j].tagF, sim.subpopulations[0].individuals.tagF)].genomes);
 				p2_chroms = c(parents2[j].genomes, sim.subpopulations[0].individuals[match(parents2[j].tagF, sim.subpopulations[0].individuals.tagF)].genomes);
-				p1_order = sample(seqLen(4), 4);
-				p2_order = sample(seqLen(4), 4);
 				breakpoints1 = sim.chromosome.drawBreakpoints();
 				breakpoints2 = sim.chromosome.drawBreakpoints();
-				offspring = sim.subpopulations[i - 1].addRecombinant(p1_chroms[p1_order[0]], p1_chroms[p1_order[1]], breakpoints1, p2_chroms[p2_order[0]], p2_chroms[p2_order[1]], breakpoints2);
+				offspring = sim.subpopulations[i - 1].addRecombinant(p1_chroms[0], p1_chroms[1], breakpoints1, p2_chroms[0], p2_chroms[1], breakpoints2);
 				breakpoints1 = sim.chromosome.drawBreakpoints();
 				breakpoints2 = sim.chromosome.drawBreakpoints();
-				other = sim.subpopulations[0].addRecombinant(p1_chroms[p1_order[2]], p1_chroms[p1_order[3]], breakpoints1,
-					p2_chroms[p2_order[2]], p2_chroms[p2_order[3]], breakpoints2);
+				other = sim.subpopulations[0].addRecombinant(p1_chroms[2], p1_chroms[3], breakpoints1,
+					p2_chroms[2], p2_chroms[3], breakpoints2);
 				defineGlobal("c_tag", (c_tag+1));
 				offspring.tagF = c_tag; //these aren't getting set for some reason
 				other.tagF = c_tag;

@@ -8,4 +8,4 @@
 #SBATCH -o slim.%A.out
 #SBATCH -e slim.%A.err
 
-slim polyploid_1.slim
+slim -seed 16948153676115 polyploid_allo.slim
