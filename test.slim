@@ -4,7 +4,7 @@ initialize()
 	initializeSLiMModelType("nonWF");
 	
 	//set mutation rate
-	initializeMutationRate(0.000005);
+	initializeMutationRate(0.00000725);
 	
 	// m1 mutation type: beneficial
 	initializeMutationType("m1", 0.5, "f", 0.005);
@@ -17,7 +17,7 @@ initialize()
 	
 	// uniform chromosome of length 10 kb with uniform recombination
 	initializeGenomicElement(g1, 0, 999);
-	initializeRecombinationRate(0.000005);
+	initializeRecombinationRate(0.05);
 	
 	//set global population parameters
 	defineConstant("K", 25); // carrying-capacity density
@@ -25,10 +25,11 @@ initialize()
 	defineConstant("mig_rate", 0.05); //mig rate
 	defineConstant("r", log(2)); //growth rate
 	defineGlobal("previous_deme", 0);
-	defineGlobal("inheritance", "allo");
+	defineGlobal("c_tag", 0);
+	defineGlobal("inheritance", "auto");
 }
 
-1 first()
+1 early()
 {
 	print(inheritance);
 	print("k: " + K +  " r: " + r + " m: " + mig_rate);
@@ -41,28 +42,61 @@ initialize()
 
 		//create individual tags to keep track of chromosomes
 		for(j in seqLen(sim.subpopulations[i - 1].individualCount)){
-			//defineGlobal("c_tag", (c_tag+1));
-			c_tag = runif(1);
-			sim.subpopulations[i - 1].individuals[j].tagF = c_tag;
-			sim.subpopulations[0].individuals[j+((i-2)*K)].tagF = c_tag;
+			f_tag = runif(1);
+			sim.subpopulations[i - 1].individuals[j].tagF = f_tag;
+			sim.subpopulations[0].individuals[j+((i-2)*K)].tagF = f_tag;
 			//sim.subpopulations[i - 1].individuals[j].tag = c_tag;
-		}
+		}		
 	}
-	
-
-	
-	
-	
+	sim.subpopulations[0].individuals.tag = seq(from=0, to=(sim.subpopulations[0].individualCount-1), by=1);
 }
 
 survival(p1) {
-// move dying males into cold storage in case they have mated
+// don't let p1 individuals die outside of after each gen
 
  if (individual.age == 0)
  	return T;
  return NULL;
 }
-
+1:200000 early(){
+	n_inds = 0;
+	n_dead = 0;
+	//print(sim.subpopulations[0].individuals.tag);
+	for(j in seqLen(sim.subpopulations[0].individualCount)){
+		if(sim.subpopulations[0].individuals[j].age > 0){
+			sim.subpopulations[0].individuals[j].tag = 0;
+			n_dead = n_dead+1;
+			}
+		if(sim.subpopulations[0].individuals[j].age == 0){
+			sim.subpopulations[0].individuals[j].tag = n_inds;
+			n_inds = n_inds+1;
+			}
+	}
+	//print(sim.subpopulations[0].individuals.tag);
+	//n_dead_1 = size(sim.subpopulations[0].individuals[sim.subpopulations[0].individuals.age > 0]);
+	//alives_1 = seq(from = 0, to = (sim.subpopulations[0].individualCount-n_dead_1-1), by = 1);
+	//print(n_dead_1);
+	//print(alives_1);
+	//deads_1 = rep(0, n_dead_1);
+	//sim.subpopulations[0].individuals.tag = c(deads_1,alives_1);
+	for(i in 2:size(sim.subpopulations)){
+		for(j in seqLen(sim.subpopulations[i - 1].individualCount)){
+			c_tag = sim.subpopulations[0].individuals[match(sim.subpopulations[i - 1].individuals[j].tagF, sim.subpopulations[0].individuals.tagF)].tag;
+			//print("-----------------");
+			//print(sim.subpopulations[0].individuals[match(sim.subpopulations[i - 1].individuals[j].tagF, sim.subpopulations[0].individuals.tagF)].tagF);
+			//print(sim.subpopulations[i - 1].individuals[j].tagF);
+			sim.subpopulations[i - 1].individuals[j].tag = c_tag;
+			}
+	}
+	//print("----------------------------");
+	//print(sim.subpopulations[1].individuals.tagF);
+	//print("----------------------------");
+	//print(sim.subpopulations[0].individuals[0:(sim.subpopulations[1].individualCount-1)].tagF);
+	//print("----------------------------");
+	//print(sim.subpopulations[1].individuals.tag);
+	//print("----------------------------");
+	//print(sim.subpopulations[0].individuals[0:(sim.subpopulations[1].individualCount-1)].tag);
+}
 
 //open up other populations after 10k generations
 10001 first()
@@ -71,15 +105,9 @@ survival(p1) {
 		sim.addSubpop(7, 0);
 }
 
-early()
+10:20000 early()
 {
-	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
-	for (i in 1:size(sim.subpopulations))
-	{
-		inds = sim.subpopulations[i - 1].individuals;
-		inds[inds.age > 0].fitnessScaling = 0.0;
-	}
-	
+
 	//forward mig
 	for (i in 2:(size(sim.subpopulations) - 1))
 	{
@@ -125,15 +153,18 @@ early()
 	}
 }
 
-//set reproduction
-reproduction()
-{
-	for (i in 2:size(sim.subpopulations)){
-		for(j in seqLen(sim.subpopulations[i - 1].individualCount)){
-			tag = sim.subpopulations[0].individuals[match(sim.subpopulations[i - 1].individuals[j].tagF, sim.subpopulations[0].individuals.tagF)].index;
-			sim.subpopulations[i - 1].individuals[j].tag = tag;
-		}
+1:200000 early(){
+	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
+	for (i in 1:size(sim.subpopulations))
+	{
+		inds = sim.subpopulations[i - 1].individuals;
+		sim.killIndividuals(inds[inds.age > 0]);
 	}
+}
+
+//set reproduction
+1:20000 reproduction()
+{
 	//logistic growth
 	for (i in 2:size(sim.subpopulations))
 	{
@@ -161,10 +192,9 @@ reproduction()
 				breakpoints1 = sim.chromosome.drawBreakpoints();
 				breakpoints2 = sim.chromosome.drawBreakpoints();
 				other = sim.subpopulations[0].addRecombinant(p1_chroms[p1_order[2]], p1_chroms[p1_order[3]], breakpoints1, p2_chroms[p2_order[2]], p2_chroms[p2_order[3]], breakpoints2);
-				//defineGlobal("c_tag", (c_tag+1));
-				c_tag = runif(1);
-				offspring.tagF = c_tag; //these aren't getting set for some reason
-				other.tagF = c_tag;
+				tag = runif(1);
+				offspring.tagF = tag;
+				other.tagF = tag;
 			}
 		}
 	}
@@ -172,23 +202,12 @@ reproduction()
 }
 
 
-10002:200000 late()
+10002:20000 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
 	}
 }
-
-
-early(){
-	for (i in 2:size(sim.subpopulations)){
-		for(j in seqLen(sim.subpopulations[i - 1].individualCount)){
-			tag = sim.subpopulations[0].individuals[match(sim.subpopulations[i - 1].individuals[j].tagF, sim.subpopulations[0].individuals.tagF)].index;
-			sim.subpopulations[i - 1].individuals[j].tag = tag;
-		}
-	}
-}
-
  
 mutationEffect(m1){
 	if(individual.subpopulation == p1){
@@ -206,15 +225,13 @@ mutationEffect(m2){
 	}
 	h = c(0.0, 0.25, 0.5, 0.75, 1.0);
 	other = sim.subpopulations[0].individuals[individual.tag];
-	//print(individual.tagF);
-	//print(other.tagF);
 	n = sum(individual.genomes.containsMutations(mut)) + sum(other.genomes.containsMutations(mut));
 	return 1 + h[n] * mut.selectionCoeff;
 }
 
-10001:200001late()
+10001:20001late()
 {
-	output_ticks = seq(from=10001,to=200001,by=50);
+	output_ticks = seq(from=1001,to=200001,by=50);
 	if(match(community.tick, output_ticks) >= 0){
 		current_deme = (size(sim.subpopulations)-1);
 		while(isNULL(mean(sim.subpopulations[current_deme].cachedFitness(NULL)))){
