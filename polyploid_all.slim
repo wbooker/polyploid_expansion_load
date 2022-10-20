@@ -128,9 +128,9 @@ survival(p1) {
 //set reproduction
 reproduction()
 {
-	inds = sim.subpopulations[seq(from = 1, to = 5, by = 1)].individuals;
+	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
 	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
-	sim.subpopulations[seq(from = 1, to = 5, by = 1)].individuals.tag = tag;
+	inds.tag = tag;
 
 	//logistic growth
 	for (i in 2:size(sim.subpopulations))
@@ -179,9 +179,9 @@ reproduction()
 
 
 1:200000 early(){
-	inds = sim.subpopulations[seq(from = 1, to = 5, by = 1)].individuals;
+	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
 	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
-	sim.subpopulations[seq(from = 1, to = 5, by = 1)].individuals.tag = tag;
+	inds.tag = tag;
 }
 
  
