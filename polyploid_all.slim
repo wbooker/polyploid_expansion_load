@@ -105,7 +105,7 @@ survival(p1) {
 		sim.addSubpop(7, 0);
 }
 
-1:20000 early()
+1:200000 early()
 {
 
 	//forward mig
@@ -163,7 +163,7 @@ survival(p1) {
 }
 
 //set reproduction
-1:20000 reproduction()
+1:200000 reproduction()
 {
 	//logistic growth
 	for (i in 2:size(sim.subpopulations))
@@ -202,7 +202,7 @@ survival(p1) {
 }
 
 
-10002:20000 late()
+10002:200000 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
@@ -229,7 +229,7 @@ mutationEffect(m2){
 	return 1 + h[n] * mut.selectionCoeff;
 }
 
-10001:20001late()
+10001:200001late()
 {
 	output_ticks = seq(from=1001,to=200001,by=50);
 	if(match(community.tick, output_ticks) >= 0){
