@@ -26,7 +26,6 @@ initialize()
 	defineConstant("r", log(2)); //growth rate
 	defineGlobal("previous_deme", 0);
 	defineGlobal("inheritance", "allo");
-	defineGlobal("rep_check", 0);
 }
 
 1 early()
@@ -50,10 +49,12 @@ initialize()
 		}
 	}
 	
+}
 
-	
-	
-	
+2: first(){
+	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	inds.tag = tag;
 }
 
 survival(p1) {
@@ -129,12 +130,7 @@ early()
 //set reproduction
 reproduction()
 {
-	if(rep_check == 0){
-		inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
-		tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
-		inds.tag = tag;
-		defineGlobal("rep_check", 1);
-	}
+
 
 	//logistic growth
 	for (i in 2:size(sim.subpopulations))
@@ -186,7 +182,6 @@ early(){
 	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
 	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
 	inds.tag = tag;
-	defineGlobal("rep_check", 0);
 }
 
  
