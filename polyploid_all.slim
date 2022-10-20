@@ -71,7 +71,7 @@ survival(p1) {
 		sim.addSubpop(7, 0);
 }
 
-early()
+1:200000 early()
 {
 	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
 	for (i in 1:size(sim.subpopulations))
@@ -128,12 +128,10 @@ early()
 //set reproduction
 reproduction()
 {
-	for (i in 2:size(sim.subpopulations)){
-		for(j in seqLen(sim.subpopulations[i - 1].individualCount)){
-			tag = sim.subpopulations[0].individuals[match(sim.subpopulations[i - 1].individuals[j].tagF, sim.subpopulations[0].individuals.tagF)].index;
-			sim.subpopulations[i - 1].individuals[j].tag = tag;
-		}
-	}
+	inds = sim.subpopulations[seq(from = 1, to = 5, by = 1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	sim.subpopulations[seq(from = 1, to = 5, by = 1)].individuals.tag = tag;
+
 	//logistic growth
 	for (i in 2:size(sim.subpopulations))
 	{
@@ -180,13 +178,10 @@ reproduction()
 }
 
 
-early(){
-	for (i in 2:size(sim.subpopulations)){
-		for(j in seqLen(sim.subpopulations[i - 1].individualCount)){
-			tag = sim.subpopulations[0].individuals[match(sim.subpopulations[i - 1].individuals[j].tagF, sim.subpopulations[0].individuals.tagF)].index;
-			sim.subpopulations[i - 1].individuals[j].tag = tag;
-		}
-	}
+1:200000 early(){
+	inds = sim.subpopulations[seq(from = 1, to = 5, by = 1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	sim.subpopulations[seq(from = 1, to = 5, by = 1)].individuals.tag = tag;
 }
 
  
@@ -212,7 +207,7 @@ mutationEffect(m2){
 	return 1 + h[n] * mut.selectionCoeff;
 }
 
-10001:200001late()
+1001:200001late()
 {
 	output_ticks = seq(from=10001,to=200001,by=50);
 	if(match(community.tick, output_ticks) >= 0){
