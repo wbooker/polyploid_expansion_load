@@ -4,7 +4,7 @@ initialize()
 	initializeSLiMModelType("nonWF");
 	
 	//set mutation rate
-	initializeMutationRate(0.000005);
+	initializeMutationRate(0.000000000025);
 	
 	// m1 mutation type: beneficial
 	initializeMutationType("m1", 0.5, "f", 0.005);
@@ -16,11 +16,11 @@ initialize()
 	initializeGenomicElementType("g1", c(m1, m2), c(0.1, 0.9));
 	
 	// uniform chromosome of length 10 kb with uniform recombination
-	initializeGenomicElement(g1, 0, 999);
-	initializeRecombinationRate(0.000005);
+	initializeGenomicElement(g1, 0, 999999999);
+	initializeRecombinationRate(0.000000000025);
 	
 	//set global population parameters
-	defineConstant("K", 100); // carrying-capacity density
+	defineConstant("K", 25); // carrying-capacity density
 	//defineConstant("n_demes", 1000); //number of demes
 	defineConstant("mig_rate", 0.05); //mig rate
 	defineConstant("r", log(2)); //growth rate
@@ -67,10 +67,11 @@ survival(p1) {
 
 
 //open up other populations after 10k generations
-10001 first()
+1001 first()
 {
 	//initialize rest of demes at 0
 		sim.addSubpop(7, 0);
+		//sim.chromosome.setMutationRate(0.000000000025);
 }
 
 early()
@@ -170,7 +171,7 @@ reproduction()
 }
 
 
-10002:200000 late()
+1002:200000 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
@@ -209,7 +210,7 @@ mutationEffect(m2){
 
 1001:200001 late()
 {
-	output_ticks = seq(from=10001,to=200001,by=50);
+	output_ticks = seq(from=1001,to=200001,by=50);
 	if(match(community.tick, output_ticks) >= 0){
 		current_deme = (size(sim.subpopulations)-1);
 		while(isNULL(mean(sim.subpopulations[current_deme].cachedFitness(NULL)))){
