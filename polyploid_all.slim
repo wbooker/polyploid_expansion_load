@@ -246,15 +246,53 @@ mutationEffect(m2){
 {
 	output_ticks = seq(from=1001,to=200001,by=50);
 	if(match(community.tick, output_ticks) >= 0){
-		current_deme = (size(sim.subpopulations)-1);
+		defineGlobal("current_deme", (size(sim.subpopulations)-1));
 		while(isNULL(mean(sim.subpopulations[current_deme].cachedFitness(NULL)))){
-			current_deme = current_deme - 1;
+			defineGlobal("current_deme", (current_deme-1));
 		}
 		speed = (current_deme - previous_deme) / 50;
 		defineGlobal("previous_deme", current_deme);
 		fitness_start = mean(sim.subpopulations[1].cachedFitness(NULL));
 		fitness_mid = mean(sim.subpopulations[round((current_deme-1)/2)].cachedFitness(NULL));
 		fitness_edge = mean(sim.subpopulations[current_deme].cachedFitness(NULL));
+
+		//log output
+		if(community.tick == 1001){
+			outDir = paste0(c("output/",inheritance,"_",K,"_",mig_rate,"_",r,"/"));
+			createDirectory(outDir);
+			if(isNULL(readFile(paste0(outDir,"trackFile.txt")))){
+				writeFile(paste0(outDir,"trackFile.txt"), "0", append = F);
+				curr_rep = 0;
+			}
+			if(!isNULL(readFile(paste0(outDir,"trackFile.txt")))){
+				trackFile = readFile(paste0(outDir,"trackFile.txt"));
+				curr_rep = asInteger(trackFile[0])+1;
+				writeFile(paste0(outDir,"trackFile.txt"), asString(curr_rep), append = F);
+			}
+			outfile = paste0(c(outDir,curr_rep,"_log.csv"));			
+			log = community.createLogFile(outfile, logInterval=50);
+ 			log.addCycle(); 
+			log.addCustomColumn("Generation", "community.tick;"); 
+			log.addCustomColumn("start_fitness", "mean(sim.subpopulations[1].cachedFitness(NULL));");
+			log.addCustomColumn("mid_fitness", "mean(sim.subpopulations[round((current_deme-1)/2)].cachedFitness(NULL));");
+			log.addCustomColumn("edge_fitness", "mean(sim.subpopulations[current_deme].cachedFitness(NULL));");
+			log.addCustomColumn("current_deme", "current_deme;");
+			
+			// intitialize log  for fitnesses of each subpop
+			defineGlobal("fitness_file", paste0(c(outDir,curr_rep,"_fitnesses.csv")));
+			writeFile(fitness_file, paste(seq(from = 0, to = 5000, by = 1), sep=","), append = F);
+			
+		}
+		//update fitness file
+		sub_fitnesses = NULL;
+		for (i in 2:size(sim.subpopulations)){
+			sub_fitnesses = c(sub_fitnesses, mean(sim.subpopulations[i-1].cachedFitness(NULL)));
+		}
+		extra_pops = rep(0, (5000-current_deme+1));
+		fitness_line = c(sub_fitnesses, extra_pops);
+		writeFile(fitness_file, paste(fitness_line, sep=","), append = T);
+		
+		//print to std out
 		print("tick: " + community.tick + " time: " + time() + " start: " + fitness_start + " mid: " + fitness_mid + " edge: " + fitness_edge + " demes: " + current_deme + " speed: " + speed);
 		}
 }
