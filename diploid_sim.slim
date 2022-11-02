@@ -1,5 +1,7 @@
 initialize()
 {
+	//defineGlobal("dom_pattern", "recessive")
+
 	//set population parameters
 	//defineConstant("K", 100); // carrying-capacity density
 	//defineConstant("mig_rate", 0.05); //mig rate
@@ -166,12 +168,16 @@ early()
 
 mutationEffect(m1){
 	h = c(0.0, 0.5, 1.0);
+	if(dom_pattern == "recessive")
+		h = c(0.0, 0.0, 1.0);
 	n = sum(individual.genomes.containsMutations(mut));
 	return 1 + h[n] * mut.selectionCoeff;
 }
 
 mutationEffect(m2){
 	h = c(0.0, 0.5, 1.0);
+	if(dom_pattern == "recessive")
+		h = c(0.0, 0.0, 1.0);
 	n = sum(individual.genomes.containsMutations(mut));
 	return 1 + h[n] * mut.selectionCoeff;
 }
@@ -220,7 +226,7 @@ reproduction()
 		//log output
 		if(community.tick == 1001){
 			defineGlobal("fitness_scalar", mean(sim.subpopulations[current_deme-1].cachedFitness(NULL)));
-			outDir = paste0(c("output/","diploid","_K-",K,"_m-",mig_rate,"_r-",r,"_u-",u,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"/"));
+			outDir = paste0(c("output/","diploid_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u-",u,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"/"));
 			createDirectory(outDir);
 			if(isNULL(readFile(paste0(outDir,"trackFile.txt")))){
 				writeFile(paste0(outDir,"trackFile.txt"), "0", append = F);
