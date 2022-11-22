@@ -39,7 +39,7 @@ initialize()
 
 }
 
-function(float)calc_het(lifso x)
+function (float)calc_het(lifso x)
 {
 	if(inheritance == "diploid")
 	{
@@ -56,7 +56,7 @@ function(float)calc_het(lifso x)
 		return calcHeterozygosity(chroms);
 }
 
-function(float)get_mutation_freqs(lifso<Subpopulation> x)
+function (float)get_mutation_freqs(lifso<Subpopulation> x)
 {
 	div_factor = 4;
 	if(inheritance == "diploid")
@@ -79,7 +79,7 @@ function(float)get_mutation_freqs(lifso<Subpopulation> x)
 	return all_inds_count / size(x.individuals) / div_factor;
 }
 
-function(float)calc_max_PHS(lifso<Subpopulation> x)
+function (float)calc_max_PHS(lifso<Subpopulation> x)
 {
 	max_phs = 0;
 	
@@ -94,7 +94,7 @@ function(float)calc_max_PHS(lifso<Subpopulation> x)
 	return asFloat(max_phs);	
 }
 
-function(float)calc_all_PHS_avg(lifso x)
+functio (float)calc_all_PHS_avg(lifso x)
 {
 	phs_flag = 0;
 	
