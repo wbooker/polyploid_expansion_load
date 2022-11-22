@@ -1,6 +1,8 @@
 initialize()
 {
-	//defineGlobal("dom_pattern", "recessive")
+	//set inheritance
+	//defineGlobal("inheritance", "auto");
+	//defineGlobal("dom_pattern", "recessive");
 
 	//set population parameters
 	//defineConstant("K", 100); // carrying-capacity density
@@ -31,9 +33,28 @@ initialize()
 	initializeGenomicElement(g1, 0, g_size);
 	initializeRecombinationRate(rho);
 	
-
-	
+	defineGlobal("c_tag", 0);
 	defineGlobal("previous_deme", 0);
+
+}
+
+function(float)get_mutation_freqs(lifso<Subpopulation> x)
+{
+	make_flag = 0;
+	all_inds_count = 0;
+
+	for(ind in x.individuals){
+		counts_1 = ind.genome1.mutationCountsInGenomes(NULL);
+		counts_2 = sim.subpopulations[0].individuals[ind.tag].genome2.mutationCountsInGenomes(NULL);
+		if(make_flag == 0){
+			all_inds_count = counts_1 + counts_2;
+			make_flag = 1;
+		}
+		else
+			all_inds_count = all_inds_count + counts_1 + counts_2;
+	}
+	
+	return all_inds_count / size(x.individuals) / 2;
 }
 
 function(float)calc_max_PHS(lifso<Subpopulation> x)
@@ -41,12 +62,33 @@ function(float)calc_max_PHS(lifso<Subpopulation> x)
 	max_phs = 0;
 	
 	for(ind in x.individuals){
-		freqs = ind.genomes.mutationFrequenciesInGenomes(NULL);
+		counts_1 = ind.genome1.mutationFrequenciesInGenomes(NULL);
+		counts_2 = sim.subpopulations[0].individuals[ind.tag].genome2.mutationFrequenciesInGenomes(NULL);
+		freqs = (counts_1+counts_2) / 2;
 		phs = size(which(freqs<1.0 & freqs>0.0)) / size(freqs);
 		if(phs > max_phs)
 			max_phs = phs;
 	}
 	return asFloat(max_phs);	
+}
+
+function(float)calc_all_PHS_avg(lifso x)
+{
+	phs_flag = 0;
+	
+	for(ind in x.individuals){
+		counts_1 = ind.genome1.mutationFrequenciesInGenomes(NULL);
+		counts_2 = sim.subpopulations[0].individuals[ind.tag].genome2.mutationFrequenciesInGenomes(NULL);
+		freqs = (counts_1+counts_2) / 2;
+		phs = size(which(freqs<1.0 & freqs>0.0)) / size(freqs);
+		if(phs_flag == 0){
+			all_phs = phs;
+			phs_flag = 1;
+		}
+		else
+			all_phs = c(all_phs,phs);
+	}
+	return asFloat(mean(all_phs));	
 }
 
 function (float)variance(float x)
@@ -66,80 +108,45 @@ function (float)variance(float x)
 		return asFloat(vars/size(x));
 }
 
-1 first()
+1 early()
 {
-	print("non-polyploid");
-	//initialize first 5 demes at carrying_capacity
-	for (i in 1:5)
+	print(inheritance);
+	print("k: " + K +  " r: " + r + " m: " + mig_rate);
+	//first deme holds extra chromosomes of every individual. individuals don't migrate from or into here
+	sim.addSubpop(1, K*5);
+
+	//initialize next 5 demes at carrying_capacity
+	for (i in 2:6){
 		sim.addSubpop(i, K);
-}
-/*
-1:1000 early()
-{
-	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
-	for (i in 1:5)
-	{
-		inds = sim.subpopulations[i - 1].individuals;
-		inds[inds.age > 0].fitnessScaling = 0.0;
-	}
-	
-	//forward mig
-	for (i in 1:4)
-	{
-		nIndividuals = sim.subpopulations[i - 1].individualCount;
-		if (nIndividuals > 0){		
-			nMigrants = rpois(1, nIndividuals * mig_rate);
-			if (nMigrants >= 1){
-				mig_inds = sim.subpopulations[i - 1].individuals;
-				if (size(mig_inds) >= 1){
-					if(nMigrants > size(mig_inds))
-						nMigrants = size(mig_inds);
-					migrants = sample(mig_inds, nMigrants);
-					for (migrant in migrants)
-					{
-						dest = i;
-						sim.subpopulations[dest].takeMigrants(migrant);
-					}
-				}
-			}
+
+		//create individual tags to keep track of chromosomes
+		for(j in seqLen(sim.subpopulations[i - 1].individualCount)){
+			defineGlobal("c_tag", (c_tag+1));
+			//c_tag = runif(1);
+			sim.subpopulations[i - 1].individuals[j].tagF = c_tag;
+			sim.subpopulations[0].individuals[j+((i-2)*K)].tagF = c_tag;
+			//sim.subpopulations[i - 1].individuals[j].tag = c_tag;
 		}
 	}
 	
-	//reverse mig
-	for (i in 2:5)
-	{
-		nIndividuals = sim.subpopulations[i - 1].individualCount;
-		if (nIndividuals > 0){
-			nMigrants = rpois(1, nIndividuals * mig_rate);
-			if (nMigrants >= 1){
-				mig_inds = sim.subpopulations[i - 1].individuals;
-				if (size(mig_inds) >= 1){
-					if(nMigrants > size(mig_inds))
-						nMigrants = size(mig_inds);
-					migrants = sample(mig_inds, nMigrants);
-					for (migrant in migrants)
-					{
-						dest = i - 2;
-						sim.subpopulations[dest].takeMigrants(migrant);
-					}
-				}
-			}
-		}	
-	}
 }
-*/
+
+survival(p1) {
+// move dying males into cold storage in case they have mated
+
+ if (individual.age == 0)
+ 	return T;
+ return NULL;
+}
+
+
+
 //open up other populations after 10k generations
 1001 first()
 {
-	//rescale fitness to 1 (only at edge pop??)
-	//sim.subpopulations[1 - 1].fitnessScaling = 1 / mean(sim.subpopulations[1 - 1].cachedFitness(NULL));
-	//sim.subpopulations[2 - 1].fitnessScaling = 1 / mean(sim.subpopulations[2 - 1].cachedFitness(NULL));
-	//sim.subpopulations[3 - 1].fitnessScaling = 1 / mean(sim.subpopulations[3 - 1].cachedFitness(NULL));
-	//sim.subpopulations[4 - 1].fitnessScaling = 1 / mean(sim.subpopulations[4 - 1].cachedFitness(NULL));
-	//sim.subpopulations[5 - 1].fitnessScaling = 1 / mean(sim.subpopulations[5 - 1].cachedFitness(NULL));
-	
 	//initialize rest of demes at 0
-		sim.addSubpop(6, 0);
+		sim.addSubpop(7, 0);
+		//sim.chromosome.setMutationRate(0.000000000025);
 }
 
 early()
@@ -152,7 +159,7 @@ early()
 	}
 	
 	//forward mig
-	for (i in 1:(size(sim.subpopulations) - 1))
+	for (i in 2:(size(sim.subpopulations) - 1))
 	{
 		nIndividuals = sim.subpopulations[i - 1].individualCount;
 		if (nIndividuals > 0){		
@@ -174,7 +181,7 @@ early()
 	}
 	
 	//reverse mig
-	for (i in 2:size(sim.subpopulations))
+	for (i in 3:size(sim.subpopulations))
 	{
 		nIndividuals = sim.subpopulations[i - 1].individualCount;
 		if (nIndividuals > 0){
@@ -196,83 +203,112 @@ early()
 	}
 }
 
-mutationEffect(m1){
-	if(dom_pattern == "additive")
-		h = c(0.0, 0.5, 1.0);
-	if(dom_pattern == "recessive")
-		h = c(0.0, 0.0, 1.0);
-	if(dom_pattern == "br_dd")
-		h = c(0.0, 0.0, 1.0);
-	if(dom_pattern == "overdominance_1")
-		h = c(0.0, 1.0, 0.0);
-	if(dom_pattern == "overdominance_2")
-		h = c(0.0, 1.0, 0.8);
-	if(dom_pattern == "overdominance_3")
-		h = c(0.0, 1.0, 0.5); 
-	if(dom_pattern == "underdominance_1")
-		h = c(0.0, -0.5, 1.0); 
-	if(dom_pattern == "underdominance_2")
-		h = c(0.0, -1.0, 1.0); 
-
-	n = sum(individual.genomes.containsMutations(mut));
-	return 1 + h[n] * mut.selectionCoeff;
-}
-
-mutationEffect(m2){
-	if(dom_pattern == "additive")
-		h = c(0.0, 0.5, 1.0);
-	if(dom_pattern == "recessive")
-		h = c(0.0, 0.0, 1.0);
-	if(dom_pattern == "br_dd")
-		h = c(0.0, 1.0, 1.0);
-	if(dom_pattern == "overdominance_1")
-		h = c(0.0, 1.0, 0.0);
-	if(dom_pattern == "overdominance_2")
-		h = c(0.0, 1.0, 0.8);
-	if(dom_pattern == "overdominance_3")
-		h = c(0.0, 1.0, 0.5); 
-	if(dom_pattern == "underdominance_1")
-		h = c(0.0, -0.5, 1.0); 
-	if(dom_pattern == "underdominance_2")
-		h = c(0.0, -1.0, 1.0); 
-
-	n = sum(individual.genomes.containsMutations(mut));
-	return 1 + h[n] * mut.selectionCoeff;
-
-}
-
 //set reproduction
 reproduction()
 {
+	
 	//logistic growth
-	for (i in 1:size(sim.subpopulations))
+	for (i in 2:size(sim.subpopulations))
 	{
 		N_star = (exp(r) * sim.subpopulations[i - 1].individualCount) / (1 + ((exp(r) - 1) * sim.subpopulations[i - 1].individualCount / K));
-		if (N_star > 0){
+		if (N_star > 0)
+		{
 			N_prime = rpois(1, N_star);
 			inds = sim.subpopulations[i - 1].individuals;
+			fitness = sim.subpopulations[i - 1].cachedFitness(NULL);
 			parents1 = sample(inds, N_prime, replace=T);
 			parents2 = sample(inds, N_prime, replace=T);
 			for (j in seqLen(N_prime))
 			{
 				breakpoints1 = sim.chromosome.drawBreakpoints();
 				breakpoints2 = sim.chromosome.drawBreakpoints();
-				offspring = sim.subpopulations[i - 1].addRecombinant(parents1[j].genome1, parents1[j].genome2, breakpoints1, parents2[j].genome1, parents2[j].genome2, breakpoints2);				
-				//sim.subpopulations[i - 1].addCrossed(parents1[j], parents2[j]);
+				offspring = sim.subpopulations[i - 1].addRecombinant(parents1[j].genome1, sim.subpopulations[0].individuals[parents1[j].tag].genome2, breakpoints1, parents2[j].genome1, sim.subpopulations[0].individuals[parents2[j].tag].genome2, breakpoints2);
+				other = sim.subpopulations[0].addRecombinant(parents1[j].genome1, sim.subpopulations[0].individuals[parents1[j].tag].genome2, breakpoints1, parents2[j].genome1, sim.subpopulations[0].individuals[parents2[j].tag].genome2, breakpoints2);
+				defineGlobal("c_tag", (c_tag+1));
+				//c_tag = runif(1);
+				offspring.tagF = c_tag; //these aren't getting set for some reason
+				other.tagF = c_tag;
 			}
 		}
 	}
 	self.active = 0;
 }
 
-1002:10001 late()
+late (){
+	sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals.genome2.removeMutations();
+	sim.subpopulations[0].individuals.genome1.removeMutations();  
+}
+
+
+1002:200000 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
 	}
 }
 
-1001:10001 late()
+// need to set tags for new individuals after selection induced mortality
+early(){
+
+	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	inds.tag = tag;
+}
+
+2: late() {
+
+	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	inds.tag = tag;
+}
+
+mutationEffect(m1){
+	h = c(0.0, 0.5, 1.0);
+	if(dom_pattern == "recessive")
+		h = c(0.0, 0.0, 1.0);
+	n = sum(individual.genomes.containsMutations(mut));
+	return 1 + h[n] * mut.selectionCoeff;
+}
+
+mutationEffect(m2){
+	h = c(0.0, 0.5, 1.0);
+	if(dom_pattern == "recessive")
+		h = c(0.0, 0.0, 1.0);
+	n = sum(individual.genomes.containsMutations(mut));
+	return 1 + h[n] * mut.selectionCoeff;
+}
+
+//do a quick check to make sure tags are right every 100 gens
+101: first (){
+	check_ticks = seq(from=101,to=200001,by=100);
+	if(match(community.tick, check_ticks) >= 0){
+		for (ind in sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals)
+			if (ind.tagF != sim.subpopulations[0].individuals[ind.tag].tagF)
+				stop("late(): error for individual " + ind.index);
+	}
+}
+
+//do a quick check to make sure tags are right every 100 gens
+101: early (){
+	check_ticks = seq(from=101,to=200001,by=100);
+	if(match(community.tick, check_ticks) >= 0){
+		for (ind in sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals)
+			if (ind.tagF != sim.subpopulations[0].individuals[ind.tag].tagF)
+				stop("late(): error for individual " + ind.index);
+	}
+}
+
+//do a quick check to make sure tags are right every 100 gens
+101: late (){
+	check_ticks = seq(from=101,to=200001,by=100);
+	if(match(community.tick, check_ticks) >= 0){
+		for (ind in sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals)
+			if (ind.tagF != sim.subpopulations[0].individuals[ind.tag].tagF)
+				stop("late(): error for individual " + ind.index);
+	}
+}
+
+1001:200001 late()
 {
 	output_ticks = seq(from=1001,to=200001,by=1);
 	if(match(community.tick, output_ticks) >= 0){
@@ -289,7 +325,7 @@ reproduction()
 		//log output
 		if(community.tick == 1001){
 			defineGlobal("fitness_scalar", mean(sim.subpopulations[current_deme-1].cachedFitness(NULL)));
-			outDir = paste0(c("output/output_new/2/","dip","_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u-",u,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"/"));
+			outDir = paste0(c("output/output_new/test/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u-",u,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"/"));
 			createDirectory(outDir);
 			if(isNULL(readFile(paste0(outDir,"trackFile.txt")))){
 				writeFile(paste0(outDir,"trackFile.txt"), "0", append = F);
@@ -335,10 +371,10 @@ reproduction()
 		for (i in 2:size(sim.subpopulations)){
 			temp_mean_fitness = mean(sim.subpopulations[i-1].cachedFitness(NULL));
 			temp_var_fitness = variance(sim.subpopulations[i-1].cachedFitness(NULL));
-			//temp_mean_mutations = size(which(get_mutation_freqs(sim.subpopulations[i-1]) > 0))/size(sim.subpopulations[i-1].individuals);
-			//temp_fixed_mutations = size(which(get_mutation_freqs(sim.subpopulations[i-1])==1.0));
-			temp_mean_mutations = mean(sim.subpopulations[i-1].individuals.countOfMutationsOfType(m1));
-			temp_fixed_mutations = size(which(sim.mutationFrequencies(i,NULL)==1.0));
+			temp_mean_mutations = size(which(get_mutation_freqs(sim.subpopulations[i-1]) > 0))/size(sim.subpopulations[i-1].individuals);
+			temp_fixed_mutations = size(which(get_mutation_freqs(sim.subpopulations[i-1])==1.0));
+			//temp_mean_mutations = mean(sim.subpopulations[i-1].individuals.countOfMutationsOfType(m1));
+			//temp_fixed_mutations = size(which(sim.mutationFrequencies(i,NULL)==1.0));
 			//pop_phs = calc_all_PHS_avg(sim.subpopulations[1:(size(sim.subpopulations)-1)]);
 			temp_max_phs = calc_max_PHS(sim.subpopulations[i-1]);
 			temp_pop_size = size(sim.subpopulations[i-1].individuals);
