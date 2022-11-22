@@ -39,6 +39,23 @@ initialize()
 
 }
 
+function(float)calc_het(lifso x)
+{
+	if(inheritance == "diploid")
+	{
+		chroms = c(sim.subpopulations[x-1].individuals.genome1, sim.subpopulations[0].individuals[sim.subpopulations[x-1].individuals.tag].genome2);
+	}
+	else
+	{
+		chroms = c(sim.subpopulations[x-1].individuals.genomes, sim.subpopulations[0].individuals[sim.subpopulations[x-1].individuals.tag].genomes);
+	}
+	
+	if(size(chroms) == 0)
+		return 0.0;
+	else
+		return calcHeterozygosity(chroms);
+}
+
 function(float)get_mutation_freqs(lifso<Subpopulation> x)
 {
 	div_factor = 4;
@@ -273,7 +290,7 @@ reproduction()
 	self.active = 0;
 }
 
-1002:10001 late()
+1002:6001 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
@@ -306,6 +323,8 @@ mutationEffect(m1){
 			h = c(0.0, 0.0, 1.0);
 		if(dom_pattern == "br_dd")
 			h = c(0.0, 0.0, 1.0);
+		if(dom_pattern == "bd_dr")
+			h = c(0.0, 1.0, 1.0);
 		if(dom_pattern == "overdominance_1")
 			h = c(0.0, 1.0, 0.0);
 		if(dom_pattern == "overdominance_2")
@@ -328,6 +347,8 @@ mutationEffect(m1){
 			h = c(0.0, 0.0, 0.0, 1.0, 1.0);
 		if(dom_pattern == "br_dd")
 			h = c(0.0, 0.0, 0.0, 0.0, 1.0);
+		if(dom_pattern == "bd_dr")
+			h = c(0.0, 1.0, 1.0, 1.0, 1.0);
 		if(dom_pattern == "overdominance_1")
 			h = c(0.0, 1.0, 1.0, 1.0, 0.0);
 		if(dom_pattern == "overdominance_2")
@@ -338,8 +359,6 @@ mutationEffect(m1){
 			h = c(0.0, -0.5, -0.5, -0.5, 0.0); 
 		if(dom_pattern == "underdominance_2")
 			h = c(0.0, -1.0, -1.0, -1.0, 0.0); 
-		if(dom_pattern == "underdominance_3")
-			h = c(0.0, -0.5, -1.0, -0.5, 0.0);  
 
 	}
 	other = sim.subpopulations[0].individuals[individual.tag];
@@ -358,6 +377,8 @@ mutationEffect(m2){
 			h = c(0.0, 0.0, 1.0);
 		if(dom_pattern == "br_dd")
 			h = c(0.0, 1.0, 1.0);
+		if(dom_pattern == "bd_dr")
+			h = c(0.0, 0.0, 1.0);
 		if(dom_pattern == "overdominance_1")
 			h = c(0.0, 1.0, 0.0);
 		if(dom_pattern == "overdominance_2")
@@ -380,6 +401,8 @@ mutationEffect(m2){
 			h = c(0.0, 0.0, 0.0, 1.0, 1.0);
 		if(dom_pattern == "br_dd")
 			h = c(0.0, 1.0, 1.0, 1.0, 1.0);
+		if(dom_pattern == "bd_dr")
+			h = c(0.0, 0.0, 0.0, 0.0, 1.0);
 		if(dom_pattern == "overdominance_1")
 			h = c(0.0, 1.0, 1.0, 1.0, 0.0);
 		if(dom_pattern == "overdominance_2")
@@ -425,9 +448,10 @@ mutationEffect(m2){
 				stop("late(): error for individual " + ind.index);
 	}
 }
-1001:10001 late()
+1001:6001 late()
 {
-	output_ticks = seq(from=1001,to=200001,by=10);
+	start_exp_tick = 1001;
+	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
 	if(match(community.tick, output_ticks) >= 0){
 		defineGlobal("current_deme", (size(sim.subpopulations)-1));
 		while(isNULL(mean(sim.subpopulations[current_deme].cachedFitness(NULL)))){
@@ -440,7 +464,7 @@ mutationEffect(m2){
 		fitness_edge = mean(sim.subpopulations[current_deme].cachedFitness(NULL));
 
 		//log output
-		if(community.tick == 1001){
+		if(community.tick == start_exp_tick){
 			defineGlobal("fitness_scalar", mean(sim.subpopulations[current_deme-1].cachedFitness(NULL)));
 			outDir = paste0(c("output/test_run_11_22_2022/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u-",u,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"/"));
 			createDirectory(outDir);
@@ -472,17 +496,20 @@ mutationEffect(m2){
 			writeFile(fixed_mutations_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
 			defineGlobal("max_phs_file", paste0(c(outDir,curr_rep,"_maxPhs.csv")));
 			writeFile(max_phs_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+			defineGlobal("heterozygosity_file", paste0(c(outDir,curr_rep,"_heterozygosity.csv")));
+			writeFile(heterozygosity_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
 			defineGlobal("pop_size_file", paste0(c(outDir,curr_rep,"_popSize.csv")));
 			writeFile(pop_size_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
 
 		}
 		//update fitness file
-		sub_fitnesses_mean = community.tick-1001;
-		sub_fitnesses_var = community.tick-1001;
-		sub_mutations_mean = community.tick-1001;
-		sub_mutations_fixed = community.tick-1001;
-		sub_max_phs = community.tick-1001;
-		sub_pop_size = community.tick-1001;
+		sub_fitnesses_mean = community.tick-start_exp_tick;
+		sub_fitnesses_var = community.tick-start_exp_tick;
+		sub_mutations_mean = community.tick-start_exp_tick;
+		sub_mutations_fixed = community.tick-start_exp_tick;
+		sub_max_phs = community.tick-start_exp_tick;
+		sub_heterozygosity = community.tick-start_exp_tick;
+		sub_pop_size = community.tick-start_exp_tick;
 
 
 		for (i in 2:size(sim.subpopulations)){
@@ -492,8 +519,9 @@ mutationEffect(m2){
 			temp_fixed_mutations = size(which(get_mutation_freqs(sim.subpopulations[i-1])==1.0));
 			//temp_mean_mutations = mean(sim.subpopulations[i-1].individuals.countOfMutationsOfType(m1));
 			//temp_fixed_mutations = size(which(sim.mutationFrequencies(i,NULL)==1.0));
-			//pop_phs = calc_all_PHS_avg(sim.subpopulations[1:(size(sim.subpopulations)-1)]);
+			pop_phs = calc_all_PHS_avg(sim.subpopulations[1:(size(sim.subpopulations)-1)]);
 			temp_max_phs = calc_max_PHS(sim.subpopulations[i-1]);
+			temp_heterozygosity = calc_het(i);
 			temp_pop_size = size(sim.subpopulations[i-1].individuals);
 			
 			if(isNULL(temp_mean_fitness)){
@@ -502,6 +530,7 @@ mutationEffect(m2){
 				sub_mutations_mean = c(sub_mutations_mean, 0);
 				sub_mutations_fixed = c(sub_mutations_fixed, 0);
 				sub_max_phs = c(sub_max_phs, 0);
+				sub_heterozygosity = c(sub_heterozygosity, 0);
 				sub_pop_size = c (sub_pop_size, 0);
 
 			}
@@ -511,6 +540,7 @@ mutationEffect(m2){
 				sub_mutations_mean = c(sub_mutations_mean, temp_mean_mutations);
 				sub_mutations_fixed = c(sub_mutations_fixed, temp_fixed_mutations);
 				sub_max_phs = c(sub_max_phs, temp_max_phs);
+				sub_heterozygosity = c(sub_heterozygosity, temp_heterozygosity);
 				sub_pop_size = c(sub_pop_size, temp_pop_size);
 
 
@@ -522,6 +552,7 @@ mutationEffect(m2){
 		mean_mutations_line = c(sub_mutations_mean, extra_pops);
 		fixed_mutations_line = c(sub_mutations_fixed, extra_pops);
 		max_phs_line = c(sub_max_phs, extra_pops);
+		heterozygosity_line = c(sub_heterozygosity, extra_pops);
 		pop_size_line = c(sub_pop_size, extra_pops);
 
 
@@ -530,6 +561,7 @@ mutationEffect(m2){
 		writeFile(mean_mutations_file, paste(mean_mutations_line, sep=","), append = T);
 		writeFile(fixed_mutations_file, paste(fixed_mutations_line, sep=","), append = T);
 		writeFile(max_phs_file, paste(max_phs_line, sep=","), append = T);
+		writeFile(heterozygosity_file, paste(heterozygosity_line, sep=","), append = T);
 		writeFile(pop_size_file, paste(pop_size_line, sep=","), append = T);
 
 
