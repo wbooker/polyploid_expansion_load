@@ -1,0 +1,356 @@
+function (float)calc_fitness_exp_load(lifso<Subpopulation> x)
+{
+	expansion_fitness = 0;
+	ind_flag = 0;
+	s_exp_1=0;
+	s_exp_5=0;
+	s_all=0;
+	for(ind in x.individuals)
+	{
+		genomes = c(ind.genomes,sim.subpopulations[0].individuals[ind.tag].genomes);
+		exp_mutations_1_flag = 0;
+		exp_mutations_5_flag = 0;
+		s_exp_1=0;
+		s_exp_5=0;
+		s_all=0;
+		mutations = unique(genomes.mutationsOfType(m1));
+		for(mut in mutations)
+		{
+			if (mut.getValue("exp_mutation_1") == 1)
+			{
+				if(exp_mutations_1_flag == 0)
+				{
+					exp_mutations_1 = mut;
+					exp_mutations_1_flag = 1;
+				}
+				else
+				{
+					exp_mutations_1 = c(exp_mutations_1, mut);
+				}
+			}
+			
+			if (mut.getValue("exp_mutation_5") == 1)
+			{
+				if(exp_mutations_5_flag == 0)
+				{
+					exp_mutations_5 = mut;
+					exp_mutations_5_flag = 1;
+				}
+				else
+				{
+					exp_mutations_5 = c(exp_mutations_5, mut);
+				}
+			}
+		}
+		if(exp_mutations_1_flag == 1)
+		{
+			exp_counts_1 = genomes.mutationCountsInGenomes(exp_mutations_1);
+			for(mut in 1:size(exp_mutations_1))
+			{
+				s_exp_1 = s_exp_1 + (exp_mutations_1[mut-1].getValue("h_m")[exp_counts_1[mut-1]] * exp_mutations_1[mut-1].selectionCoeff);
+			}
+		}
+		if(exp_mutations_5_flag == 1)
+		{
+			exp_counts_5 = genomes.mutationCountsInGenomes(exp_mutations_5);
+			for(mut in 1:size(exp_mutations_5))
+			{
+				s_exp_5 = s_exp_5 + (exp_mutations_5[mut-1].getValue("h_m")[exp_counts_5[mut-1]] * exp_mutations_5[mut-1].selectionCoeff);
+			}
+		}
+		
+		all_counts = genomes.mutationCountsInGenomes(mutations);
+		for(mut in 1:size(mutations))
+		{
+			s_all = s_all + (mutations[mut-1].getValue("h_m")[all_counts[mut-1]] * mutations[mut-1].selectionCoeff);
+		}	
+		if(ind_flag == 0)
+		{
+			exp_fitnesses_1 = 1 + s_exp_1;
+			exp_fitnesses_5 = 1 + s_exp_5;
+			all_fitnesses = 1 + s_all;
+			ind_flag = 1;
+		}
+		else
+		{
+			exp_fitnesses_1 = c(exp_fitnesses_1, (1+s_exp_1));
+			exp_fitnesses_5 = c(exp_fitnesses_5, (1+s_exp_5));
+			all_fitnesses = c(all_fitnesses, (1+s_all));
+		}
+	}
+	//return(exp_fitnesses);
+	return c(mean(all_fitnesses),((mean(exp_fitnesses_1)-1) / (mean(all_fitnesses)-1)), ((mean(exp_fitnesses_5)-1) / (mean(all_fitnesses)-1)));
+	
+}
+
+
+function (float)calc_exp_load_proportion_5(lifso<Subpopulation> x)
+{
+	expansion_fitness = 0;
+	ind_flag = 0;
+	for(ind in x.individuals)
+	{
+		genomes = c(ind.genomes,sim.subpopulations[0].individuals[ind.tag].genomes);
+		exp_mutations_flag = 0;
+		s_exp=0;
+		s_all=0;
+		mutations = unique(genomes.mutationsOfType(m1));
+		for(mut in mutations)
+		{
+			if (mut.getValue("exp_mutation_5") == 1)
+			{
+				if(exp_mutations_flag == 0)
+				{
+					exp_mutations = mut;
+					exp_mutations_flag = 1;
+				}
+				else
+				{
+					exp_mutations = c(exp_mutations, mut);
+				}
+			}
+		}
+		if(size(exp_mutations) > 0)
+		{
+			exp_counts = genomes.mutationCountsInGenomes(exp_mutations);
+			for(mut in 1:size(exp_mutations))
+			{
+				s_exp = s_exp + (exp_mutations[mut-1].getValue("h_m")[exp_counts[mut-1]] * exp_mutations[mut-1].selectionCoeff);
+			}
+			
+			all_counts = genomes.mutationCountsInGenomes(mutations);
+			for(mut in 1:size(mutations))
+			{
+				s_all = s_all + (mutations[mut-1].getValue("h_m")[all_counts[mut-1]] * mutations[mut-1].selectionCoeff);
+			}		
+		}
+			
+		if(ind_flag == 0)
+		{
+			exp_fitnesses = 1 + s_exp;
+			all_fitnesses = 1 + s_all;
+			ind_flag = 1;
+		}
+		else
+		{
+			exp_fitnesses = c(exp_fitnesses, (1+s_exp));
+			all_fitnesses = c(all_fitnesses, (1+s_all));
+		}
+	}
+	//return(exp_fitnesses);
+	//return (mean(exp_fitnesses)-1) / (mean(all_fitnesses)-1);
+	return c(mean(all_fitnesses), mean(x.cachedFitness(NULL)));
+	
+}
+
+function (float)calc_h_from_s(float s, float t_i, integer t_r)
+{
+	//calculate h from s using theta_intercept and theta_rate parameters
+	h = 1 / ((1/t_i)-(t_r*s));
+	return h;
+}
+
+function (float)get_tetraploid_h_vector(float s_d){
+	//calculate h vector of tetraploids given h of a diploid (s_d)
+	if(s_d == 0.5){
+		return c(0.0,0.25,0.5,0.75,1.0);
+	}
+	else
+	{
+		s_t_25 = 1-(1+((1-s_d)/(2*s_d-1)))*(0.25/(0.25+((1-s_d)/(2*s_d-1))));
+		s_t_50 = 1-(1+((1-s_d)/(2*s_d-1)))*(0.5/(0.5+((1-s_d)/(2*s_d-1))));
+		s_t_75 = 1-(1+((1-s_d)/(2*s_d-1)))*(0.75/(0.75+((1-s_d)/(2*s_d-1))));
+		return c(0.0,s_t_75,s_t_50,s_t_25,1.0);
+	}
+}
+
+function (float)calc_het(lifso x)
+{
+	if(inheritance == "diploid")
+	{
+		chroms = c(sim.subpopulations[x-1].individuals.genome1, sim.subpopulations[0].individuals[sim.subpopulations[x-1].individuals.tag].genome2);
+	}
+	else
+	{
+		chroms = c(sim.subpopulations[x-1].individuals.genomes, sim.subpopulations[0].individuals[sim.subpopulations[x-1].individuals.tag].genomes);
+	}
+	
+	if(size(chroms) == 0)
+		return 0.0;
+	else
+		return calcHeterozygosity(chroms);
+}
+
+function (float)get_mutation_freqs(lifso<Subpopulation> x)
+{
+	div_factor = 4;
+	if(inheritance == "diploid")
+		div_factor = 2;
+	all_inds = c(x.individuals,sim.subpopulations[0].individuals[x.individuals.tag]);
+	if(size(all_inds) != 0){
+		counts = all_inds.genomes.mutationCountsInGenomes(NULL);
+		return counts / size(x.individuals) / div_factor;
+	}
+	else
+		return 0.0;
+}
+
+function (float)get_beneficial_freq(lifso<Subpopulation> x)
+{
+	div_factor = 4;
+	if(inheritance == "diploid")
+		div_factor = 2;
+	all_inds = c(x.individuals,sim.subpopulations[0].individuals[x.individuals.tag]);
+	all_muts = unique(all_inds.genomes.mutationsOfType(m1));
+	if(size(all_inds) != 0){
+		counts = all_inds.genomes.mutationCountsInGenomes(all_muts);
+		return counts / size(x.individuals) / div_factor;
+	}
+	else
+		return 0.0;
+}
+
+function (float)get_deleterious_freq(lifso<Subpopulation> x)
+{
+	div_factor = 4;
+	if(inheritance == "diploid")
+		div_factor = 2;
+	all_inds = c(x.individuals,sim.subpopulations[0].individuals[x.individuals.tag]);
+	all_muts = unique(all_inds.genomes.mutationsOfType(m2));
+	if(size(all_inds) != 0){
+		counts = all_inds.genomes.mutationCountsInGenomes(all_muts);
+		return counts / size(x.individuals) / div_factor;
+	}
+	else
+		return 0.0;
+}
+
+function (float)mut_per_genome(lifso<Subpopulation> x)
+{
+	div_factor = 4;
+	if(inheritance == "diploid")
+		div_factor = 2;
+	n_muts_ben = 0;
+	n_muts_del = 0;
+	
+	all_inds = c(x.individuals,sim.subpopulations[0].individuals[x.individuals.tag]);
+	if(size(all_inds) != 0){
+		for(ind in x.individuals){
+			genomes = c(ind.genomes, sim.subpopulations[0].individuals[ind.tag].genomes);
+			n_muts_ben = n_muts_ben + genomes.countOfMutationsOfType(m1);
+			n_muts_del = n_muts_del + genomes.countOfMutationsOfType(m2);
+
+		}
+		counts_total = sum(n_muts_ben+n_muts_del) / size(x.individuals) / div_factor;
+		counts_ben= sum(n_muts_ben) / size(x.individuals) / div_factor;
+		counts_del= sum(n_muts_del) / size(x.individuals) / div_factor;
+
+		return c(counts_total, counts_ben, counts_del);
+	}
+	else
+		return 0.0;
+}
+
+function (float)get_mutation_per_ind(lifso<Subpopulation> x)
+{
+	n_muts = 0;
+	if(size(x.individuals) != 0){
+		for(ind in x.individuals){
+			counts_1 = ind.genomes.mutationCountsInGenomes(NULL);
+			counts_2 = sim.subpopulations[0].individuals[ind.tag].genomes.mutationCountsInGenomes(NULL);
+			all_counts = counts_1 + counts_2;
+			n_muts = n_muts + size(which(all_counts != 0));
+		}
+		return n_muts / size(x.individuals);
+	}
+	else
+		return 0.0;
+}
+
+function (float)get_ben_mutation_per_ind(lifso<Subpopulation> x)
+{
+	all_genomes = c(x.individuals,sim.subpopulations[0].individuals[x.individuals.tag]);
+	all_muts = unique(all_genomes.genomes.mutationsOfType(m1));
+	n_muts = 0;
+	if(size(all_genomes) != 0){
+		for(ind in x.individuals){
+			counts_1 = ind.genomes.mutationCountsInGenomes(all_muts);
+			counts_2 = sim.subpopulations[0].individuals[ind.tag].genomes.mutationCountsInGenomes(all_muts);
+			all_counts = counts_1 + counts_2;
+			n_muts = n_muts + size(which(all_counts != 0));
+		}
+		return n_muts / size(x.individuals);
+	}
+	else
+		return 0.0;
+}
+
+function (float)get_del_mutation_per_ind(lifso<Subpopulation> x)
+{
+	all_genomes = c(x.individuals,sim.subpopulations[0].individuals[x.individuals.tag]);
+	all_muts = unique(all_genomes.genomes.mutationsOfType(m2));
+	n_muts = 0;
+	if(size(all_genomes) != 0){
+		for(ind in x.individuals){
+			counts_1 = ind.genomes.mutationCountsInGenomes(all_muts);
+			counts_2 = sim.subpopulations[0].individuals[ind.tag].genomes.mutationCountsInGenomes(all_muts);
+			all_counts = counts_1 + counts_2;
+			n_muts = n_muts + size(which(all_counts != 0));
+		}
+		return n_muts / size(x.individuals);
+	}
+	else
+		return 0.0;
+}
+
+
+function (float)calc_max_PHS(lifso<Subpopulation> x)
+{
+	max_phs = 0;
+	
+	for(ind in x.individuals){
+		counts_1 = ind.genomes.mutationFrequenciesInGenomes(NULL);
+		counts_2 = sim.subpopulations[0].individuals[ind.tag].genomes.mutationFrequenciesInGenomes(NULL);
+		freqs = (counts_1+counts_2) / 2;
+		phs = size(which(freqs<1.0 & freqs>0.0)) / size(freqs);
+		if(phs > max_phs)
+			max_phs = phs;
+	}
+	return asFloat(max_phs);	
+}
+
+function (float)calc_all_PHS_avg(lifso x)
+{
+	phs_flag = 0;
+	
+	for(ind in x.individuals){
+		counts_1 = ind.genomes.mutationFrequenciesInGenomes(NULL);
+		counts_2 = sim.subpopulations[0].individuals[ind.tag].genomes.mutationFrequenciesInGenomes(NULL);
+		freqs = (counts_1+counts_2) / 2;
+		phs = size(which(freqs<1.0 & freqs>0.0)) / size(freqs);
+		if(phs_flag == 0){
+			all_phs = phs;
+			phs_flag = 1;
+		}
+		else
+			all_phs = c(all_phs,phs);
+	}
+	return asFloat(mean(all_phs));	
+}
+
+function (float)variance(float x)
+{
+	vars = 0;
+	if(isNULL(x)){
+		return NULL;
+	}
+	else{
+		mean_x = mean(x);
+		for(i in x){
+			if(!isNULL(i)){
+				vars = vars + (i-mean_x)^2;
+			}
+		}
+	}
+		return asFloat(vars/size(x));
+}
