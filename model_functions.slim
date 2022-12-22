@@ -31,11 +31,13 @@ function (float)get_selection_frequency_spectrum(lifso x)
 
 function (float)calc_fitness_exp_load(lifso<Subpopulation> x)
 {
+	
 	expansion_fitness = 0;
 	ind_flag = 0;
 	s_exp_1=0;
 	s_exp_5=0;
 	s_all=0;
+	if(size(x.individuals) > 0){
 	for(ind in x.individuals)
 	{
 		genomes = c(ind.genomes,sim.subpopulations[0].individuals[ind.tag].genomes);
@@ -114,6 +116,10 @@ function (float)calc_fitness_exp_load(lifso<Subpopulation> x)
 	}
 	//return(exp_fitnesses);
 	return c(mean(all_fitnesses),((mean(exp_fitnesses_1)-1) / (mean(all_fitnesses)-1)), ((mean(exp_fitnesses_5)-1) / (mean(all_fitnesses)-1)));
+	}
+	else{
+		return c(0.0,0.0,0.0);
+	}
 	
 }
 
