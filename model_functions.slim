@@ -1,3 +1,34 @@
+function (float)get_sfs(lifso x)
+{
+	//gets site frequency spectrum of the focal clade and the two clades surrounding
+	tags = sim.subpopulations[(x-2):(x+2)].individuals.tag;
+	genomes = c(sim.subpopulations[(x-2):(x+2)].genomes,sim.subpopulations[0].individuals[tags].genomes);
+	mutations = unique(genomes.mutationsOfType(m1));
+	mutations_ben = unique(genomes.mutationsOfType(m2));
+	freqs = genomes.mutationFrequenciesInGenomes(c(mutations,mutations_ben));
+	if(inheritance == "diploid")
+		//multiply by two here because we have 2 empty dip chromosomes
+		return freqs * 2;
+	
+	else
+		return freqs;
+}
+
+
+
+function (float)get_selection_frequency_spectrum(lifso x)
+{
+	//gets selection coefficient frequency spectrum of the focal clade and the two clades surrounding
+	tags = sim.subpopulations[(x-2):(x+2)].individuals.tag;
+	genomes = c(sim.subpopulations[(x-2):(x+2)].genomes,sim.subpopulations[0].individuals[tags].genomes);
+	mutations_ben = unique(genomes.mutationsOfType(m1));
+	mutations_del = unique(genomes.mutationsOfType(m2));
+	mutations = c(mutations_del,mutations_ben);
+	s = mutations.selectionCoeff;
+	return s;
+}
+
+
 function (float)calc_fitness_exp_load(lifso<Subpopulation> x)
 {
 	expansion_fitness = 0;
@@ -13,7 +44,10 @@ function (float)calc_fitness_exp_load(lifso<Subpopulation> x)
 		s_exp_1=0;
 		s_exp_5=0;
 		s_all=0;
-		mutations = unique(genomes.mutationsOfType(m1));
+		mutations_ben = unique(genomes.mutationsOfType(m1));
+		mutations_del = unique(genomes.mutationsOfType(m2));
+		mutations = c(mutations_del,mutations_ben);
+
 		for(mut in mutations)
 		{
 			if (mut.getValue("exp_mutation_1") == 1)
@@ -94,7 +128,9 @@ function (float)calc_exp_load_proportion_5(lifso<Subpopulation> x)
 		exp_mutations_flag = 0;
 		s_exp=0;
 		s_all=0;
-		mutations = unique(genomes.mutationsOfType(m1));
+		mutations_ben = unique(genomes.mutationsOfType(m1));
+		mutations_del = unique(genomes.mutationsOfType(m2));
+		mutations = c(mutations_del,mutations_ben);
 		for(mut in mutations)
 		{
 			if (mut.getValue("exp_mutation_5") == 1)
