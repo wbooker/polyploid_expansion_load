@@ -1,3 +1,5 @@
+
+
 function (float)get_sfs(lifso x)
 {
 	//gets site frequency spectrum of the focal clade and the two clades surrounding
@@ -267,6 +269,21 @@ function (float)get_deleterious_freq(lifso<Subpopulation> x)
 		return 0.0;
 }
 
+function (float)get_dip_mutation_freq(lifso<Subpopulation> x)
+{
+	div_factor = 4;
+	if(inheritance == "diploid")
+		div_factor = 2;
+	all_inds = c(x.individuals,sim.subpopulations[0].individuals[x.individuals.tag]);
+	all_muts = unique(all_inds.genomes.mutationsOfType(m3));
+	if(size(all_inds) != 0){
+		counts = all_inds.genomes.mutationCountsInGenomes(all_muts);
+		return counts / size(x.individuals) / div_factor;
+	}
+	else
+		return 0.0;
+}
+
 function (float)mut_per_genome(lifso<Subpopulation> x)
 {
 	div_factor = 4;
@@ -345,6 +362,26 @@ function (float)get_del_mutation_per_ind(lifso<Subpopulation> x)
 		return 0.0;
 }
 
+function (float)get_mutation_per_ind_type(lifso<Subpopulation> x, lifso mType)
+{
+	all_genomes = c(x.individuals,sim.subpopulations[0].individuals[x.individuals.tag]);
+	all_muts = unique(all_genomes.genomes.mutationsOfType(mType));
+	n_muts = 0;
+	if(size(all_genomes) != 0){
+		for(ind in x.individuals){
+			counts_1 = ind.genomes.mutationCountsInGenomes(all_muts);
+			counts_2 = sim.subpopulations[0].individuals[ind.tag].genomes.mutationCountsInGenomes(all_muts);
+			all_counts = counts_1 + counts_2;
+			n_muts = n_muts + size(which(all_counts != 0));
+		}
+		return n_muts / size(x.individuals);
+	}
+	else
+		return 0.0;
+}
+
+
+
 
 function (float)calc_max_PHS(lifso<Subpopulation> x)
 {
@@ -395,4 +432,12 @@ function (float)variance(float x)
 		}
 	}
 		return asFloat(vars/size(x));
+}
+
+function (integer)check_neg(integer x)
+{
+	if(x < 0)
+		return 0;
+	else
+		return x;
 }
