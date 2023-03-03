@@ -240,8 +240,8 @@ mutationEffect(m2)
 			sim.subpopulations[i - 1].individuals[j].setValue("pop", i);
 			sim.subpopulations[0].individuals[j+((i-2)*K)].tagF = c_tag;
 			sim.subpopulations[0].individuals[j+((i-2)*K)].setValue("pop", i);
-			//sim.subpopulations[i - 1].individuals[j].tag = c_tag;
 			sim.subpopulations[i - 1].individuals[j].setValue("mig",0);
+			//sim.subpopulations[i - 1].individuals[j].tag = c_tag;
 		}
 	}
 }
@@ -266,7 +266,7 @@ survival(p1) {
 
 //open up other populations after 10k generations
 
-early()
+1:2500 early()
 {
 	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
 	for (i in 1:size(sim.subpopulations))
@@ -275,11 +275,10 @@ early()
 		inds[inds.age > 0].fitnessScaling = 0.0;
 	}
 	
-	allPopSizes = sim.subpopulations.individualCount;
-	//all migration
+	//all mig
 	for (i in 2:(size(sim.subpopulations) - 1))
 	{
-		nIndividuals = allPopSizes[i-1];
+		nIndividuals = sim.subpopulations[i - 1].individualCount;
 		if (nIndividuals > 0){		
 			nMigrants = rpois(1, nIndividuals * mig_rate);
 			if (nMigrants >= 1){
@@ -293,12 +292,61 @@ early()
 						dest = sample(c(i,i-2),1);
 						if(i==2)
 							dest = i;
-						if(i==6){
-							if(community.tick < 2501)
-								dest = i-2;
-						}
+						if(i==6)
+							dest = i-2;
 						sim.subpopulations[i - 1].individuals.setValue("mig",1);
 						sim.subpopulations[dest].takeMigrants(migrant);
+						migrant.setValue("pop", i);
+					}
+				}
+			}
+		}
+	}
+}
+
+2501:10001 early()
+{
+	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
+	for (i in 1:size(sim.subpopulations))
+	{
+		inds = sim.subpopulations[i - 1].individuals;
+		inds[inds.age > 0].fitnessScaling = 0.0;
+	}
+	allPopSizes = sim.subpopulations.individualCount;
+	//2d migration
+	for (i in 2:(size(sim.subpopulations) - 1))
+	{
+		nIndividuals = allPopSizes[i-1];
+		if (nIndividuals > 0){		
+			nMigrants = rpois(1, nIndividuals * mig_rate);
+			if (nMigrants >= 1){
+				mig_inds = sim.subpopulations[i - 1].individuals[which(sim.subpopulations[i - 1].individuals.getValue("mig")==0)];
+				if (size(mig_inds) >= 1){
+					if(nMigrants > size(mig_inds))
+						nMigrants = size(mig_inds);
+					migrants = sample(mig_inds, nMigrants);
+					for (migrant in migrants)
+					{
+						mig_dests = c(i-1,i+1,i-5,i+5);
+						if(i<7)
+							mig_dests = c(i-1,i+1,i+5);
+						if((i-2)%5 == 0){
+							if(i<7)
+								mig_dests = c(i+1,i+5);
+							else
+								mig_dests = c(i+1,i-5,i+5);
+						}
+
+						if((i-1)%5 == 0){
+							if(i<7)
+								mig_dests = c(i-1,i+5);
+							else
+								mig_dests = c(i-1,i-5,i+5);
+						}
+						dest = sample(mig_dests,1);
+						//print(c(i-1,dest-1));
+						sim.subpopulations[i - 1].individuals.setValue("mig",1);
+						sim.subpopulations[dest-1].takeMigrants(migrant);
 						migrant.setValue("pop", i);
 					}
 				}
@@ -371,10 +419,14 @@ reproduction()
 	self.active = 0;
 }
 
-2501:10001 late()
+2500:10001 late()
 {
-	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
+	if(sum(sim.subpopulations[(size(sim.subpopulations)-5):(size(sim.subpopulations)-1)].individualCount) > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
+		sim.addSubpop(size(sim.subpopulations)+2, 0);
+		sim.addSubpop(size(sim.subpopulations)+3, 0);
+		sim.addSubpop(size(sim.subpopulations)+4, 0);
+		sim.addSubpop(size(sim.subpopulations)+5, 0);
 	}
 }
 
@@ -436,11 +488,10 @@ early(){
 		fitness_start = mean(sim.subpopulations[1].cachedFitness(NULL));
 		fitness_mid = mean(sim.subpopulations[round((current_deme)/2)].cachedFitness(NULL));
 		fitness_edge = mean(sim.subpopulations[current_deme].cachedFitness(NULL));
-		outDir_pre = paste0(c("output/test_equal_s/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u-",u,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
-				
+		outDir_pre = paste0(c("output/2d_model/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u-",u,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
 
 		if(community.tick == start_exp_tick){
-				defineGlobal("fitness_scalar", mean(sim.subpopulations[current_deme-1].cachedFitness(NULL)));
+				defineGlobal("fitness_scalar", mean(sim.subpopulations[5].cachedFitness(NULL)));
 				createDirectory(outDir_pre);
 				if(isNULL(readFile(paste0(outDir_pre,"trackFile.txt")))){
 					writeFile(paste0(outDir_pre,"trackFile.txt"), "0", append = F);

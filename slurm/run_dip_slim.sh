@@ -15,4 +15,4 @@ DOMINANCE=${2}
 K=$3
 BS=$4
 
-slim -d g_size=999999 -d K=$K -d "r=log(2)" -d mig_rate=0.05 -d u_r=2.5e-8 -d u_d=1e-9 -d u_b=2.5e-8 -d rho=2.5e-8 -d b_s=$BS -d d_s=-0.0045 -d "inheritance='$INHERITANCE'" -d "dom_pattern='$DOMINANCE'" polyploid_all_diploidization.slim 
+slim -d g_size=999999 -d K=$K -d "r=log(2)" -d mig_rate=0.05 -d u_r=5e-8 -d u_d=5e-9 -d u_b=5e-8 -d rho=5e-8 -d b_s=$BS -d d_s=-0.001472 -d "inheritance='$INHERITANCE'" -d "dom_pattern='$DOMINANCE'" polyploid_all_diploidization.slim 

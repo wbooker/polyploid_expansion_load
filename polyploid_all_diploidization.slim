@@ -251,6 +251,7 @@ mutationEffect(m2)
 			sim.subpopulations[0].individuals[j+((i-2)*K)].tagF = c_tag;
 			sim.subpopulations[0].individuals[j+((i-2)*K)].setValue("pop", i);
 			//sim.subpopulations[i - 1].individuals[j].tag = c_tag;
+			sim.subpopulations[i - 1].individuals[j].setValue("mig",0);
 		}
 	}
 }
@@ -284,50 +285,34 @@ early()
 		inds[inds.age > 0].fitnessScaling = 0.0;
 	}
 	
-	//forward mig
+	//all migration
 	for (i in 2:(size(sim.subpopulations) - 1))
 	{
-		nIndividuals = sim.subpopulations[i - 1].individualCount;
+		nIndividuals = allPopSizes[i-1];
 		if (nIndividuals > 0){		
 			nMigrants = rpois(1, nIndividuals * mig_rate);
 			if (nMigrants >= 1){
-				mig_inds = sim.subpopulations[i - 1].individuals;
+				mig_inds = sim.subpopulations[i - 1].individuals[which(sim.subpopulations[i - 1].individuals.getValue("mig")==0)];
 				if (size(mig_inds) >= 1){
 					if(nMigrants > size(mig_inds))
 						nMigrants = size(mig_inds);
 					migrants = sample(mig_inds, nMigrants);
 					for (migrant in migrants)
 					{
-						dest = i;
+						dest = sample(c(i,i-2),1);
+						if(i==2)
+							dest = i;
+						if(i==6){
+							if(community.tick < 2501)
+								dest = i-2;
+						}
+						sim.subpopulations[i - 1].individuals.setValue("mig",1);
 						sim.subpopulations[dest].takeMigrants(migrant);
 						migrant.setValue("pop", i);
 					}
 				}
 			}
 		}
-	}
-	
-	//reverse mig
-	for (i in 3:size(sim.subpopulations))
-	{
-		nIndividuals = sim.subpopulations[i - 1].individualCount;
-		if (nIndividuals > 0){
-			nMigrants = rpois(1, nIndividuals * mig_rate);
-			if (nMigrants >= 1){
-				mig_inds = sim.subpopulations[i - 1].individuals;
-				if (size(mig_inds) >= 1){
-					if(nMigrants > size(mig_inds))
-						nMigrants = size(mig_inds);
-					migrants = sample(mig_inds, nMigrants);
-					for (migrant in migrants)
-					{
-						dest = i - 2;
-						sim.subpopulations[dest].takeMigrants(migrant);
-						migrant.setValue("pop", i);
-					}
-				}
-			}
-		}	
 	}
 }
 
@@ -360,6 +345,8 @@ reproduction()
 				other.tagF = c_tag;
 				offspring.setValue("pop", i);				
 				other.setValue("pop", i);
+				offspring.setValue("mig", 0);
+
 				}
 			}
 			else
@@ -398,8 +385,10 @@ reproduction()
 					//c_tag = runif(1);
 					offspring.tagF = c_tag; //these aren't getting set for some reason
 					other.tagF = c_tag;
-					offspring.setValue("pop", i);				
+					offspring.setValue("pop", i);
+					offspring.setValue("dip_index", mean(c(n_dip_muts_1/20,n_dip_muts_2/20)));				
 					other.setValue("pop", i);
+					offspring.setValue("mig", 0);
 				}
 			}
 		}
@@ -542,6 +531,9 @@ early(){
 			writeFile(exp_load_1_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
 			defineGlobal("exp_load_5_file", paste0(c(outDir,curr_rep,"_exp_load_prop_5.csv")));
 			writeFile(exp_load_5_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+			defineGlobal("dip_index_file", paste0(c(outDir,curr_rep,"_dipIndex.csv")));
+			writeFile(dip_index_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+
 
 			defineGlobal("core_site_frequencies_file", paste0(c(outDir,curr_rep,"_coreSiteFrequencies.csv")));
 			defineGlobal("core_selection_frequencies_file", paste0(c(outDir,curr_rep,"_coreSelectionFrequencies.csv")));
@@ -573,7 +565,7 @@ early(){
 		sub_exp_load_prop_5 = community.tick-start_exp_tick;
 		sub_diploidization_mutations_mean = community.tick-start_exp_tick;
 		sub_neutral_mutations_mean = community.tick-start_exp_tick;
-
+		sub_dip_index_mean = community.tick-start_exp_tick;
 
 		for (i in 2:(current_deme+1)){
 			temp_mean_fitness = mean(sim.subpopulations[i-1].cachedFitness(NULL));
@@ -589,6 +581,7 @@ early(){
 			fitness_exp_load = calc_fitness_exp_load(sim.subpopulations[i-1]);
 			temp_mean_diploidization_mutations = get_mutation_per_ind_type(sim.subpopulations[i-1], m3);
 			temp_mean_neutral_mutations = get_mutation_per_ind_type(sim.subpopulations[i-1], m4);
+			temp_mean_dip_index = get_dip_index_robust(sim.subpopulations[i-1]);
 
 			
 			if(isNULL(temp_mean_fitness)){
@@ -612,6 +605,7 @@ early(){
 				sub_exp_load_prop_5 = c(sub_exp_load_prop_5, 0);
 				sub_diploidization_mutations_mean = c(sub_diploidization_mutations_mean, 0);
 				sub_neutral_mutations_mean = c(sub_neutral_mutations_mean, 0);
+				sub_dip_index_mean = c(sub_dip_index_mean,0);
 
 
 			}
@@ -636,6 +630,7 @@ early(){
 				sub_exp_load_prop_5 = c(sub_exp_load_prop_5, fitness_exp_load[2]);
 				sub_diploidization_mutations_mean = c(sub_diploidization_mutations_mean, temp_mean_diploidization_mutations);
 				sub_neutral_mutations_mean = c(sub_neutral_mutations_mean, temp_mean_neutral_mutations);
+				sub_dip_index_mean = c(sub_dip_index_mean,temp_mean_dip_index);
 
 
 			}
@@ -661,7 +656,7 @@ early(){
 		exp_load_prop_5_line = c(sub_exp_load_prop_5, extra_pops);
 		dip_mean_mutations_line = c(sub_diploidization_mutations_mean, extra_pops);
 		neutral_mean_mutations_line = c(sub_neutral_mutations_mean, extra_pops);
-
+		dip_index_line = c(sub_dip_index_mean, extra_pops);
 
 
 		writeFile(mean_fitness_file, paste(mean_fitness_line, sep=","), append = T);
@@ -684,6 +679,7 @@ early(){
 		writeFile(pop_size_file, paste(pop_size_line, sep=","), append = T);
 		writeFile(mean_diploidization_mutations_file, paste(dip_mean_mutations_line, sep=","), append = T);
 		writeFile(mean_neutral_mutations_file, paste(neutral_mean_mutations_line, sep=","), append = T);
+		writeFile(dip_index_file, paste(dip_index_line, sep=","), append = T);
 
 
 

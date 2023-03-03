@@ -380,8 +380,13 @@ function (float)get_mutation_per_ind_type(lifso<Subpopulation> x, lifso mType)
 		return 0.0;
 }
 
-
-
+function (float)get_dip_index_robust(lifso<Subpopulation> x)
+{
+	if(size(x.individuals) == 0)
+		return 0.0;
+	else
+		return mean(x.individuals.getValue("dip_index"));
+}
 
 function (float)calc_max_PHS(lifso<Subpopulation> x)
 {
