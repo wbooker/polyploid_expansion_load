@@ -8,6 +8,8 @@
 #SBATCH -o slim.%A.out
 #SBATCH -e slim.%A.err
 
+### EXAMPLE: sbatch slurm/run_slim.sh auto recessive 50 0.000
+
 INHERITANCE=${1}
 DOMINANCE=${2}
 K=$3

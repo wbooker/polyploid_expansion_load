@@ -425,6 +425,9 @@ early(){
 2501:10001 late()
 {
 	start_exp_tick = 2501;
+	//if above different than 2501 remember to set exp_mutation_5!!!!
+
+
 	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
 	if(match(community.tick, output_ticks) >= 0){
 		defineGlobal("current_deme", (size(sim.subpopulations)-1));

@@ -20,8 +20,11 @@ initialize()
 	//set mutation rate
 	initializeMutationRate(u);
 	
-	//
-	
+	//set 2d axis size
+	defineGlobal("d_size", 10);
+
+
+
 	//beneficial
 	initializeMutationType("m1", 0.5, "f", b_s);
 
@@ -226,10 +229,10 @@ mutationEffect(m2)
 	print(dom_pattern);
 	print("k: " + K +  " r: " + r + " m: " + mig_rate);
 	//first deme holds extra chromosomes of every individual. individuals don't migrate from or into here
-	sim.addSubpop(1, K*5);
+	sim.addSubpop(1, K*d_size);
 
-	//initialize next 5 demes at carrying_capacity
-	for (i in 2:6){
+	//initialize next demes at carrying_capacity
+	for (i in 2:(d_size+1)){
 		sim.addSubpop(i, K);
 
 		//create individual tags to keep track of chromosomes
@@ -292,7 +295,7 @@ survival(p1) {
 						dest = sample(c(i,i-2),1);
 						if(i==2)
 							dest = i;
-						if(i==6)
+						if(i==d_size+1)
 							dest = i-2;
 						sim.subpopulations[i - 1].individuals.setValue("mig",1);
 						sim.subpopulations[dest].takeMigrants(migrant);
@@ -304,8 +307,14 @@ survival(p1) {
 	}
 }
 
+//2d migration
 2501:10001 early()
 {
+	if(sum(sim.subpopulations[(size(sim.subpopulations)-10):(size(sim.subpopulations)-1)].individualCount) > 0){
+		for(i in 1:d_size){
+			sim.addSubpop(size(sim.subpopulations)+1, 0);
+		}
+	}
 	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
 	for (i in 1:size(sim.subpopulations))
 	{
@@ -327,21 +336,21 @@ survival(p1) {
 					migrants = sample(mig_inds, nMigrants);
 					for (migrant in migrants)
 					{
-						mig_dests = c(i-1,i+1,i-5,i+5);
-						if(i<7)
-							mig_dests = c(i-1,i+1,i+5);
-						if((i-2)%5 == 0){
-							if(i<7)
-								mig_dests = c(i+1,i+5);
+						mig_dests = c(i-1,i+1,i-d_size,i+d_size);
+						if(i<(d_size+2))
+							mig_dests = c(i-1,i+1,i+d_size);
+						if((i-2)%d_size == 0){
+							if(i<(d_size+2))
+								mig_dests = c(i+1,i+d_size);
 							else
-								mig_dests = c(i+1,i-5,i+5);
+								mig_dests = c(i+1,i-d_size,i+d_size);
 						}
 
-						if((i-1)%5 == 0){
-							if(i<7)
-								mig_dests = c(i-1,i+5);
+						if((i-1)%d_size == 0){
+							if(i<(d_size+2))
+								mig_dests = c(i-1,i+d_size);
 							else
-								mig_dests = c(i-1,i-5,i+5);
+								mig_dests = c(i-1,i-d_size,i+d_size);
 						}
 						dest = sample(mig_dests,1);
 						//print(c(i-1,dest-1));
@@ -419,16 +428,6 @@ reproduction()
 	self.active = 0;
 }
 
-2500:10001 late()
-{
-	if(sum(sim.subpopulations[(size(sim.subpopulations)-5):(size(sim.subpopulations)-1)].individualCount) > 0){
-		sim.addSubpop(size(sim.subpopulations)+1, 0);
-		sim.addSubpop(size(sim.subpopulations)+2, 0);
-		sim.addSubpop(size(sim.subpopulations)+3, 0);
-		sim.addSubpop(size(sim.subpopulations)+4, 0);
-		sim.addSubpop(size(sim.subpopulations)+5, 0);
-	}
-}
 
 // need to set tags for new individuals after selection induced mortality
 early(){
@@ -477,6 +476,8 @@ early(){
 2501:10001 late()
 {
 	start_exp_tick = 2501;
+	//if above different than 2501 remember to set exp_mutation_5!!!!
+
 	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
 	if(match(community.tick, output_ticks) >= 0){
 		defineGlobal("current_deme", (size(sim.subpopulations)-1));
@@ -488,10 +489,10 @@ early(){
 		fitness_start = mean(sim.subpopulations[1].cachedFitness(NULL));
 		fitness_mid = mean(sim.subpopulations[round((current_deme)/2)].cachedFitness(NULL));
 		fitness_edge = mean(sim.subpopulations[current_deme].cachedFitness(NULL));
-		outDir_pre = paste0(c("output/2d_model/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u-",u,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
+		outDir_pre = paste0(c("output/2d_model/",inheritance,"_",dom_pattern,"_2dsize-",d_size,"_K-",K,"_m-",mig_rate,"_r-",r,"_u-",u,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
 
 		if(community.tick == start_exp_tick){
-				defineGlobal("fitness_scalar", mean(sim.subpopulations[5].cachedFitness(NULL)));
+				defineGlobal("fitness_scalar", mean(sim.subpopulations[2:(d_size+1)].cachedFitness(NULL)));
 				createDirectory(outDir_pre);
 				if(isNULL(readFile(paste0(outDir_pre,"trackFile.txt")))){
 					writeFile(paste0(outDir_pre,"trackFile.txt"), "0", append = F);

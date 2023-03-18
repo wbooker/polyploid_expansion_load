@@ -5,6 +5,7 @@ initialize()
 	//defineGlobal("dom_pattern", "DFE");
 	//defineGlobal("dip_model", diff); // diploidization model
 
+
 	//set population parameters
 	//defineConstant("K", 25); // carrying-capacity density
 	//defineConstant("mig_rate", 0.05); //mig rate
@@ -16,15 +17,9 @@ initialize()
 	//defineConstant("b_s", 0.0045); // beneficial selection coefficient
 	//defineConstant("d_s", -0.0045); // deleterious selection coefficient
 	//defineConstant("g_size", 999999); // genome size
-	//defineConstant("dip_lambda", 0.5); // n_mutations required for dom model, lambda coefficient for diff model
-	
-	if(dip_model == "dom")
-	{
-		block_size = (g_size+1)/dip_lambda;
-		defineConstant("dip_positions", seq(asInteger(round(((block_size/2)-1))), asInteger(round((g_size-(block_size/2)))), asInteger(round(block_size))));
-		print(dip_positions);
-	}
+	//defineConstant("dip_lambda", 0.5); // genome size
 
+	
 	//set as nonWF model
 	initializeSLiMModelType("nonWF");
 	
@@ -47,16 +42,8 @@ initialize()
 		initializeMutationType("m2", 0.5, "f", d_s);
 
 	initializeMutationType("m3", 0.5, "f", 0.0);
-	m3.color = "cornflowerblue"; 
-
 	initializeMutationType("m4", 0.5, "f", 0.0);
 
-	//make sure dom mutations don't fix permanently
-	if(dip_model == "dom")
-	{
-		m3.convertToSubstitution = F;
-		m4.convertToSubstitution = F;
-	}
 	if(b_s > 0)
 		initializeGenomicElementType("g1", c(m1, m2, m3, m4), c(0.1, 0.7, 0.1, 0.1)); //need to fix this to deal with proportions of beneficial, but leaving it for now
 	else
@@ -114,6 +101,7 @@ initialize()
 		defineGlobal("h_m2", c(0.0, -0.5, -0.5, -0.5, 1.0));
 	if(dom_pattern == "underdominance_2")
 		defineGlobal("h_m2", c(0.0, -1.0, -1.0, -1.0, 1.0)); 
+
 
 }
 
@@ -182,71 +170,16 @@ mutationEffect(m2)
 	return 1 + h_m[n] * mut.selectionCoeff;
 }
 
-mutation(m3){
-	//if diff model, add all mutations
-	if(dip_model == "diff")
-		return T;
-
-	//if at a proposed dip locus, add mutation
-	if(match(mut.position, dip_positions) >= 0)
-		return T;
-	// otherwise don't add mutation
-	return F;
-}
-
-mutation(m4)
-{
-	//if diff model, add all mutations
-	if(dip_model == "diff")
-		return T;
-	if(match(mut.position, dip_positions) <= 0)
-		return F;
-	// if we already have an m3 mutation at the site, allow
-	// the new m4 mutation; we will remove the stack below
-	if (genome.containsMarkerMutation(m3, mut.position))
-		return T;
-
-	// no m3 mutation is present, so unique down
-	return DIP_MUTS[which(dip_positions==mut.position)]; 
-}
-
-late() {
-	if(dip_model == "dom")
-	{	
-		// implement back-mutations from A to a
-		m4_muts = sim.mutationsOfType(m4);
-
-		// do we have any m3 mutations segregating?
-		// if so, we have m2/m3 stacked mutations to remove
-		if (m4_muts.length() > 0)
-		{
-			genomes = sim.subpopulations.genomes;
-			counts = genomes.countOfMutationsOfType(m4);
-			hasStacked = genomes[counts > 0];
-
-			for (genome in hasStacked)
-			{
-				stacked_m4 = genome.mutationsOfType(m4);
-				stackPositions = stacked_m4.position;
-				all_m3 = genome.mutationsOfType(m3);
-				s = (match(all_m3.position, stackPositions) >= 0);
-				stacked_m3 = all_m3[s];
-				genome.removeMutations(c(stacked_m4, stacked_m3));
-			}
-		}
-	}
-}
-
 1 early()
 {
 	print(inheritance);
 	print(dom_pattern);
-	print("k: " + K +  " r: " + r + " m: " + mig_rate + " reg_mu: " + u_r + " dip_mu: " + u_d);
+	print("k: " + K +  " r: " + r + " m: " + mig_rate);
 	//first deme holds extra chromosomes of every individual. individuals don't migrate from or into here
-	sim.addSubpop(1, K*5);
+	sim.addSubpop(1, K*d_size);
 
-	//initialize next 5 demes at carrying_capacity
-	for (i in 2:6){
+	//initialize next demes at carrying_capacity
+	for (i in 2:(d_size+1)){
 		sim.addSubpop(i, K);
 
 		//create individual tags to keep track of chromosomes
@@ -257,20 +190,21 @@ late() {
 			sim.subpopulations[i - 1].individuals[j].setValue("pop", i);
 			sim.subpopulations[0].individuals[j+((i-2)*K)].tagF = c_tag;
 			sim.subpopulations[0].individuals[j+((i-2)*K)].setValue("pop", i);
-			//sim.subpopulations[i - 1].individuals[j].tag = c_tag;
 			sim.subpopulations[i - 1].individuals[j].setValue("mig",0);
+			//sim.subpopulations[i - 1].individuals[j].tag = c_tag;
 		}
 	}
-
-	if(dip_model == "dom"){
-		target = p1.genomes[0];
-		target.addNewDrawnMutation(m3, dip_positions);
- 		defineConstant("DIP_MUTS", target.mutations); 
-		target.removeMutations();
-	}
-
 }
 
+
+//remove mutations from 1 genome in each diploid population (reservoir and local) to make it effectively diploid if diploid inheritance
+early() {
+	if(inheritance == "diploid")
+	{
+		sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals.genome2.removeMutations();
+		sim.subpopulations[0].individuals.genome1.removeMutations();
+	}
+}
 survival(p1) {
 // since p1 has fitness of 1 for calc purposes, we need to kill them if age is greater than 1
 
@@ -278,6 +212,9 @@ survival(p1) {
  	return T;
  return NULL;
 }
+
+
+//open up other populations after 10k generations
 
 1:2500 early()
 {
@@ -288,23 +225,17 @@ survival(p1) {
 		sim.subpopulations.genomes.removeMutations(dip_muts);
 		sim.subpopulations.genomes.removeMutations(neut_muts);
 	}
-}
-
-//open up other populations after 10k generations
-
-early()
-{
 	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
 	for (i in 1:size(sim.subpopulations))
 	{
 		inds = sim.subpopulations[i - 1].individuals;
 		inds[inds.age > 0].fitnessScaling = 0.0;
 	}
-	allPopSizes = sim.subpopulations.individualCount;
-	//all migration
+	
+	//all mig
 	for (i in 2:(size(sim.subpopulations) - 1))
 	{
-		nIndividuals = allPopSizes[i-1];
+		nIndividuals = sim.subpopulations[i - 1].individualCount;
 		if (nIndividuals > 0){		
 			nMigrants = rpois(1, nIndividuals * mig_rate);
 			if (nMigrants >= 1){
@@ -318,12 +249,67 @@ early()
 						dest = sample(c(i,i-2),1);
 						if(i==2)
 							dest = i;
-						if(i==6){
-							if(community.tick < 2501)
-								dest = i-2;
-						}
+						if(i==d_size+1)
+							dest = i-2;
 						sim.subpopulations[i - 1].individuals.setValue("mig",1);
 						sim.subpopulations[dest].takeMigrants(migrant);
+						migrant.setValue("pop", i);
+					}
+				}
+			}
+		}
+	}
+}
+
+//2d migration
+2501:10001 early()
+{
+	if(sum(sim.subpopulations[(size(sim.subpopulations)-10):(size(sim.subpopulations)-1)].individualCount) > 0){
+		for(i in 1:d_size){
+			sim.addSubpop(size(sim.subpopulations)+1, 0);
+		}
+	}
+	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
+	for (i in 1:size(sim.subpopulations))
+	{
+		inds = sim.subpopulations[i - 1].individuals;
+		inds[inds.age > 0].fitnessScaling = 0.0;
+	}
+	allPopSizes = sim.subpopulations.individualCount;
+	//2d migration
+	for (i in 2:(size(sim.subpopulations) - 1))
+	{
+		nIndividuals = allPopSizes[i-1];
+		if (nIndividuals > 0){		
+			nMigrants = rpois(1, nIndividuals * mig_rate);
+			if (nMigrants >= 1){
+				mig_inds = sim.subpopulations[i - 1].individuals[which(sim.subpopulations[i - 1].individuals.getValue("mig")==0)];
+				if (size(mig_inds) >= 1){
+					if(nMigrants > size(mig_inds))
+						nMigrants = size(mig_inds);
+					migrants = sample(mig_inds, nMigrants);
+					for (migrant in migrants)
+					{
+						mig_dests = c(i-1,i+1,i-d_size,i+d_size);
+						if(i<(d_size+2))
+							mig_dests = c(i-1,i+1,i+d_size);
+						if((i-2)%d_size == 0){
+							if(i<(d_size+2))
+								mig_dests = c(i+1,i+d_size);
+							else
+								mig_dests = c(i+1,i-d_size,i+d_size);
+						}
+
+						if((i-1)%d_size == 0){
+							if(i<(d_size+2))
+								mig_dests = c(i-1,i+d_size);
+							else
+								mig_dests = c(i-1,i-d_size,i+d_size);
+						}
+						dest = sample(mig_dests,1);
+						//print(c(i-1,dest-1));
+						sim.subpopulations[i - 1].individuals.setValue("mig",1);
+						sim.subpopulations[dest-1].takeMigrants(migrant);
 						migrant.setValue("pop", i);
 					}
 				}
@@ -478,12 +464,7 @@ reproduction()
 	self.active = 0;
 }
 
-2501:10001 late()
-{
-	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
-		sim.addSubpop(size(sim.subpopulations)+1, 0);
-	}
-}
+
 
 // need to set tags for new individuals after selection induced mortality
 early(){
@@ -529,6 +510,7 @@ early(){
 				stop("late(): error for individual " + ind.index);
 	}
 }
+
 2501:10001 late()
 {
 	start_exp_tick = 2501;
@@ -545,11 +527,12 @@ early(){
 		fitness_start = mean(sim.subpopulations[1].cachedFitness(NULL));
 		fitness_mid = mean(sim.subpopulations[round((current_deme)/2)].cachedFitness(NULL));
 		fitness_edge = mean(sim.subpopulations[current_deme].cachedFitness(NULL));
-		outDir_pre = paste0(c("output/test_diploidization/diploidization-",dip_model,"_dipLambda-",dip_lambda,"_remDipMuts-",remove_dip_muts,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_r-",u_r,"_u_d-",u_d,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
+
+		outDir_pre = paste0(c("output/2d_model/diploidization_2d-",dip_model,"_dipLambda-",dip_lambda,"_remDipMuts-",remove_dip_muts,"_",dom_pattern,"_2dsize-",d_size,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_r-",u_r,"_u_d-",u_d,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
 				
 
 	if(community.tick == start_exp_tick){
-			defineGlobal("fitness_scalar", mean(sim.subpopulations[current_deme-1].cachedFitness(NULL)));
+			defineGlobal("fitness_scalar", mean(sim.subpopulations[2:(d_size+1)].cachedFitness(NULL)));
 			createDirectory(outDir_pre);
 			if(isNULL(readFile(paste0(outDir_pre,"trackFile.txt")))){
 				writeFile(paste0(outDir_pre,"trackFile.txt"), "0", append = F);
