@@ -18,4 +18,4 @@ BS=$5
 D_MUT=$6 ##remove dip mutations prior to expansion (0 is don't remove)
 
 
-slim -d g_size=999999 -d K=$K -d "r=log(2)" -d dip_lambda=$DIP_LAMBDA -d remove_dip_muts=$D_MUT -d mig_rate=0.05 -d u_r=5e-8 -d u_d=5e-5 -d u_b=5e-8 -d rho=5e-8 -d b_s=$BS -d d_s=-0.001472 -d "dom_pattern='$DOMINANCE'" -d "dip_model='$DIP_MODEL'" polyploid_all_diploidization.slim 
+slim -d g_size=999999 -d K=$K -d "r=log(2)" -d dip_lambda=$DIP_LAMBDA -d remove_dip_muts=$D_MUT -d mig_rate=0.05 -d u_r=5e-8 -d u_d=2.5e-10 -d u_b=5e-8 -d rho=5e-8 -d b_s=$BS -d d_s=-0.001472 -d "dom_pattern='$DOMINANCE'" -d "dip_model='$DIP_MODEL'" polyploid_all_diploidization.slim 
