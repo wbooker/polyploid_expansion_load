@@ -19,4 +19,4 @@ K=$5
 BS=$6
 D_MUT=$7
 
-slim -d g_size=999999 -d K=$K -d d_size=$D_SIZE -d "r=log(2)" -d dip_lambda=$DIP_LAMBDA -d remove_dip_muts=$D_MUT -d mig_rate=0.05 -d u_r=5e-8 -d u_d=5e-9 -d u_b=5e-8 -d rho=5e-8 -d b_s=$BS -d d_s=-0.001472 -d "dom_pattern='$DOMINANCE'" -d "dip_model='$DIP_MODEL'" polyploid_all_diploidization_2d.slim 
+slim -d g_size=999999 -d K=$K -d d_size=$D_SIZE -d "r=log(2)" -d dip_lambda=$DIP_LAMBDA -d remove_dip_muts=$D_MUT -d mig_rate=0.05 -d u_del=5e-8 -d u_dip=2.5e-10 -d u_ben=5e-9 -d rho=5e-8 -d b_s=$BS -d d_s=-0.001472 -d "dom_pattern='$DOMINANCE'" -d "dip_model='$DIP_MODEL'" polyploid_all_diploidization_2d.slim 
