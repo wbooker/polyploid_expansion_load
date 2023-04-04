@@ -188,7 +188,7 @@ mutationEffect(m1)
 
 mutation(m2)
 {
-	mut.setValue("s", -0.002);
+	mut.setValue("s", -0.01);
 	mut.setValue("exp_mutation_5", 0);
 	mut.setValue("exp_mutation_1", 0);
 	if(mut.originTick >= 2501){
@@ -226,9 +226,11 @@ mutationEffect(m2)
 fitnessEffect()
 {
 	if(individual.subpopulation == p1){
-		return 1.0;
+		genomes = individual.genomes;
 	}
-	genomes = c(individual.genomes,sim.subpopulations[0].individuals[individual.tag].genomes);
+	else{
+		genomes = c(individual.genomes,sim.subpopulations[0].individuals[individual.tag].genomes);
+	}
 	//ind_fit=1;
 	mutations_ben = unique(genomes.mutationsOfType(m1));
 	mutations_del = unique(genomes.mutationsOfType(m2));
@@ -236,10 +238,12 @@ fitnessEffect()
 	if(size(mutations)==0)
 		return 1.0;
 	mut_counts = genomes.mutationCountsInGenomes(mutations);
+	fit_vector = sapply(seqAlong(mutations), "mut = mutations[applyValue]; count = mut_counts[applyValue]; 1 + mut.getValue('h_m')[count] * mut.getValue('s');");
 
-	fit_vector = rep(1,size(mutations)) + (mutations[0:(size(mutations)-1)].getValue("h_m")[mut_counts[0:(size(mutations)-1)]] * mutations[0:(size(mutations)-1)].getValue("s"));
+
+	//fit_vector = rep(1,size(mutations)) + (mutations[0:(size(mutations)-1)].getValue("h_m")[mut_counts[0:(size(mutations)-1)]] * mutations[0:(size(mutations)-1)].getValue("s"));
 	//print(fit_vector);
-	return cumProduct(fit_vector)[size(fit_vector)-1];
+	return product(fit_vector);
 }
 
 1 early()
