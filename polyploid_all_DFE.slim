@@ -34,7 +34,8 @@ initialize()
 	if(dom_pattern == "DFE")
 		initializeMutationType("m2", 0.5, "g", -0.001472,0.16);
 	else
-		initializeMutationType("m2", 0.5, "f", d_s);
+		//initializeMutationType("m2", 0.5, "f", d_s);
+		initializeMutationType("m2", 0.5, "f", 0.0);
 
 	//ensure mutations don't convert for tracking
 	m1.convertToSubstitution = F;
@@ -178,19 +179,16 @@ mutation(m1)
 
 }
 
+/*
 mutationEffect(m1)
 {
-	if(individual.subpopulation == p1){
-		return 1.0;
-	}
-	other = sim.subpopulations[0].individuals[individual.tag];
-	n = sum(individual.genomes.containsMutations(mut)) + sum(other.genomes.containsMutations(mut));
-	h_m = mut.getValue("h_m");
-	return 1 + h_m[n] * mut.selectionCoeff;
+	return 1.0;
 }
+*/
 
 mutation(m2)
 {
+	mut.setValue("s", -0.002);
 	mut.setValue("exp_mutation_5", 0);
 	mut.setValue("exp_mutation_1", 0);
 	if(mut.originTick >= 2501){
@@ -218,15 +216,30 @@ mutation(m2)
 	return T;
 }
 
+/*
 mutationEffect(m2)
+{
+	return 1.0;
+}
+*/
+
+fitnessEffect()
 {
 	if(individual.subpopulation == p1){
 		return 1.0;
 	}
-	other = sim.subpopulations[0].individuals[individual.tag];
-	n = sum(individual.genomes.containsMutations(mut)) + sum(other.genomes.containsMutations(mut));
-	h_m = mut.getValue("h_m");
-	return 1 + h_m[n] * mut.selectionCoeff;
+	genomes = c(individual.genomes,sim.subpopulations[0].individuals[individual.tag].genomes);
+	//ind_fit=1;
+	mutations_ben = unique(genomes.mutationsOfType(m1));
+	mutations_del = unique(genomes.mutationsOfType(m2));
+	mutations = c(mutations_del,mutations_ben);
+	if(size(mutations)==0)
+		return 1.0;
+	mut_counts = genomes.mutationCountsInGenomes(mutations);
+
+	fit_vector = rep(1,size(mutations)) + (mutations[0:(size(mutations)-1)].getValue("h_m")[mut_counts[0:(size(mutations)-1)]] * mutations[0:(size(mutations)-1)].getValue("s"));
+	//print(fit_vector);
+	return cumProduct(fit_vector)[size(fit_vector)-1];
 }
 
 1 early()
@@ -436,7 +449,7 @@ early(){
 	start_exp_tick = 2501;
 	//if above different than 2501 remember to set exp_mutation_5!!!!
 
-	outDir_pre = paste0(c("output/test_equal_s/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
+	outDir_pre = paste0(c("output/new_fit_calc_4_4_2023/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
 	
 	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
 

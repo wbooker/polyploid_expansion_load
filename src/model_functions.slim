@@ -109,25 +109,17 @@ function (float)calc_fitness_exp_load(lifso<Subpopulation> x)
 			if(exp_mutations_1_flag == 1)
 			{
 				exp_counts_1 = genomes.mutationCountsInGenomes(exp_mutations_1);
-				for(mut in 1:size(exp_mutations_1))
-				{
-					s_exp_1 = s_exp_1 * (1+(exp_mutations_1[mut-1].getValue("h_m")[exp_counts_1[mut-1]] * exp_mutations_1[mut-1].selectionCoeff));
-				}
+ 				s_exp_1 = rep(1,size(exp_mutations_1)) + (exp_mutations_1[0:(size(exp_mutations_1)-1)].getValue("h_m")[exp_counts_1[0:(size(exp_mutations_1)-1)]] * exp_mutations_1[0:(size(exp_mutations_1)-1)].selectionCoeff);
 			}
 			if(exp_mutations_5_flag == 1)
 			{
 				exp_counts_5 = genomes.mutationCountsInGenomes(exp_mutations_5);
-				for(mut in 1:size(exp_mutations_5))
-				{
-					s_exp_5 = s_exp_5 * (1+(exp_mutations_5[mut-1].getValue("h_m")[exp_counts_5[mut-1]] * exp_mutations_5[mut-1].selectionCoeff));
-				}
+ 				s_exp_5 = rep(1,size(exp_mutations_5)) + (exp_mutations_5[0:(size(exp_mutations_5)-1)].getValue("h_m")[exp_counts_5[0:(size(exp_mutations_5)-1)]] * exp_mutations_5[0:(size(exp_mutations_5)-1)].selectionCoeff);
 			}
 			
 			all_counts = genomes.mutationCountsInGenomes(mutations);
-			for(mut in 1:size(mutations))
-			{
-				s_all = s_all * (1+(mutations[mut-1].getValue("h_m")[all_counts[mut-1]] * mutations[mut-1].selectionCoeff));
-			}	
+ 			s_all = rep(1,size(mutations)) + (mutations[0:(size(mutations)-1)].getValue("h_m")[all_counts[0:(size(mutations)-1)]] * mutations[0:(size(mutations)-1)].selectionCoeff);
+			
 			if(ind_flag == 0)
 			{
 				exp_fitnesses_1 = s_exp_1;
