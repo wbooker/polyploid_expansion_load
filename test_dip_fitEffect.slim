@@ -181,6 +181,86 @@ function (float)variance(float x)
 }
 
 
+mutation(m1)
+{
+	mut.setValue("exp_mutation_5", 0);
+	mut.setValue("exp_mutation_1", 0);
+	if(mut.originTick >= start_exp_tick){
+		if(parent.getValue("pop") >= (size(sim.subpopulations)-4))
+			mut.setValue("exp_mutation_5", 1);
+		if(parent.getValue("pop") >= size(sim.subpopulations)-1)
+			mut.setValue("exp_mutation_1", 1);
+	}
+
+	//DFE currently doesn't do anything with beneficial alleles
+	if(dom_pattern=="DFE"){
+		if(inheritance=="diploid")
+		{
+			mut.setValue("dom", calc_h_from_s(mut.selectionCoeff, 0.978, 50328));
+			mut.setValue("h_m",c(0,mut.getValue("dom"),1.0));
+		}
+		else
+		{
+			mut.setValue("dom", calc_h_from_s(mut.selectionCoeff, 0.978, 50328));
+			mut.setValue("h_m",get_tetraploid_h_vector(1-mut.getValue("dom")));
+		}
+	}
+	else{
+		mut.setValue("s", b_s);
+		mut.setValue("h_m",h_m1);
+	}
+	return T;
+
+}
+
+mutation(m2)
+{
+	mut.setValue("exp_mutation_5", 0);
+	mut.setValue("exp_mutation_1", 0);
+	if(mut.originTick >= start_exp_tick){
+		if(parent.getValue("pop") >= (size(sim.subpopulations)-4))
+			mut.setValue("exp_mutation_5", 1);
+		if(parent.getValue("pop") >= size(sim.subpopulations)-1)
+			mut.setValue("exp_mutation_1", 1);
+	}
+
+	if(dom_pattern=="DFE"){
+		mut_s = rgamma(1,-0.001472,0.16);
+		mut.setValue("s", mut_s);
+		if(inheritance=="diploid")
+		{
+			mut.setValue("dom", calc_h_from_s(mut_s, 0.978, 50328));
+			mut.setValue("h_m",c(0,mut.getValue("dom"),1.0));
+		}
+		else
+		{
+			mut.setValue("dom", calc_h_from_s(mut_s, 0.978, 50328));
+			mut.setValue("h_m",get_tetraploid_h_vector(1-mut.getValue("dom")));
+		}
+	}
+	else{
+		mut.setValue("s", d_s);
+		mut.setValue("h_m",h_m2);
+	}
+	return T;
+}
+fitnessEffect()
+{
+	if(individual.subpopulation == p1)
+		return 1.0;
+	
+	genomes = c(individual.genomes,sim.subpopulations[0].individuals[individual.tag].genomes);
+	mutations_ben = unique(genomes.mutationsOfType(m1));
+	mutations_del = unique(genomes.mutationsOfType(m2));
+	mutations = c(mutations_del,mutations_ben);
+	if(size(mutations)==0)
+		return 1.0;
+	mut_counts = genomes.mutationCountsInGenomes(mutations);
+	fit_vector = sapply(seqAlong(mutations), "mut = mutations[applyValue]; count = mut_counts[applyValue]; 1 + mut.getValue('h_m')[count] * mut.getValue('s');");
+	return product(fit_vector);
+}
+
+
 1 early()
 {
 	print(inheritance);
@@ -209,20 +289,6 @@ function (float)variance(float x)
 
 
 
-
-mutation(m1){
-	mut.setValue("s", b_s);
-	mut.setValue("h_m",h_m2);
-	return T;
-}
-
-mutation(m2)
-{
-	mut.setValue("s", d_s);
-	mut.setValue("h_m",h_m2);
-	return T;
-}
-
 survival(p1) {
 // since p1 has fitness of 1 for calc purposes, we need to kill them if age is greater than 1
  if (individual.age == 0)
@@ -236,29 +302,6 @@ early() {
 		sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals.genome2.removeMutations();
 		sim.subpopulations[0].individuals.genome1.removeMutations();
 	}
-}
-
-fitnessEffect()
-{
-	if(individual.subpopulation == p1){
-		return 1.0;
-	}
-    genomes = c(individual.genomes,sim.subpopulations[0].individuals[individual.tag].genomes);
-
-    //if(inheritance == "diploid");
-    genomesa = c(individual.genome1,sim.subpopulations[0].individuals[individual.tag].genome2);
-	mutations_ben = unique(genomes.mutationsOfType(m1));
-	mutations_del = unique(genomes.mutationsOfType(m2));
-	mutations = c(mutations_del,mutations_ben);
-	if(size(mutations)==0)
-		return 1.0;
-	mut_counts = genomes.mutationCountsInGenomes(mutations);
-	fit_vector = sapply(seqAlong(mutations), "mut = mutations[applyValue]; count = mut_counts[applyValue]; 1 + mut.getValue('h_m')[count] * mut.getValue('s');");
-
-
-	//fit_vector = rep(1,size(mutations)) + (mutations[0:(size(mutations)-1)].getValue("h_m")[mut_counts[0:(size(mutations)-1)]] * mutations[0:(size(mutations)-1)].getValue("s"));
-	//print(fit_vector);
-	return product(fit_vector);
 }
 
 early()
