@@ -31,9 +31,11 @@ function (float)get_sfs(lifso x)
 	//gets site frequency spectrum of the focal clade and the two clades surrounding
 	tags = sim.subpopulations[(x-2):(x+2)].individuals.tag;
 	genomes = c(sim.subpopulations[(x-2):(x+2)].genomes,sim.subpopulations[0].individuals[tags].genomes);
-	mutations = unique(genomes.mutationsOfType(m1));
-	mutations_ben = unique(genomes.mutationsOfType(m2));
-	freqs = genomes.mutationFrequenciesInGenomes(c(mutations,mutations_ben));
+	if(size(genomes)<1)
+		return NULL;
+	mutations_ben = unique(genomes.mutationsOfType(m1));
+	mutations_del = unique(genomes.mutationsOfType(m2));
+	freqs = genomes.mutationFrequenciesInGenomes(c(mutations_ben,mutations_del));
 	if(inheritance == "diploid")
 		//multiply by two here because we have 2 empty dip chromosomes
 		return freqs * 2;
@@ -49,10 +51,12 @@ function (float)get_selection_frequency_spectrum(lifso x)
 	//gets selection coefficient frequency spectrum of the focal clade and the two clades surrounding
 	tags = sim.subpopulations[(x-2):(x+2)].individuals.tag;
 	genomes = c(sim.subpopulations[(x-2):(x+2)].genomes,sim.subpopulations[0].individuals[tags].genomes);
+	if(size(genomes)<1)
+		return NULL;
 	mutations_ben = unique(genomes.mutationsOfType(m1));
 	mutations_del = unique(genomes.mutationsOfType(m2));
 	mutations = c(mutations_del,mutations_ben);
-	s = mutations.selectionCoeff;
+	s = mutations.getValue("s");
 	return s;
 }
 
@@ -109,16 +113,16 @@ function (float)calc_fitness_exp_load(lifso<Subpopulation> x)
 			if(exp_mutations_1_flag == 1)
 			{
 				exp_counts_1 = genomes.mutationCountsInGenomes(exp_mutations_1);
- 				s_exp_1 = rep(1,size(exp_mutations_1)) + (exp_mutations_1[0:(size(exp_mutations_1)-1)].getValue("h_m")[exp_counts_1[0:(size(exp_mutations_1)-1)]] * exp_mutations_1[0:(size(exp_mutations_1)-1)].selectionCoeff);
+ 				s_exp_1 = rep(1,size(exp_mutations_1)) + (exp_mutations_1[0:(size(exp_mutations_1)-1)].getValue("h_m")[exp_counts_1[0:(size(exp_mutations_1)-1)]] * exp_mutations_1[0:(size(exp_mutations_1)-1)].getValue("s"));
 			}
 			if(exp_mutations_5_flag == 1)
 			{
 				exp_counts_5 = genomes.mutationCountsInGenomes(exp_mutations_5);
- 				s_exp_5 = rep(1,size(exp_mutations_5)) + (exp_mutations_5[0:(size(exp_mutations_5)-1)].getValue("h_m")[exp_counts_5[0:(size(exp_mutations_5)-1)]] * exp_mutations_5[0:(size(exp_mutations_5)-1)].selectionCoeff);
+ 				s_exp_5 = rep(1,size(exp_mutations_5)) + (exp_mutations_5[0:(size(exp_mutations_5)-1)].getValue("h_m")[exp_counts_5[0:(size(exp_mutations_5)-1)]] * exp_mutations_5[0:(size(exp_mutations_5)-1)].getValue("s"));
 			}
 			
 			all_counts = genomes.mutationCountsInGenomes(mutations);
- 			s_all = rep(1,size(mutations)) + (mutations[0:(size(mutations)-1)].getValue("h_m")[all_counts[0:(size(mutations)-1)]] * mutations[0:(size(mutations)-1)].selectionCoeff);
+ 			s_all = rep(1,size(mutations)) + (mutations[0:(size(mutations)-1)].getValue("h_m")[all_counts[0:(size(mutations)-1)]] * mutations[0:(size(mutations)-1)].getValue("s"));
 			
 			if(ind_flag == 0)
 			{

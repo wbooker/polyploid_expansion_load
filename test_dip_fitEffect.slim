@@ -1,19 +1,19 @@
 initialize()
 {
-	//set inheritance
-	//defineGlobal("inheritance", "auto");
-	//defineGlobal("dom_pattern", "DFE");
+	defineGlobal("inheritance", "diploid");
+	defineGlobal("dom_pattern", "additive");
 
 	//set population parameters
-	//defineConstant("K", 25); // carrying-capacity density
-	//defineConstant("mig_rate", 0.05); //mig rate
-	//defineConstant("r", log(2)); //growth rate
-	//defineConstant("u_del", 2.5e-8); // deleterious mutation_rate
-	//defineConstant("u_ben", 2.5e-8); // beneficial mutation_rate	
-	//defineConstant("rho", 2.5e-8); // recombination_rate
-	//defineConstant("b_s", 0.0045); // beneficial selection coefficient
-	//defineConstant("d_s", -0.0045); // deleterious selection coefficient
-	//defineConstant("g_size", 999999); // genome size
+	defineConstant("K", 100); // carrying-capacity density
+	defineConstant("mig_rate", 0.05); //mig rate
+	defineConstant("r", log(2)); //growth rate
+	defineConstant("u_del", 2.5e-11); // deleterious mutation_rate
+	defineConstant("u_ben", 2.5e-12); // beneficial mutation_rate
+	defineConstant("u", 2.5e-11); // deleterious mutation_rate	
+	defineConstant("b_s", 0.005); // beneficial selection coefficient
+	defineConstant("d_s", -0.005); // deleterious selection coefficient
+	defineConstant("g_size", 999999999); // genome size
+	defineConstant("start_exp_tick", 2501); //make sure to change the 2 tick events triggered here if this changes too
 
 	//set as nonWF model
 	initializeSLiMModelType("nonWF");
@@ -23,20 +23,22 @@ initialize()
 	else
 		defineGlobal("u_t", u_del);
 
+	defineConstant("rho", u_t); // recombination_rate
+
 	//set mutation rate
 	initializeMutationRate(u_t);
 	
-
-	//beneficial
-	initializeMutationType("m1", 0.5, "f", 0.0);
-
-	//deleterious
-	initializeMutationType("m2", 0.5, "f", 0.0);
-
+	// m1 mutation type: beneficial
+	initializeMutationType("m1", 0.5, "f", b_s);
+	m1.color = "green"; 
+	
+	// m2 mutation type: deleterious
+	initializeMutationType("m2", 0.5, "f", d_s);
+	m2.color = "red"; 
 	//ensure mutations don't convert for tracking
 	m1.convertToSubstitution = F;
 	m2.convertToSubstitution = F;
-
+	
 	if(b_s > 0)
 		initializeGenomicElementType("g1", c(m1, m2), c((u_ben/u_t),(u_del/u_t)));
 	else
@@ -45,14 +47,15 @@ initialize()
 	// uniform chromosome of length 10 kb with uniform recombination
 	initializeGenomicElement(g1, 0, g_size);
 	initializeRecombinationRate(rho);
-
-	defineConstant("start_exp_tick", 10001); //make sure to change the 2 tick events triggered here if this changes too
+	
 
 	defineGlobal("c_tag", 0);
 	defineGlobal("previous_deme", 0);
-	source("src/model_functions.slim");
+	
 
 	// define heterozygote coefficients depending on inheritance and dominance pattern, if not DFE
+	
+	
 	if(inheritance == "diploid"){
 		if(dom_pattern == "additive")
 			defineGlobal("h_m1", c(0.0, 0.5, 1.0));
@@ -144,86 +147,39 @@ initialize()
 			defineGlobal("h_m2", c(0.0, -1.0, -1.0, -1.0, 1.0)); 
 	}
 
-}
-
-mutation(m1)
-{
-	mut.setValue("exp_mutation_5", 0);
-	mut.setValue("exp_mutation_1", 0);
-	if(mut.originTick >= start_exp_tick){
-		if(parent.getValue("pop") >= (size(sim.subpopulations)-4))
-			mut.setValue("exp_mutation_5", 1);
-		if(parent.getValue("pop") >= size(sim.subpopulations)-1)
-			mut.setValue("exp_mutation_1", 1);
-	}
-
-	//DFE currently doesn't do anything with beneficial alleles
-	if(dom_pattern=="DFE"){
-		if(inheritance=="diploid")
-		{
-			mut.setValue("dom", calc_h_from_s(mut.selectionCoeff, 0.978, 50328));
-			mut.setValue("h_m",c(0,mut.getValue("dom"),1.0));
-		}
-		else
-		{
-			mut.setValue("dom", calc_h_from_s(mut.selectionCoeff, 0.978, 50328));
-			mut.setValue("h_m",get_tetraploid_h_vector(1-mut.getValue("dom")));
-		}
-	}
-	else{
-		mut.setValue("s", b_s);
-		mut.setValue("h_m",h_m1);
-	}
-	return T;
 
 }
 
-mutation(m2)
+function(float)calc_max_PHS(lifso<Subpopulation> x)
 {
-	mut.setValue("exp_mutation_5", 0);
-	mut.setValue("exp_mutation_1", 0);
-	if(mut.originTick >= start_exp_tick){
-		if(parent.getValue("pop") >= (size(sim.subpopulations)-4))
-			mut.setValue("exp_mutation_5", 1);
-		if(parent.getValue("pop") >= size(sim.subpopulations)-1)
-			mut.setValue("exp_mutation_1", 1);
-	}
-
-	if(dom_pattern=="DFE"){
-		mut_s = rgamma(1,-0.001472,0.16);
-		mut.setValue("s", mut_s);
-		if(inheritance=="diploid")
-		{
-			mut.setValue("dom", calc_h_from_s(mut_s, 0.978, 50328));
-			mut.setValue("h_m",c(0,mut.getValue("dom"),1.0));
-		}
-		else
-		{
-			mut.setValue("dom", calc_h_from_s(mut_s, 0.978, 50328));
-			mut.setValue("h_m",get_tetraploid_h_vector(1-mut.getValue("dom")));
-		}
-	}
-	else{
-		mut.setValue("s", d_s);
-		mut.setValue("h_m",h_m2);
-	}
-	return T;
-}
-fitnessEffect()
-{
-	if(individual.subpopulation == p1)
-		return 1.0;
+	max_phs = 0;
 	
-	genomes = c(individual.genomes,sim.subpopulations[0].individuals[individual.tag].genomes);
-	mutations_ben = unique(genomes.mutationsOfType(m1));
-	mutations_del = unique(genomes.mutationsOfType(m2));
-	mutations = c(mutations_del,mutations_ben);
-	if(size(mutations)==0)
-		return 1.0;
-	mut_counts = genomes.mutationCountsInGenomes(mutations);
-	fit_vector = sapply(seqAlong(mutations), "mut = mutations[applyValue]; count = mut_counts[applyValue]; 1 + mut.getValue('h_m')[count] * mut.getValue('s');");
-	return product(fit_vector);
+	for(ind in x.individuals){
+		freqs = ind.genomes.mutationFrequenciesInGenomes(NULL);
+		phs = size(which(freqs<1.0 & freqs>0.0)) / size(freqs);
+		if(phs > max_phs)
+			max_phs = phs;
+	}
+	return asFloat(max_phs);	
 }
+
+function (float)variance(float x)
+{
+	vars = 0;
+	if(isNULL(x)){
+		return NULL;
+	}
+	else{
+		mean_x = mean(x);
+		for(i in x){
+			if(!isNULL(i)){
+				vars = vars + (i-mean_x)^2;
+			}
+		}
+	}
+		return asFloat(vars/size(x));
+}
+
 
 1 early()
 {
@@ -252,7 +208,28 @@ fitnessEffect()
 }
 
 
-//remove mutations from 1 genome in each diploid population (reservoir and local) to make it effectively diploid if diploid inheritance
+
+
+mutation(m1){
+	mut.setValue("s", b_s);
+	mut.setValue("h_m",h_m2);
+	return T;
+}
+
+mutation(m2)
+{
+	mut.setValue("s", d_s);
+	mut.setValue("h_m",h_m2);
+	return T;
+}
+
+survival(p1) {
+// since p1 has fitness of 1 for calc purposes, we need to kill them if age is greater than 1
+ if (individual.age == 0)
+ 	return T;
+ return NULL;
+}
+
 early() {
 	if(inheritance == "diploid")
 	{
@@ -261,39 +238,28 @@ early() {
 	}
 }
 
-/*
-survival(p1) {
-// since p1 has fitness of 1 for calc purposes, we need to kill them if age is greater than 1
+fitnessEffect()
+{
+	if(individual.subpopulation == p1){
+		return 1.0;
+	}
+    genomes = c(individual.genomes,sim.subpopulations[0].individuals[individual.tag].genomes);
 
- if (individual.age == 0)
- 	return T;
- return NULL;
+    //if(inheritance == "diploid");
+    genomesa = c(individual.genome1,sim.subpopulations[0].individuals[individual.tag].genome2);
+	mutations_ben = unique(genomes.mutationsOfType(m1));
+	mutations_del = unique(genomes.mutationsOfType(m2));
+	mutations = c(mutations_del,mutations_ben);
+	if(size(mutations)==0)
+		return 1.0;
+	mut_counts = genomes.mutationCountsInGenomes(mutations);
+	fit_vector = sapply(seqAlong(mutations), "mut = mutations[applyValue]; count = mut_counts[applyValue]; 1 + mut.getValue('h_m')[count] * mut.getValue('s');");
+
+
+	//fit_vector = rep(1,size(mutations)) + (mutations[0:(size(mutations)-1)].getValue("h_m")[mut_counts[0:(size(mutations)-1)]] * mutations[0:(size(mutations)-1)].getValue("s"));
+	//print(fit_vector);
+	return product(fit_vector);
 }
-*/
-
-// need to set tags for new individuals after selection induced mortality
-early(){
-
-	inds = sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals;
-	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
-	inds.tag = tag;
-}
-
-2: first() {
-
-	inds = sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals;
-	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
-	inds.tag = tag;
-}
-
-2: late() {
-
-	inds = sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals;
-	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
-	inds.tag = tag;
-}
-
-//open up other populations after 10k generations
 
 early()
 {
@@ -323,7 +289,7 @@ early()
 						if(i==2)
 							dest = i;
 						if(i==6){
-							if(community.tick < start_exp_tick)
+							if(community.tick < 2501)
 								dest = i-2;
 						}
 						sim.subpopulations[i - 1].individuals.setValue("mig",1);
@@ -400,11 +366,34 @@ reproduction()
 	self.active = 0;
 }
 
-10001:20001 late()
+2501:10001 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
 	}
+}
+
+
+// need to set tags for new individuals after selection induced mortality
+2: first(){
+
+	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	inds.tag = tag;
+}
+
+early(){
+
+	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	inds.tag = tag;
+}
+
+2: late() {
+
+	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	inds.tag = tag;
 }
 
 //do a quick check to make sure tags are right every 100 gens
@@ -436,14 +425,117 @@ reproduction()
 				stop("late(): error for individual " + ind.index);
 	}
 }
-10001:20001 late()
+
+
+2501:10001 late()
 {
+	output_ticks = seq(from=2501,to=200001,by=1);
+	if(match(community.tick, output_ticks) >= 0){
+        defineGlobal("current_deme", (size(sim.subpopulations)-1));
+        while(isNULL(mean(sim.subpopulations[current_deme].cachedFitness(NULL)))){
+            defineGlobal("current_deme", (current_deme-1));
+        }
+    speed = (current_deme - previous_deme) / 10;
+    defineGlobal("previous_deme", current_deme);
+    fitness_start = mean(sim.subpopulations[1].cachedFitness(NULL));
+    fitness_mid = mean(sim.subpopulations[round((current_deme)/2)].cachedFitness(NULL));
+    fitness_edge = mean(sim.subpopulations[current_deme].cachedFitness(NULL));
 
-	outDir_pre = paste0(c("output/new_fit_calc_4_4_2023/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
-	
-	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
+		//log output
+		if(community.tick == 2501){
+			defineGlobal("fitness_scalar", mean(sim.subpopulations[current_deme-1].cachedFitness(NULL)));
+			outDir = paste0(c("output/","dip","_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u-",u,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"/"));
+			createDirectory(outDir);
+			if(isNULL(readFile(paste0(outDir,"trackFile.txt")))){
+				writeFile(paste0(outDir,"trackFile.txt"), "0", append = F);
+				curr_rep = 0;
+			}
+			if(!isNULL(readFile(paste0(outDir,"trackFile.txt")))){
+				trackFile = readFile(paste0(outDir,"trackFile.txt"));
+				curr_rep = asInteger(trackFile[0])+1;
+				writeFile(paste0(outDir,"trackFile.txt"), asString(curr_rep), append = F);
+			}
+			outfile = paste0(c(outDir,curr_rep,"_log.csv"));			
+			log = community.createLogFile(outfile, logInterval=50);
+ 			log.addCycle(); 
+			log.addCustomColumn("start_fitness", "mean(sim.subpopulations[1].cachedFitness(NULL));");
+			log.addCustomColumn("mid_fitness", "mean(sim.subpopulations[round((current_deme-1)/2)].cachedFitness(NULL));");
+			log.addCustomColumn("edge_fitness", "mean(sim.subpopulations[current_deme].cachedFitness(NULL));");
+			log.addCustomColumn("current_deme", "current_deme-1;"); //need to subtract 1 here so we don't count the first population holding all the extra chromosomes
+			
+			// intitialize log  for fitnesses of each subpop
+			defineGlobal("mean_fitness_file", paste0(c(outDir,curr_rep,"_meanFitness.csv")));
+			writeFile(mean_fitness_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+			defineGlobal("var_fitness_file", paste0(c(outDir,curr_rep,"_varFitness.csv")));
+			writeFile(var_fitness_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+			defineGlobal("mean_mutations_file", paste0(c(outDir,curr_rep,"_meanMutations.csv")));
+			writeFile(mean_mutations_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+			defineGlobal("fixed_mutations_file", paste0(c(outDir,curr_rep,"_fixedMutations.csv")));
+			writeFile(fixed_mutations_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+			defineGlobal("max_phs_file", paste0(c(outDir,curr_rep,"_maxPhs.csv")));
+			writeFile(max_phs_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+			defineGlobal("pop_size_file", paste0(c(outDir,curr_rep,"_popSize.csv")));
+			writeFile(pop_size_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
 
-	if(match(community.tick, output_ticks) >= 0)
-		source("src/output_reg.slim");
+		}
+		//update fitness file
+		sub_fitnesses_mean = community.tick-2501;
+		sub_fitnesses_var = community.tick-2501;
+		sub_mutations_mean = community.tick-2501;
+		sub_mutations_fixed = community.tick-2501;
+		sub_max_phs = community.tick-2501;
+		sub_pop_size = community.tick-2501;
 
+
+		for (i in 2:size(sim.subpopulations)){
+			temp_mean_fitness = mean(sim.subpopulations[i-1].cachedFitness(NULL));
+			temp_var_fitness = variance(sim.subpopulations[i-1].cachedFitness(NULL));
+			//temp_mean_mutations = size(which(get_mutation_freqs(sim.subpopulations[i-1]) > 0))/size(sim.subpopulations[i-1].individuals);
+			//temp_fixed_mutations = size(which(get_mutation_freqs(sim.subpopulations[i-1])==1.0));
+			temp_mean_mutations = mean(sim.subpopulations[i-1].individuals.countOfMutationsOfType(m1));
+			temp_fixed_mutations = size(which(sim.mutationFrequencies(i,NULL)==1.0));
+			//pop_phs = calc_all_PHS_avg(sim.subpopulations[1:(size(sim.subpopulations)-1)]);
+			temp_max_phs = calc_max_PHS(sim.subpopulations[i-1]);
+			temp_pop_size = size(sim.subpopulations[i-1].individuals);
+			
+			if(isNULL(temp_mean_fitness)){
+				sub_fitnesses_mean = c(sub_fitnesses_mean, 0);
+				sub_fitnesses_var = c(sub_fitnesses_var, 0);
+				sub_mutations_mean = c(sub_mutations_mean, 0);
+				sub_mutations_fixed = c(sub_mutations_fixed, 0);
+				sub_max_phs = c(sub_max_phs, 0);
+				sub_pop_size = c (sub_pop_size, 0);
+
+			}
+			else{
+				sub_fitnesses_mean = c(sub_fitnesses_mean, (temp_mean_fitness/fitness_scalar));
+				sub_fitnesses_var = c(sub_fitnesses_var, temp_var_fitness);
+				sub_mutations_mean = c(sub_mutations_mean, temp_mean_mutations);
+				sub_mutations_fixed = c(sub_mutations_fixed, temp_fixed_mutations);
+				sub_max_phs = c(sub_max_phs, temp_max_phs);
+				sub_pop_size = c(sub_pop_size, temp_pop_size);
+
+
+			}
+		}
+		extra_pops = rep(0, (2000-size(sim.subpopulations)));
+		mean_fitness_line = c(sub_fitnesses_mean, extra_pops);
+		var_fitness_line = c(sub_fitnesses_var, extra_pops);
+		mean_mutations_line = c(sub_mutations_mean, extra_pops);
+		fixed_mutations_line = c(sub_mutations_fixed, extra_pops);
+		max_phs_line = c(sub_max_phs, extra_pops);
+		pop_size_line = c(sub_pop_size, extra_pops);
+
+
+		writeFile(mean_fitness_file, paste(mean_fitness_line, sep=","), append = T);
+		writeFile(var_fitness_file, paste(var_fitness_line, sep=","), append = T);
+		writeFile(mean_mutations_file, paste(mean_mutations_line, sep=","), append = T);
+		writeFile(fixed_mutations_file, paste(fixed_mutations_line, sep=","), append = T);
+		writeFile(max_phs_file, paste(max_phs_line, sep=","), append = T);
+		writeFile(pop_size_file, paste(pop_size_line, sep=","), append = T);
+
+
+		//print to std out
+		print("tick: " + community.tick + " time: " + time() + " start: " + fitness_start + " mid: " + fitness_mid + " edge: " + fitness_edge + " demes: " + current_deme + " speed: " + speed);
+		}
 }

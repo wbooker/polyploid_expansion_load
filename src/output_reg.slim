@@ -1,7 +1,8 @@
 defineGlobal("current_deme", (size(sim.subpopulations)-1));
-while(isNULL(mean(sim.subpopulations[current_deme].cachedFitness(NULL)))){
-defineGlobal("current_deme", (current_deme-1));
-}
+while(isNULL(mean(sim.subpopulations[current_deme].cachedFitness(NULL))))
+    {
+    defineGlobal("current_deme", (current_deme-1));
+    }
 speed = (current_deme - previous_deme) / 10;
 defineGlobal("previous_deme", current_deme);
 fitness_start = mean(sim.subpopulations[1].cachedFitness(NULL));
