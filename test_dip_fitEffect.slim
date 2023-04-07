@@ -1,5 +1,6 @@
 initialize()
 {
+    setSeed(30780470494173);
 	defineGlobal("inheritance", "diploid");
 	defineGlobal("dom_pattern", "additive");
 
@@ -57,14 +58,9 @@ initialize()
 	
 	
 	if(inheritance == "diploid"){
-		if(dom_pattern == "additive")
-			defineGlobal("h_m1", c(0.0, 0.5, 1.0));
+    	defineGlobal("h_m1", c(0.0, 0.5, 1.0)); // additive default
 		if(dom_pattern == "recessive")
 			defineGlobal("h_m1", c(0.0, 0.0, 1.0));
-		if(dom_pattern == "br_dd")
-			defineGlobal("h_m1", c(0.0, 0.0, 1.0));
-		if(dom_pattern == "bd_dr")
-			defineGlobal("h_m1", c(0.0, 1.0, 1.0));
 		if(dom_pattern == "overdominance_1")
 			defineGlobal("h_m1", c(0.0, 1.0, 0.0));
 		if(dom_pattern == "overdominance_2")
@@ -75,20 +71,23 @@ initialize()
 			defineGlobal("h_m1", c(0.0, -0.5, 1.0)); 
 		if(dom_pattern == "underdominance_2")
 			defineGlobal("h_m1", c(0.0, -1.0, 1.0)); 
-		//n = sum(individual.genomes.containsMutations(mut));
+        defineGlobal("h_m2", h_m1);        
+		if(dom_pattern == "br_dd"){
+			defineGlobal("h_m1", c(0.0, 0.0, 1.0));
+			defineGlobal("h_m2", c(0.0, 1.0, 1.0));
+        }
+		if(dom_pattern == "bd_dr"){
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0));
+			defineGlobal("h_m2", c(0.0, 0.0, 1.0));
 		}
+    }
 	else
 	{
-		if(dom_pattern == "additive")
-			defineGlobal("h_m1", c(0.0, 0.25, 0.5, 0.75, 1.0));
+		defineGlobal("h_m1", c(0.0, 0.25, 0.5, 0.75, 1.0)); // additive default
 		if(dom_pattern == "recessive")
 			defineGlobal("h_m1", c(0.0, 0.0, 0.0, 0.0, 1.0));
 		if(dom_pattern == "duplex")
 			defineGlobal("h_m1", c(0.0, 0.0, 0.0, 1.0, 1.0));
-		if(dom_pattern == "br_dd")
-			defineGlobal("h_m1", c(0.0, 0.0, 0.0, 0.0, 1.0));
-		if(dom_pattern == "bd_dr")
-			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 1.0));
 		if(dom_pattern == "overdominance_1")
 			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 0.0));
 		if(dom_pattern == "overdominance_2")
@@ -99,54 +98,16 @@ initialize()
 			defineGlobal("h_m1", c(0.0, -0.5, -0.5, -0.5, 0.0)); 
 		if(dom_pattern == "underdominance_2")
 			defineGlobal("h_m1", c(0.0, -1.0, -1.0, -1.0, 0.0)); 
-
-	}
-	
-	if(inheritance == "diploid"){
-		if(dom_pattern == "additive")
-			defineGlobal("h_m2", c(0.0, 0.5, 1.0));
-		if(dom_pattern == "recessive")
-			defineGlobal("h_m2", c(0.0, 0.0, 1.0));
-		if(dom_pattern == "br_dd")
-			defineGlobal("h_m2", c(0.0, 1.0, 1.0));
-		if(dom_pattern == "bd_dr")
-			defineGlobal("h_m2", c(0.0, 0.0, 1.0));
-		if(dom_pattern == "overdominance_1")
-			defineGlobal("h_m2", c(0.0, 1.0, 0.0));
-		if(dom_pattern == "overdominance_2")
-			defineGlobal("h_m2", c(0.0, 1.0, 0.8));
-		if(dom_pattern == "overdominance_3")
-			defineGlobal("h_m2", c(0.0, 1.0, 0.5)); 
-		if(dom_pattern == "underdominance_1")
-			defineGlobal("h_m2", c(0.0, -0.5, 1.0)); 
-		if(dom_pattern == "underdominance_2")
-			defineGlobal("h_m2", c(0.0, -1.0, 1.0)); 
-		//n = sum(individual.genomes.containsMutations(mut));
-	}
-	else
-	{
-		if(dom_pattern == "additive")
-			defineGlobal("h_m2", c(0.0, 0.25, 0.5, 0.75, 1.0));
-		if(dom_pattern == "recessive")
-			defineGlobal("h_m2", c(0.0, 0.0, 0.0, 0.0, 1.0));
-		if(dom_pattern == "duplex")
-			defineGlobal("h_m2", c(0.0, 0.0, 0.0, 1.0, 1.0));
-		if(dom_pattern == "br_dd")
+        defineGlobal("h_m2", h_m1);        
+		if(dom_pattern == "br_dd"){
+			defineGlobal("h_m1", c(0.0, 0.0, 0.0, 0.0, 1.0));
 			defineGlobal("h_m2", c(0.0, 1.0, 1.0, 1.0, 1.0));
-		if(dom_pattern == "bd_dr")
+        }
+		if(dom_pattern == "bd_dr"){
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 1.0));
 			defineGlobal("h_m2", c(0.0, 0.0, 0.0, 0.0, 1.0));
-		if(dom_pattern == "overdominance_1")
-			defineGlobal("h_m2", c(0.0, 1.0, 1.0, 1.0, 0.0));
-		if(dom_pattern == "overdominance_2")
-			defineGlobal("h_m2", c(0.0, 1.0, 1.0, 1.0, 0.8));
-		if(dom_pattern == "overdominance_3")
-			defineGlobal("h_m2", c(0.0, 1.0, 1.0, 1.0, 0.5));
-		if(dom_pattern == "underdominance_1")
-			defineGlobal("h_m2", c(0.0, -0.5, -0.5, -0.5, 1.0));
-		if(dom_pattern == "underdominance_2")
-			defineGlobal("h_m2", c(0.0, -1.0, -1.0, -1.0, 1.0)); 
+        }
 	}
-
 
 }
 
@@ -266,6 +227,10 @@ fitnessEffect()
 	print(inheritance);
 	print(dom_pattern);
 	print("k: " + K +  " r: " + r + " m: " + mig_rate);
+    print("h_m1");
+    print(h_m1);
+    print("h_m2");
+    print(h_m2);
 	//first deme holds extra chromosomes of every individual. individuals don't migrate from or into here
 	sim.addSubpop(1, K*5);
 
