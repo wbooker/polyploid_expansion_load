@@ -1,19 +1,20 @@
 initialize()
 {
-    setSeed(30780470494173);
-	defineGlobal("inheritance", "diploid");
-	defineGlobal("dom_pattern", "additive");
+    //setSeed(30780470494173);
+	//defineGlobal("inheritance", "diploid");
+	//defineGlobal("dom_pattern", "additive");
 
 	//set population parameters
-	defineConstant("K", 100); // carrying-capacity density
-	defineConstant("mig_rate", 0.05); //mig rate
-	defineConstant("r", log(2)); //growth rate
-	defineConstant("u_del", 2.5e-11); // deleterious mutation_rate
-	defineConstant("u_ben", 2.5e-12); // beneficial mutation_rate
-	defineConstant("u", 2.5e-11); // deleterious mutation_rate	
-	defineConstant("b_s", 0.005); // beneficial selection coefficient
-	defineConstant("d_s", -0.005); // deleterious selection coefficient
-	defineConstant("g_size", 999999999); // genome size
+	//defineConstant("K", 100); // carrying-capacity density
+	//defineConstant("mig_rate", 0.05); //mig rate
+	//defineConstant("r", log(2)); //growth rate
+	//defineConstant("u_del", 2.5e-11); // deleterious mutation_rate
+	//defineConstant("u_ben", 2.5e-12); // beneficial mutation_rate
+	//defineConstant("u", 2.5e-11); // deleterious mutation_rate	
+	//defineConstant("b_s", 0.005); // beneficial selection coefficient
+	//defineConstant("d_s", -0.005); // deleterious selection coefficient
+	//defineConstant("g_size", 999999999); // genome size
+
 	defineConstant("start_exp_tick", 2501); //make sure to change the 2 tick events triggered here if this changes too
 
 	//set as nonWF model
@@ -52,7 +53,7 @@ initialize()
 
 	defineGlobal("c_tag", 0);
 	defineGlobal("previous_deme", 0);
-	
+	source("src/model_functions.slim");
 
 	// define heterozygote coefficients depending on inheritance and dominance pattern, if not DFE
 	
@@ -110,37 +111,6 @@ initialize()
 	}
 
 }
-
-function(float)calc_max_PHS(lifso<Subpopulation> x)
-{
-	max_phs = 0;
-	
-	for(ind in x.individuals){
-		freqs = ind.genomes.mutationFrequenciesInGenomes(NULL);
-		phs = size(which(freqs<1.0 & freqs>0.0)) / size(freqs);
-		if(phs > max_phs)
-			max_phs = phs;
-	}
-	return asFloat(max_phs);	
-}
-
-function (float)variance(float x)
-{
-	vars = 0;
-	if(isNULL(x)){
-		return NULL;
-	}
-	else{
-		mean_x = mean(x);
-		for(i in x){
-			if(!isNULL(i)){
-				vars = vars + (i-mean_x)^2;
-			}
-		}
-	}
-		return asFloat(vars/size(x));
-}
-
 
 mutation(m1)
 {
@@ -442,113 +412,12 @@ reproduction()
 
 2501:10001 late()
 {
-	output_ticks = seq(from=2501,to=200001,by=1);
-	if(match(community.tick, output_ticks) >= 0){
-        defineGlobal("current_deme", (size(sim.subpopulations)-1));
-        while(isNULL(mean(sim.subpopulations[current_deme].cachedFitness(NULL)))){
-            defineGlobal("current_deme", (current_deme-1));
-        }
-    speed = (current_deme - previous_deme) / 10;
-    defineGlobal("previous_deme", current_deme);
-    fitness_start = mean(sim.subpopulations[1].cachedFitness(NULL));
-    fitness_mid = mean(sim.subpopulations[round((current_deme)/2)].cachedFitness(NULL));
-    fitness_edge = mean(sim.subpopulations[current_deme].cachedFitness(NULL));
 
-		//log output
-		if(community.tick == 2501){
-			defineGlobal("fitness_scalar", mean(sim.subpopulations[current_deme-1].cachedFitness(NULL)));
-			outDir = paste0(c("output/","dip","_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u-",u,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"/"));
-			createDirectory(outDir);
-			if(isNULL(readFile(paste0(outDir,"trackFile.txt")))){
-				writeFile(paste0(outDir,"trackFile.txt"), "0", append = F);
-				curr_rep = 0;
-			}
-			if(!isNULL(readFile(paste0(outDir,"trackFile.txt")))){
-				trackFile = readFile(paste0(outDir,"trackFile.txt"));
-				curr_rep = asInteger(trackFile[0])+1;
-				writeFile(paste0(outDir,"trackFile.txt"), asString(curr_rep), append = F);
-			}
-			outfile = paste0(c(outDir,curr_rep,"_log.csv"));			
-			log = community.createLogFile(outfile, logInterval=50);
- 			log.addCycle(); 
-			log.addCustomColumn("start_fitness", "mean(sim.subpopulations[1].cachedFitness(NULL));");
-			log.addCustomColumn("mid_fitness", "mean(sim.subpopulations[round((current_deme-1)/2)].cachedFitness(NULL));");
-			log.addCustomColumn("edge_fitness", "mean(sim.subpopulations[current_deme].cachedFitness(NULL));");
-			log.addCustomColumn("current_deme", "current_deme-1;"); //need to subtract 1 here so we don't count the first population holding all the extra chromosomes
-			
-			// intitialize log  for fitnesses of each subpop
-			defineGlobal("mean_fitness_file", paste0(c(outDir,curr_rep,"_meanFitness.csv")));
-			writeFile(mean_fitness_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-			defineGlobal("var_fitness_file", paste0(c(outDir,curr_rep,"_varFitness.csv")));
-			writeFile(var_fitness_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-			defineGlobal("mean_mutations_file", paste0(c(outDir,curr_rep,"_meanMutations.csv")));
-			writeFile(mean_mutations_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-			defineGlobal("fixed_mutations_file", paste0(c(outDir,curr_rep,"_fixedMutations.csv")));
-			writeFile(fixed_mutations_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-			defineGlobal("max_phs_file", paste0(c(outDir,curr_rep,"_maxPhs.csv")));
-			writeFile(max_phs_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-			defineGlobal("pop_size_file", paste0(c(outDir,curr_rep,"_popSize.csv")));
-			writeFile(pop_size_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+	outDir_pre = paste0(c("output/new_fit_calc_4_4_2023/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
+	
+	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
 
-		}
-		//update fitness file
-		sub_fitnesses_mean = community.tick-2501;
-		sub_fitnesses_var = community.tick-2501;
-		sub_mutations_mean = community.tick-2501;
-		sub_mutations_fixed = community.tick-2501;
-		sub_max_phs = community.tick-2501;
-		sub_pop_size = community.tick-2501;
+	if(match(community.tick, output_ticks) >= 0)
+		source("src/output_reg.slim");
 
-
-		for (i in 2:size(sim.subpopulations)){
-			temp_mean_fitness = mean(sim.subpopulations[i-1].cachedFitness(NULL));
-			temp_var_fitness = variance(sim.subpopulations[i-1].cachedFitness(NULL));
-			//temp_mean_mutations = size(which(get_mutation_freqs(sim.subpopulations[i-1]) > 0))/size(sim.subpopulations[i-1].individuals);
-			//temp_fixed_mutations = size(which(get_mutation_freqs(sim.subpopulations[i-1])==1.0));
-			temp_mean_mutations = mean(sim.subpopulations[i-1].individuals.countOfMutationsOfType(m1));
-			temp_fixed_mutations = size(which(sim.mutationFrequencies(i,NULL)==1.0));
-			//pop_phs = calc_all_PHS_avg(sim.subpopulations[1:(size(sim.subpopulations)-1)]);
-			temp_max_phs = calc_max_PHS(sim.subpopulations[i-1]);
-			temp_pop_size = size(sim.subpopulations[i-1].individuals);
-			
-			if(isNULL(temp_mean_fitness)){
-				sub_fitnesses_mean = c(sub_fitnesses_mean, 0);
-				sub_fitnesses_var = c(sub_fitnesses_var, 0);
-				sub_mutations_mean = c(sub_mutations_mean, 0);
-				sub_mutations_fixed = c(sub_mutations_fixed, 0);
-				sub_max_phs = c(sub_max_phs, 0);
-				sub_pop_size = c (sub_pop_size, 0);
-
-			}
-			else{
-				sub_fitnesses_mean = c(sub_fitnesses_mean, (temp_mean_fitness/fitness_scalar));
-				sub_fitnesses_var = c(sub_fitnesses_var, temp_var_fitness);
-				sub_mutations_mean = c(sub_mutations_mean, temp_mean_mutations);
-				sub_mutations_fixed = c(sub_mutations_fixed, temp_fixed_mutations);
-				sub_max_phs = c(sub_max_phs, temp_max_phs);
-				sub_pop_size = c(sub_pop_size, temp_pop_size);
-
-
-			}
-		}
-		extra_pops = rep(0, (2000-size(sim.subpopulations)));
-		mean_fitness_line = c(sub_fitnesses_mean, extra_pops);
-		var_fitness_line = c(sub_fitnesses_var, extra_pops);
-		mean_mutations_line = c(sub_mutations_mean, extra_pops);
-		fixed_mutations_line = c(sub_mutations_fixed, extra_pops);
-		max_phs_line = c(sub_max_phs, extra_pops);
-		pop_size_line = c(sub_pop_size, extra_pops);
-
-
-		writeFile(mean_fitness_file, paste(mean_fitness_line, sep=","), append = T);
-		writeFile(var_fitness_file, paste(var_fitness_line, sep=","), append = T);
-		writeFile(mean_mutations_file, paste(mean_mutations_line, sep=","), append = T);
-		writeFile(fixed_mutations_file, paste(fixed_mutations_line, sep=","), append = T);
-		writeFile(max_phs_file, paste(max_phs_line, sep=","), append = T);
-		writeFile(pop_size_file, paste(pop_size_line, sep=","), append = T);
-
-
-		//print to std out
-		print("tick: " + community.tick + " time: " + time() + " start: " + fitness_start + " mid: " + fitness_mid + " edge: " + fitness_edge + " demes: " + current_deme + " speed: " + speed);
-		}
 }

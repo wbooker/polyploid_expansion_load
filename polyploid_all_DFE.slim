@@ -1,5 +1,6 @@
 initialize()
 {
+    //setSeed(30780470494173);
 	//set inheritance
 	//defineGlobal("inheritance", "auto");
 	//defineGlobal("dom_pattern", "DFE");
@@ -25,6 +26,8 @@ initialize()
 
 	//set mutation rate
 	initializeMutationRate(u_t);
+	defineConstant("rho", u_t); // recombination_rate
+
 	
 
 	//beneficial
@@ -46,7 +49,7 @@ initialize()
 	initializeGenomicElement(g1, 0, g_size);
 	initializeRecombinationRate(rho);
 
-	defineConstant("start_exp_tick", 10001); //make sure to change the 2 tick events triggered here if this changes too
+	defineConstant("start_exp_tick", 2501); //make sure to change the 2 tick events triggered here if this changes too
 
 	defineGlobal("c_tag", 0);
 	defineGlobal("previous_deme", 0);
@@ -400,7 +403,7 @@ reproduction()
 	self.active = 0;
 }
 
-10001:20001 late()
+2501:10001 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
@@ -436,7 +439,7 @@ reproduction()
 				stop("late(): error for individual " + ind.index);
 	}
 }
-10001:20001 late()
+2501:10001 late()
 {
 
 	outDir_pre = paste0(c("output/new_fit_calc_4_4_2023/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
