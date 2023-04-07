@@ -403,7 +403,7 @@ reproduction()
 	self.active = 0;
 }
 
-2501:10001 late()
+2501:20001 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
@@ -439,7 +439,6 @@ reproduction()
 				stop("late(): error for individual " + ind.index);
 	}
 }
-
 
 2501:10001 late()
 {
