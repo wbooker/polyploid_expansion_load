@@ -295,6 +295,8 @@ early(){
 }
 
 
+//open up other populations after 10k generations
+
 early()
 {
 	// parents die; offspring survive proportional to fitness (Generations discrete and non-overlapping)
@@ -323,7 +325,7 @@ early()
 						if(i==2)
 							dest = i;
 						if(i==6){
-							if(community.tick < 2501)
+							if(community.tick < start_exp_tick)
 								dest = i-2;
 						}
 						sim.subpopulations[i - 1].individuals.setValue("mig",1);
@@ -335,6 +337,7 @@ early()
 		}
 	}
 }
+
 
 //set reproduction
 reproduction()
