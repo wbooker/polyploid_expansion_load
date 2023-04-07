@@ -253,14 +253,7 @@ fitnessEffect()
 }
 
 
-
-survival(p1) {
-// since p1 has fitness of 1 for calc purposes, we need to kill them if age is greater than 1
- if (individual.age == 0)
- 	return T;
- return NULL;
-}
-
+//remove mutations from 1 genome in each diploid population (reservoir and local) to make it effectively diploid if diploid inheritance
 early() {
 	if(inheritance == "diploid")
 	{
@@ -268,6 +261,39 @@ early() {
 		sim.subpopulations[0].individuals.genome1.removeMutations();
 	}
 }
+
+
+survival(p1) {
+// since p1 has fitness of 1 for calc purposes, we need to kill them if age is greater than 1
+
+ if (individual.age == 0)
+ 	return T;
+ return NULL;
+}
+
+
+// need to set tags for new individuals after selection induced mortality
+early(){
+
+	inds = sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	inds.tag = tag;
+}
+
+2: first() {
+
+	inds = sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	inds.tag = tag;
+}
+
+2: late() {
+
+	inds = sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	inds.tag = tag;
+}
+
 
 early()
 {
@@ -379,29 +405,6 @@ reproduction()
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
 	}
-}
-
-
-// need to set tags for new individuals after selection induced mortality
-2: first(){
-
-	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
-	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
-	inds.tag = tag;
-}
-
-early(){
-
-	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
-	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
-	inds.tag = tag;
-}
-
-2: late() {
-
-	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
-	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
-	inds.tag = tag;
 }
 
 //do a quick check to make sure tags are right every 100 gens
