@@ -24,20 +24,19 @@ initialize()
 	//set mutation rate, u_t is rate with all mutations
 	if(b_s > 0)
 		defineGlobal("u_t", (u_del + (2*u_dip) + u_ben));
+		defineGlobal("rho", (u_del+u_ben));
 	else
 		defineGlobal("u_t", (u_del + (2*u_dip)));
+		defineGlobal("rho", (u_del));
 
 	//
 	initializeMutationRate(u_t);
 	
 	//beneficial
-	initializeMutationType("m1", 0.5, "f", b_s);
+	initializeMutationType("m1", 0.5, "f", 0.0);
 
 	//deleterious
-	if(dom_pattern == "DFE")
-		initializeMutationType("m2", 0.5, "g", -0.001472,0.16);
-	else
-		initializeMutationType("m2", 0.5, "f", d_s);
+	initializeMutationType("m2", 0.5, "f", 0.0);
 
 	initializeMutationType("m3", 0.5, "f", 0.0);
 	m3.color = "cornflowerblue"; 
@@ -51,7 +50,7 @@ initialize()
 	m4.convertToSubstitution = F;
 
 	if(b_s > 0)
-		initializeGenomicElementType("g1", c(m1, m2, m3, m4), c((u_ben/u_t),(u_del/u_t),(u_dip/u_t),(u_dip/u_t))); //need to fix this to deal with proportions of beneficial, but leaving it for now
+		initializeGenomicElementType("g1", c(m1, m2, m3, m4), c((u_ben/u_t),(u_del/u_t),(u_dip/u_t),(u_dip/u_t)));
 	else
 		initializeGenomicElementType("g1", c(m2,m3,m4), c((u_del/u_t),(u_dip/u_t),(u_dip/u_t)));
 	
@@ -114,40 +113,43 @@ mutation(m1)
 {
 	mut.setValue("exp_mutation_5", 0);
 	mut.setValue("exp_mutation_1", 0);
-	if(mut.originTick >= 2501){
+	if(mut.originTick >= start_exp_tick){
 		if(parent.getValue("pop") >= (size(sim.subpopulations)-4))
 			mut.setValue("exp_mutation_5", 1);
 		if(parent.getValue("pop") >= size(sim.subpopulations)-1)
 			mut.setValue("exp_mutation_1", 1);
 	}
 
+	//DFE currently doesn't do anything with beneficial alleles
 	if(dom_pattern=="DFE"){
-		mut.setValue("dom", calc_h_from_s(mut.selectionCoeff, 0.978, 50328));
-		mut.setValue("h_m",get_tetraploid_h_vector(1-mut.getValue("dom")));
+		mut.setValue("s", 0.000);
+		mut.setValue("h_m",h_m1);
+		/*
+		if(inheritance=="diploid")
+		{
+			mut.setValue("dom", calc_h_from_s(mut.selectionCoeff, 0.978, 50328));
+			mut.setValue("h_m",c(0,mut.getValue("dom"),1.0));
+		}
+		else
+		{
+			mut.setValue("dom", calc_h_from_s(mut.selectionCoeff, 0.978, 50328));
+			mut.setValue("h_m",get_tetraploid_h_vector(1-mut.getValue("dom")));
+		}
+		*/
 	}
 	else{
+		mut.setValue("s", b_s);
 		mut.setValue("h_m",h_m1);
 	}
 	return T;
 
 }
 
-mutationEffect(m1)
-{
-	if(individual.subpopulation == p1){
-		return 1.0;
-	}
-	other = sim.subpopulations[0].individuals[individual.tag];
-	n = sum(individual.genomes.containsMutations(mut)) + sum(other.genomes.containsMutations(mut));
-	h_m = mut.getValue("h_m");
-	return 1 + h_m[n] * mut.selectionCoeff;
-}
-
 mutation(m2)
 {
 	mut.setValue("exp_mutation_5", 0);
 	mut.setValue("exp_mutation_1", 0);
-	if(mut.originTick >= 2501){
+	if(mut.originTick >= start_exp_tick){
 		if(parent.getValue("pop") >= (size(sim.subpopulations)-4))
 			mut.setValue("exp_mutation_5", 1);
 		if(parent.getValue("pop") >= size(sim.subpopulations)-1)
@@ -155,24 +157,39 @@ mutation(m2)
 	}
 
 	if(dom_pattern=="DFE"){
-		mut.setValue("dom", calc_h_from_s(mut.selectionCoeff, 0.978, 50328));
-		mut.setValue("h_m",get_tetraploid_h_vector(1-mut.getValue("dom")));
+		mut_s = rgamma(1,-0.001472,0.16);
+		mut.setValue("s", mut_s);
+		if(inheritance=="diploid")
+		{
+			mut.setValue("dom", calc_h_from_s(mut_s, 0.978, 50328));
+			mut.setValue("h_m",c(0,mut.getValue("dom"),1.0));
+		}
+		else
+		{
+			mut.setValue("dom", calc_h_from_s(mut_s, 0.978, 50328));
+			mut.setValue("h_m",get_tetraploid_h_vector(1-mut.getValue("dom")));
+		}
 	}
 	else{
+		mut.setValue("s", d_s);
 		mut.setValue("h_m",h_m2);
 	}
 	return T;
 }
-
-mutationEffect(m2)
+fitnessEffect()
 {
-	if(individual.subpopulation == p1){
+	if(individual.subpopulation == p1)
 		return 1.0;
-	}
-	other = sim.subpopulations[0].individuals[individual.tag];
-	n = sum(individual.genomes.containsMutations(mut)) + sum(other.genomes.containsMutations(mut));
-	h_m = mut.getValue("h_m");
-	return 1 + h_m[n] * mut.selectionCoeff;
+	
+	genomes = c(individual.genomes,sim.subpopulations[0].individuals[individual.tag].genomes);
+	mutations_ben = unique(genomes.mutationsOfType(m1));
+	mutations_del = unique(genomes.mutationsOfType(m2));
+	mutations = c(mutations_del,mutations_ben);
+	if(size(mutations)==0)
+		return 1.0;
+	mut_counts = genomes.mutationCountsInGenomes(mutations);
+	fit_vector = sapply(seqAlong(mutations), "mut = mutations[applyValue]; count = mut_counts[applyValue]; 1 + mut.getValue('h_m')[count] * mut.getValue('s');");
+	return product(fit_vector);
 }
 
 mutation(m4)

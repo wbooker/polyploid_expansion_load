@@ -113,16 +113,22 @@ function (float)calc_fitness_exp_load(lifso<Subpopulation> x)
 			if(exp_mutations_1_flag == 1)
 			{
 				exp_counts_1 = genomes.mutationCountsInGenomes(exp_mutations_1);
- 				s_exp_1 = rep(1,size(exp_mutations_1)) + (exp_mutations_1[0:(size(exp_mutations_1)-1)].getValue("h_m")[exp_counts_1[0:(size(exp_mutations_1)-1)]] * exp_mutations_1[0:(size(exp_mutations_1)-1)].getValue("s"));
+ 				//s_exp_1 = rep(1,size(exp_mutations_1)) + (exp_mutations_1[0:(size(exp_mutations_1)-1)].getValue("h_m")[exp_counts_1[0:(size(exp_mutations_1)-1)]] * exp_mutations_1[0:(size(exp_mutations_1)-1)].getValue("s"));
+				fit_vector = sapply(seqAlong(exp_mutations_1), "mut = exp_mutations_1[applyValue]; count = exp_counts_1[applyValue]; 1 + mut.getValue('h_m')[count] * mut.getValue('s');");
+				s_exp_1 = product(fit_vector);
 			}
 			if(exp_mutations_5_flag == 1)
 			{
 				exp_counts_5 = genomes.mutationCountsInGenomes(exp_mutations_5);
- 				s_exp_5 = rep(1,size(exp_mutations_5)) + (exp_mutations_5[0:(size(exp_mutations_5)-1)].getValue("h_m")[exp_counts_5[0:(size(exp_mutations_5)-1)]] * exp_mutations_5[0:(size(exp_mutations_5)-1)].getValue("s"));
+ 				//s_exp_5 = rep(1,size(exp_mutations_5)) + (exp_mutations_5[0:(size(exp_mutations_5)-1)].getValue("h_m")[exp_counts_5[0:(size(exp_mutations_5)-1)]] * exp_mutations_5[0:(size(exp_mutations_5)-1)].getValue("s"));
+				fit_vector = sapply(seqAlong(exp_mutations_5), "mut = exp_mutations_5[applyValue]; count = exp_counts_5[applyValue]; 1 + mut.getValue('h_m')[count] * mut.getValue('s');");
+				s_exp_5 = product(fit_vector);
 			}
 			
 			all_counts = genomes.mutationCountsInGenomes(mutations);
- 			s_all = rep(1,size(mutations)) + (mutations[0:(size(mutations)-1)].getValue("h_m")[all_counts[0:(size(mutations)-1)]] * mutations[0:(size(mutations)-1)].getValue("s"));
+ 			//s_all = rep(1,size(mutations)) + (mutations[0:(size(mutations)-1)].getValue("h_m")[all_counts[0:(size(mutations)-1)]] * mutations[0:(size(mutations)-1)].getValue("s"));
+			fit_vector = sapply(seqAlong(mutations), "mut = mutations[applyValue]; count = all_counts[applyValue]; 1 + mut.getValue('h_m')[count] * mut.getValue('s');");
+			s_all = product(fit_vector);
 			
 			if(ind_flag == 0)
 			{
