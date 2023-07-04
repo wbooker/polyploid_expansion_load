@@ -45,6 +45,10 @@ function (float)get_sfs(lifso x)
 }
 
 
+function(float)get_pairing_efficiency(lifso x)
+{
+	return asFloat(8/(0.08 + 80*exp((78 - x))));
+}
 
 function (float)get_selection_frequency_spectrum(lifso x)
 {
@@ -58,6 +62,66 @@ function (float)get_selection_frequency_spectrum(lifso x)
 	mutations = c(mutations_del,mutations_ben);
 	s = mutations.getValue("s");
 	return s;
+}
+
+function (float)get_h_frequency_spectrum(lifso x)
+{
+	//gets selection coefficient frequency spectrum of the focal clade and the two clades surrounding
+	tags = sim.subpopulations[(x-2):(x+2)].individuals.tag;
+	genomes = c(sim.subpopulations[(x-2):(x+2)].genomes,sim.subpopulations[0].individuals[tags].genomes);
+	if(size(genomes)<1)
+		return NULL;
+	mutations_ben = unique(genomes.mutationsOfType(m1));
+	mutations_del = unique(genomes.mutationsOfType(m2));
+	mutations = c(mutations_del,mutations_ben);
+	h = mutations.getValue("dom");
+	return h;
+}
+
+
+function (integer)hartigan_dip_test_list(lifso<Subpopulation> x){
+	n = size(x.individuals);
+
+	if(n <= 5){
+		return NULL;
+	}
+	if(n < 20)
+		n_sampled = n;
+	else
+		n_sampled = 20;
+
+	// create sorted list of mutational difference comparisons
+
+	inds = sample(x.individuals, n_sampled, replace=F);
+	other = sim.subpopulations[0].individuals[inds.tag];
+	genomes = c(inds.genomes, other.genomes);
+	dip_muts_1 = unique(genomes.mutationsOfType(m3));
+	for(i in 0:(size(genomes)-1)){
+
+		//if(i == 0){
+	//		samples = seq(1,(size(genomes)-1));
+	//	}
+	//	else{
+	//		samples =c(seq(0,i-1),seq(i+1,(size(genomes)-1)));
+	//	}
+		samples = seq(0,(size(genomes)-1))[which(seq(0,(size(genomes)-1))!=i)];
+		
+		comp_genomes = genomes[sample(samples,20,replace=F)];
+		for(j in 0:(size(comp_genomes)-1)){
+			if(i == 0){
+				if(j == 0){
+					diff_vector = size(which(genomes[i].mutationCountsInGenomes(dip_muts_1) != comp_genomes[j].mutationCountsInGenomes(dip_muts_1)));
+				}
+				else{
+					diff_vector = c(diff_vector, size(which(genomes[i].mutationCountsInGenomes(dip_muts_1) != comp_genomes[j].mutationCountsInGenomes(dip_muts_1))));
+				}
+			}
+			else{
+				diff_vector = c(diff_vector, size(which(genomes[i].mutationCountsInGenomes(dip_muts_1) != comp_genomes[j].mutationCountsInGenomes(dip_muts_1))));
+			}
+		}
+	}
+	 return diff_vector;
 }
 
 

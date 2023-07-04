@@ -37,7 +37,7 @@ if(community.tick == start_exp_tick){
     log.addCustomColumn("edge_het", "calc_het(current_deme+1);");
     log.addCustomColumn("current_deme", "current_deme;"); //need to subtract 1 here so we don't count the first population holding all the extra chromosomes
     
-    // intitialize log  for fitnesses of each subpop
+    // intitialize log for calcs of each subpop
     defineGlobal("mean_fitness_file", paste0(c(outDir,curr_rep,"_meanFitnessScaled.csv")));
     writeFile(mean_fitness_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
     defineGlobal("var_fitness_file", paste0(c(outDir,curr_rep,"_varFitness.csv")));
@@ -73,14 +73,16 @@ if(community.tick == start_exp_tick){
     writeFile(exp_load_1_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
     defineGlobal("exp_load_5_file", paste0(c(outDir,curr_rep,"_exp_load_prop_5.csv")));
     writeFile(exp_load_5_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-
-    defineGlobal("core_site_frequencies_file", paste0(c(outDir,curr_rep,"_coreSiteFrequencies.csv")));
-    defineGlobal("core_selection_frequencies_file", paste0(c(outDir,curr_rep,"_coreSelectionFrequencies.csv")));
-    defineGlobal("middle_site_frequencies_file", paste0(c(outDir,curr_rep,"_midSiteFrequencies.csv")));
-    defineGlobal("middle_selection_frequencies_file", paste0(c(outDir,curr_rep,"_midSelectionFrequencies.csv")));
-    defineGlobal("edge_site_frequencies_file", paste0(c(outDir,curr_rep,"_edgeSiteFrequencies.csv")));
-    defineGlobal("edge_selection_frequencies_file", paste0(c(outDir,curr_rep,"_edgeSelectionFrequencies.csv")));
     defineGlobal("num_mutations_file", paste0(c(outDir,curr_rep,"_numMutations.csv")));
+    defineGlobal("core_selection_frequencies_file", paste0(c(outDir,curr_rep,"_coreSelectionFrequencies.csv")));
+    defineGlobal("core_het_frequencies_file", paste0(c(outDir,curr_rep,"_coreHetFrequencies.csv")));
+    defineGlobal("middle_selection_frequencies_file", paste0(c(outDir,curr_rep,"_midSelectionFrequencies.csv")));
+    defineGlobal("middle_het_frequencies_file", paste0(c(outDir,curr_rep,"_midHetFrequencies.csv")));
+    defineGlobal("edge_selection_frequencies_file", paste0(c(outDir,curr_rep,"_edgeSelectionFrequencies.csv")));
+    defineGlobal("edge_het_frequencies_file", paste0(c(outDir,curr_rep,"_edgeHetFrequencies.csv")));
+    defineGlobal("core_site_frequencies_file", paste0(c(outDir,curr_rep,"_coreSiteFrequencies.csv")));
+    defineGlobal("middle_site_frequencies_file", paste0(c(outDir,curr_rep,"_midSiteFrequencies.csv")));
+    defineGlobal("edge_site_frequencies_file", paste0(c(outDir,curr_rep,"_edgeSiteFrequencies.csv")));
 
 }
 
@@ -202,30 +204,50 @@ writeFile(pop_size_file, paste(pop_size_line, sep=","), append = T);
 
 
 //// SFS calcs
+
 sfs_core = get_sfs(3);
-selection_fs_core = get_selection_frequency_spectrum(3);
 if(current_deme > 6){
     sfs_mid = get_sfs(current_deme/2);
-    selection_fs_mid = get_selection_frequency_spectrum(current_deme/2);
     sfs_edge = get_sfs(current_deme-2);
-    selection_fs_edge = get_selection_frequency_spectrum(current_deme-2);
 }
 else{
     sfs_mid = 0.0;
-    selection_fs_mid = 0.0;
     sfs_edge = 0.0;
-    selection_fs_edge = 0.0;
 }
-
 n_mutations = size(sim.mutations);
-
-writeFile(core_site_frequencies_file, paste(c((community.tick-start_exp_tick),sfs_core), sep=","), append = T);
-writeFile(core_selection_frequencies_file, paste(c((community.tick-start_exp_tick),selection_fs_core), sep=","), append = T);
-writeFile(middle_site_frequencies_file, paste(c((community.tick-start_exp_tick),sfs_mid), sep=","), append = T);
-writeFile(middle_selection_frequencies_file, paste(c((community.tick-start_exp_tick),selection_fs_mid), sep=","), append = T);
-writeFile(edge_site_frequencies_file, paste(c((community.tick-start_exp_tick),sfs_edge), sep=","), append = T);
-writeFile(edge_selection_frequencies_file, paste(c((community.tick-start_exp_tick),selection_fs_edge), sep=","), append = T);
 writeFile(num_mutations_file, paste(c((community.tick-start_exp_tick),n_mutations), sep=","), append = T);
+writeFile(core_site_frequencies_file, paste(c((community.tick-start_exp_tick),sfs_core), sep=","), append = T);
+writeFile(middle_site_frequencies_file, paste(c((community.tick-start_exp_tick),sfs_mid), sep=","), append = T);
+writeFile(edge_site_frequencies_file, paste(c((community.tick-start_exp_tick),sfs_edge), sep=","), append = T);
+
+if(dom_pattern == "DFE"){
+
+
+
+    selection_fs_core = get_selection_frequency_spectrum(3);
+    het_fs_core = get_h_frequency_spectrum(3);
+
+    if(current_deme > 6){
+        selection_fs_mid = get_selection_frequency_spectrum(current_deme/2);
+        het_fs_mid = get_h_frequency_spectrum(current_deme/2);
+        selection_fs_edge = get_selection_frequency_spectrum(current_deme-2);
+        het_fs_edge = get_h_frequency_spectrum(current_deme-2);
+    }
+    else{
+        selection_fs_mid = 0.0;
+        het_fs_mid = 0.0;
+        selection_fs_edge = 0.0;
+        het_fs_edge = 0.0;
+    }
+
+
+    writeFile(core_selection_frequencies_file, paste(c((community.tick-start_exp_tick),selection_fs_core), sep=","), append = T);
+    writeFile(core_het_frequencies_file, paste(c((community.tick-start_exp_tick),het_fs_core), sep=","), append = T);
+    writeFile(middle_selection_frequencies_file, paste(c((community.tick-start_exp_tick),selection_fs_mid), sep=","), append = T);
+    writeFile(middle_het_frequencies_file, paste(c((community.tick-start_exp_tick),het_fs_mid), sep=","), append = T);
+    writeFile(edge_selection_frequencies_file, paste(c((community.tick-start_exp_tick),selection_fs_edge), sep=","), append = T);
+    writeFile(edge_het_frequencies_file, paste(c((community.tick-start_exp_tick),het_fs_edge), sep=","), append = T);
+}
 //////////
 
 //print to std out

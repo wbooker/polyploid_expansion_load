@@ -418,22 +418,57 @@ reproduction()
 						//sample recombinant
 						p2_recomb_a = c(0,sample(p2_prob_seq, 1, replace = F));
 						p2_recomb_b = seq(from = 1, to = 3, by = 1)[which(seq(from = 1, to = 3, by = 1) != p2_recomb_a[1])];
-					}					
-					breakpoints1 = sim.chromosome.drawBreakpoints();
-					breakpoints2 = sim.chromosome.drawBreakpoints();
-					offspring = sim.subpopulations[i - 1].addRecombinant(p1_chroms[p1_recomb_a[0]], p1_chroms[p1_recomb_a[1]], breakpoints1, p2_chroms[p2_recomb_a[0]], p2_chroms[p2_recomb_a[1]], breakpoints2);
-					breakpoints1 = sim.chromosome.drawBreakpoints();
-					breakpoints2 = sim.chromosome.drawBreakpoints();
-					other = sim.subpopulations[0].addRecombinant(p1_chroms[p1_recomb_b[0]], p1_chroms[p1_recomb_b[1]], breakpoints1, p2_chroms[p2_recomb_b[0]], p2_chroms[p2_recomb_b[1]], breakpoints2);
-					defineGlobal("c_tag", (c_tag+1));
-					//c_tag = runif(1);
-					offspring.tagF = c_tag; //these aren't getting set for some reason
-					other.tagF = c_tag;
-					offspring.setValue("pop", i);
-					offspring.setValue("dip_index", mean(c(((max(p1_probs)-0.333)/0.666),((max(p2_probs)-0.333)/0.666))));			
-					other.setValue("pop", i);
-					other.setValue("dip_index", "test");
-					offspring.setValue("mig", 0);
+					}
+
+					diffs_1a = size(which(p1_chroms[p1_recomb_a[0]].mutationCountsInGenomes(dip_muts_1) != p1_chroms[p1_recomb_a[1]].mutationCountsInGenomes(dip_muts_1)));
+					diffs_1b = size(which(p1_chroms[p1_recomb_b[0]].mutationCountsInGenomes(dip_muts_1) != p1_chroms[p1_recomb_b[1]].mutationCountsInGenomes(dip_muts_1)));
+					diffs_2a = size(which(p2_chroms[p2_recomb_a[0]].mutationCountsInGenomes(dip_muts_2) != p2_chroms[p2_recomb_a[1]].mutationCountsInGenomes(dip_muts_2)));
+					diffs_2b = size(which(p2_chroms[p2_recomb_b[0]].mutationCountsInGenomes(dip_muts_2) != p2_chroms[p2_recomb_b[1]].mutationCountsInGenomes(dip_muts_2)));
+
+					similarity_1a = size(which(p1_chroms[p1_recomb_a[0]].mutationCountsInGenomes(dip_muts_1) == p1_chroms[p1_recomb_a[1]].mutationCountsInGenomes(dip_muts_1)));
+					similarity_1b = size(which(p1_chroms[p1_recomb_b[0]].mutationCountsInGenomes(dip_muts_1) == p1_chroms[p1_recomb_b[1]].mutationCountsInGenomes(dip_muts_1)));
+					similarity_2a = size(which(p2_chroms[p2_recomb_a[0]].mutationCountsInGenomes(dip_muts_2) == p2_chroms[p2_recomb_a[1]].mutationCountsInGenomes(dip_muts_2)));
+					similarity_2b = size(which(p2_chroms[p2_recomb_b[0]].mutationCountsInGenomes(dip_muts_2) == p2_chroms[p2_recomb_b[1]].mutationCountsInGenomes(dip_muts_2)));
+
+					affinity_1a = similarity_1a / (diffs_1a + similarity_1a) * 100;
+					affinity_1b = similarity_1b / (diffs_1b + similarity_1b) * 100;
+					affinity_2a = similarity_2a / (diffs_2a + similarity_2a) * 100;
+					affinity_2b = similarity_2b / (diffs_2b + similarity_2b) * 100;
+
+					if(size(dip_muts_1) < 1){
+						affinity_1a = 100.0;
+						affinity_1b = 100.0;
+					}
+
+					if(size(dip_muts_2) < 1){
+						affinity_2a = 100.0;
+						affinity_2b = 100.0;
+					}
+
+					fitness_1 = ((8 / (0.08 + 80*exp(78-affinity_1a))) / 100) * ((8 / (0.08 + 80*exp(78-affinity_1b))) / 100) * ((8 / (0.08 + 80*exp(78-affinity_2a))) / 100) * ((8 / (0.08 + 80*exp(78-affinity_2b))) / 100);					
+					print(fitness_1);
+					fitness_0 = 1 - fitness_1;
+					prob_reproduction = c(rep(1, asInteger(round(1000*fitness_1))), rep(0, asInteger(round(1000*fitness_0))));
+
+					if(sample(prob_reproduction, 1, replace = F) == 1)
+					{
+						breakpoints1 = sim.chromosome.drawBreakpoints();
+						breakpoints2 = sim.chromosome.drawBreakpoints();
+						offspring = sim.subpopulations[i - 1].addRecombinant(p1_chroms[p1_recomb_a[0]], p1_chroms[p1_recomb_a[1]], breakpoints1, p2_chroms[p2_recomb_a[0]], p2_chroms[p2_recomb_a[1]], breakpoints2);
+						breakpoints1 = sim.chromosome.drawBreakpoints();
+						breakpoints2 = sim.chromosome.drawBreakpoints();
+						other = sim.subpopulations[0].addRecombinant(p1_chroms[p1_recomb_b[0]], p1_chroms[p1_recomb_b[1]], breakpoints1, p2_chroms[p2_recomb_b[0]], p2_chroms[p2_recomb_b[1]], breakpoints2);
+						defineGlobal("c_tag", (c_tag+1));
+						//c_tag = runif(1);
+						offspring.tagF = c_tag; //these aren't getting set for some reason
+						other.tagF = c_tag;
+						offspring.setValue("pop", i);
+						offspring.setValue("dip_index", mean(c(((max(p2_probs)-(1/3))/(2/3)),((max(p2_probs)-(1/3))/(2/3)))));			
+						other.setValue("pop", i);
+						other.setValue("dip_index", "test");
+						offspring.setValue("mig", 0);
+						offspring.setValue("chrom_fit", fitness_1);
+					}
 				}
 			}
 			if(dip_model == "dom")
@@ -483,7 +518,7 @@ reproduction()
 	self.active = 0;
 }
 
-2501:3501 late()
+2501:10001 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
@@ -534,9 +569,9 @@ early(){
 				stop("late(): error for individual " + ind.index);
 	}
 }
-2501:3501 late()
+2501:10001 late()
 {
-	outDir_pre = paste0(c("output/paper_run/dip/diploidization-",dip_model,"_dipLambda-",dip_lambda,"_remDipMuts-",remove_dip_muts,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_u_dip-",u_dip,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
+	outDir_pre = paste0(c("output/test_pairFit/diploidization-",dip_model,"_dipLambda-",dip_lambda,"_remDipMuts-",remove_dip_muts,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_u_dip-",u_dip,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
 
 	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
 	if(match(community.tick, output_ticks) >= 0)

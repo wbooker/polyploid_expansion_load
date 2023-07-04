@@ -145,7 +145,6 @@ mutation(m1)
 	else{
 		mut.setValue("s", b_s);
 		mut.setValue("h_m",h_m1);
-		mut.setValue("dom",0.0);
 	}
 	return T;
 
@@ -177,11 +176,10 @@ mutation(m2)
 		}
 	}
 	else{
-		//mut_s = rgamma(1,d_s,0.16);
+		//mut_s = rpois(1,d_s);
 		//mut.setValue("s", mut_s);
 		mut.setValue("s", d_s);
 		mut.setValue("h_m",h_m2);
-		mut.setValue("dom",0.0);
 	}
 	return T;
 }
@@ -214,11 +212,11 @@ fitnessEffect()
     	print(h_m2);
 	}
 	//first deme holds extra chromosomes of every individual. individuals don't migrate from or into here
-	sim.addSubpop(1, K*5);
+	sim.addSubpop(1, K*10);
 
 	//initialize next 5 demes at carrying_capacity
 	for (i in 2:6){
-		sim.addSubpop(i, K);
+		sim.addSubpop(i, K*2);
 
 		//create individual tags to keep track of chromosomes
 		for(j in seqLen(sim.subpopulations[i - 1].individualCount)){
@@ -226,8 +224,8 @@ fitnessEffect()
 			//c_tag = runif(1);
 			sim.subpopulations[i - 1].individuals[j].tagF = c_tag;
 			sim.subpopulations[i - 1].individuals[j].setValue("pop", i);
-			sim.subpopulations[0].individuals[j+((i-2)*K)].tagF = c_tag;
-			sim.subpopulations[0].individuals[j+((i-2)*K)].setValue("pop", i);
+			sim.subpopulations[0].individuals[j+((i-2)*K*2)].tagF = c_tag;
+			sim.subpopulations[0].individuals[j+((i-2)*K*2)].setValue("pop", i);
 			//sim.subpopulations[i - 1].individuals[j].tag = c_tag;
 			sim.subpopulations[i - 1].individuals[j].setValue("mig",0);
 		}
@@ -239,6 +237,10 @@ fitnessEffect()
 early() {
 	if(inheritance == "diploid")
 	{
+		sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals.genome2.removeMutations();
+		sim.subpopulations[0].individuals.genome1.removeMutations();
+	}
+	if(community.tick < (start_exp_tick-1)){
 		sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals.genome2.removeMutations();
 		sim.subpopulations[0].individuals.genome1.removeMutations();
 	}
@@ -293,8 +295,11 @@ early()
 	for (i in 2:(size(sim.subpopulations) - 1))
 	{
 		nIndividuals = allPopSizes[i-1];
-		if (nIndividuals > 0){		
+		if (nIndividuals > 0){
 			nMigrants = rpois(1, nIndividuals * mig_rate);
+			if(community.tick < 2501);		
+				nMigrants = rpois(1, nIndividuals * 0.5);
+			print(nMigrants);
 			if (nMigrants >= 1){
 				mig_inds = sim.subpopulations[i - 1].individuals[which(sim.subpopulations[i - 1].individuals.getValue("mig")==0)];
 				if (size(mig_inds) >= 1){
@@ -322,7 +327,97 @@ early()
 
 
 //set reproduction
-reproduction()
+1:2499 reproduction()
+{
+	
+	//logistic growth
+	for (i in 2:size(sim.subpopulations))
+	{
+		N_star = (exp(r) * sim.subpopulations[i - 1].individualCount) / (1 + ((exp(r) - 1) * sim.subpopulations[i - 1].individualCount / (K*2)));
+		if (N_star > 0)
+		{
+			N_prime = rpois(1, N_star);
+			inds = sim.subpopulations[i - 1].individuals;
+			fitness = sim.subpopulations[i - 1].cachedFitness(NULL);
+			parents1 = sample(inds, N_prime, replace=T);
+			parents2 = sample(inds, N_prime, replace=T);
+
+				//first generations population behaves as diploids
+				for (j in seqLen(N_prime))
+				{
+					breakpoints1 = sim.chromosome.drawBreakpoints();
+					breakpoints2 = sim.chromosome.drawBreakpoints();
+					offspring = sim.subpopulations[i - 1].addRecombinant(parents1[j].genome1, sim.subpopulations[0].individuals[parents1[j].tag].genome2, breakpoints1, parents2[j].genome1, sim.subpopulations[0].individuals[parents2[j].tag].genome2, breakpoints2);
+					other = sim.subpopulations[0].addRecombinant(parents1[j].genome1, sim.subpopulations[0].individuals[parents1[j].tag].genome2, breakpoints1, parents2[j].genome1, sim.subpopulations[0].individuals[parents2[j].tag].genome2, breakpoints2);
+					defineGlobal("c_tag", (c_tag+1));
+					//c_tag = runif(1);
+					offspring.tagF = c_tag; //these aren't getting set for some reason
+					other.tagF = c_tag;
+					offspring.setValue("pop", i);				
+					other.setValue("pop", i);
+					offspring.setValue("mig", 0);
+				}
+		}
+	}
+	self.active = 0;
+}
+
+2500 reproduction()
+{
+	//the generation prior to expansion, populations turn into polyploids (if not a diploid model)
+	N_prime = 500;
+	inds = sim.subpopulations[1:5].individuals;
+	parents1 = sample(inds, N_prime, replace=T);
+	parents2 = sample(inds, N_prime, replace=T);
+	i = 2; // starting population to distribute offspring
+	if(inheritance == "diploid")
+	{
+		for (j in seqLen(N_prime))
+		{
+			// determine which population offspring are going to
+			if(j % (N_prime / 5) == 0)
+				i = (j / (N_prime / 5)) + 2;
+		breakpoints1 = sim.chromosome.drawBreakpoints();
+		breakpoints2 = sim.chromosome.drawBreakpoints();
+		offspring = sim.subpopulations[i - 1].addRecombinant(parents1[j].genome1, sim.subpopulations[0].individuals[parents1[j].tag].genome2, breakpoints1, parents2[j].genome1, sim.subpopulations[0].individuals[parents2[j].tag].genome2, breakpoints2);
+		other = sim.subpopulations[0].addRecombinant(parents1[j].genome1, sim.subpopulations[0].individuals[parents1[j].tag].genome2, breakpoints1, parents2[j].genome1, sim.subpopulations[0].individuals[parents2[j].tag].genome2, breakpoints2);
+		defineGlobal("c_tag", (c_tag+1));
+		//c_tag = runif(1);
+		offspring.tagF = c_tag; //these aren't getting set for some reason
+		other.tagF = c_tag;
+		offspring.setValue("pop", i);				
+		other.setValue("pop", i);
+		offspring.setValue("mig", 0);
+		}
+	}
+	else
+	{
+		for (j in seqLen(N_prime))
+		{
+			if(j % (N_prime / 5) == 0)
+				i = (j / (N_prime / 5)) + 2;
+			p1_chroms = c(parents1[j].genome1, sim.subpopulations[0].individuals[parents1[j].tag].genome2);
+			p2_chroms = c(parents2[j].genome1, sim.subpopulations[0].individuals[parents2[j].tag].genome2);
+			breakpoints1 = sim.chromosome.drawBreakpoints();
+			breakpoints2 = sim.chromosome.drawBreakpoints();
+			offspring = sim.subpopulations[i - 1].addRecombinant(p1_chroms[0], p1_chroms[1], breakpoints1, p1_chroms[0], p1_chroms[1], breakpoints2);
+			breakpoints1 = sim.chromosome.drawBreakpoints();
+			breakpoints2 = sim.chromosome.drawBreakpoints();
+			other = sim.subpopulations[0].addRecombinant(p2_chroms[0], p2_chroms[1], breakpoints1, p2_chroms[0], p2_chroms[1], breakpoints2);
+			defineGlobal("c_tag", (c_tag+1));
+			//c_tag = runif(1);
+			offspring.tagF = c_tag; //these aren't getting set for some reason
+			other.tagF = c_tag;
+			offspring.setValue("pop", i);				
+			other.setValue("pop", i);
+			offspring.setValue("mig", 0);
+		}
+	}
+	self.active = 0;
+}
+
+2501:6501 reproduction()
+//during expansion reproduction occurs normally as in other models
 {
 	
 	//logistic growth
@@ -385,7 +480,7 @@ reproduction()
 	self.active = 0;
 }
 
-2501:4501 late()
+2501:6501 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
@@ -422,10 +517,10 @@ reproduction()
 	}
 }
 
-2501:4501 late()
+2501:6501 late()
 {
 
-	outDir_pre = paste0(c("output/paper_run/basic/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
+	outDir_pre = paste0(c("output/test_pois/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
 	
 	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
 
