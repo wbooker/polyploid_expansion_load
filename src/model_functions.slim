@@ -60,6 +60,8 @@ function (float)get_selection_frequency_spectrum(lifso x)
 	mutations_ben = unique(genomes.mutationsOfType(m1));
 	mutations_del = unique(genomes.mutationsOfType(m2));
 	mutations = c(mutations_del,mutations_ben);
+	if(size(mutations)<1)
+		return NULL;
 	s = mutations.getValue("s");
 	return s;
 }
@@ -85,10 +87,10 @@ function (integer)hartigan_dip_test_list(lifso<Subpopulation> x){
 	if(n <= 5){
 		return NULL;
 	}
-	if(n < 20)
+	if(n < 40)
 		n_sampled = n;
 	else
-		n_sampled = 20;
+		n_sampled = 40;
 
 	// create sorted list of mutational difference comparisons
 

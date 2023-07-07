@@ -247,9 +247,9 @@ writeFile(dip_fitness_ratio_file_100, paste(dip_fit_ratio_100_line, sep=","), ap
 writeFile(dip_fitness_ratio_file_50, paste(dip_fit_ratio_50_line, sep=","), append = T);
 
 
-core_dip_test_line = hartigan_dip_test_list(sim.subpopulations[1:3]);
-mid_dip_test_line = hartigan_dip_test_list(sim.subpopulations[round(current_deme/2)-1:round(current_deme/2)+1]);
-edge_dip_test_line = hartigan_dip_test_list(sim.subpopulations[current_deme-3:current_deme]);
+core_dip_test_line = hartigan_dip_test_list(sim.subpopulations[1]);
+mid_dip_test_line = hartigan_dip_test_list(sim.subpopulations[round(current_deme/2)]);
+edge_dip_test_line = hartigan_dip_test_list(sim.subpopulations[current_deme-3]);
 writeFile(core_diptest_file, paste(c((community.tick-start_exp_tick),core_dip_test_line), sep=","), append = T);
 writeFile(middle_diptest_file, paste(c((community.tick-start_exp_tick),mid_dip_test_line), sep=","), append = T);
 writeFile(edge_diptest_file, paste(c((community.tick-start_exp_tick),edge_dip_test_line), sep=","), append = T);

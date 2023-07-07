@@ -101,12 +101,13 @@
 #    done
 #done
 
-DIP_MODEL=(1 2)
-DOMINANCE=("recessive")
+DIP_LAMBDA=(100)
+DOMINANCE=("DFE")
 K=(100)
-d_s=(-0.005 -0.01 -0.0025)
+d_s=(-0.005)
+DIP_U=(0.001 0.002)
 D_MUT=(1)
-for i in "${DIP_MODEL[@]}"
+for i in "${DIP_LAMBDA[@]}"
 do
     for d in "${DOMINANCE[@]}"
     do
@@ -116,9 +117,12 @@ do
             do
                 for m in "${D_MUT[@]}"
                 do
-                    for j in {1..75}
+                    for u in "${DIP_U[@]}"
                     do
-                   sbatch slurm/run_dip_slim.sh dom $i $d $k 0.000 $s $m
+                        for j in {1..25}
+                        do
+                        sbatch slurm/run_dip_slim.sh diff $i $d $k 0.000 $s $u $m
+                        done
                     done
                 done
             done
@@ -140,7 +144,7 @@ done
 ##            for s in "${d_s[@]}"
  #           do
  ##               for m in "${D_MUT[@]}"
-                do
+##                do
 #                    for j in {1..15}
 #                    do
 #                    sbatch slurm/run_dip_slim.sh diff $i $d $k 0.000 $s $m

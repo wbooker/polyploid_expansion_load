@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --partition=dschridelab
+#SBATCH --partition=general
 #SBATCH -N 1
 #SBATCH -n 1 
 #SBATCH --time=120:00:00
