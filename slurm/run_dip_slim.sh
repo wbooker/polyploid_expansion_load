@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --partition=general
+#SBATCH --partition=dschridelab
 #SBATCH -N 1
 #SBATCH -n 1 
 #SBATCH --time=120:00:00
@@ -20,4 +20,4 @@ D_U=$7
 D_MUT=$8 ##remove dip mutations prior to expansion (0 is don't remove)
 
 
-slim -d g_size=999999 -d K=$K -d "r=log(2)" -d dip_lambda=$DIP_LAMBDA -d remove_dip_muts=$D_MUT -d mig_rate=0.05 -d u_del=2.5e-8 -d u_ben=2.5e-9 -d u_dip=$D_U -d b_s=$BS -d d_s=$DS -d "dom_pattern='$DOMINANCE'" -d "dip_model='$DIP_MODEL'" polyploid_all_diploidization_pairingFit_setLoci.slim 
+slim -d g_size=999999 -d K=$K -d "r=log(2)" -d dip_lambda=$DIP_LAMBDA -d remove_dip_muts=$D_MUT -d mig_rate=0.05 -d u_del=2.5e-8 -d u_ben=2.5e-9 -d u_dip=$D_U -d b_s=$BS -d d_s=$DS -d "dom_pattern='$DOMINANCE'" -d "dip_model='$DIP_MODEL'" polyploid_all_diploidization_pairingFit_setLoci.slim

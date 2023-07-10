@@ -78,10 +78,17 @@ if(community.tick == start_exp_tick){
     writeFile(exp_load_5_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
     defineGlobal("dip_index_file", paste0(c(outDir,curr_rep,"_dipIndex.csv")));
     writeFile(dip_index_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+    defineGlobal("pair_efficiency_file", paste0(c(outDir,curr_rep,"_pairEfficiency.csv")));
+    writeFile(pair_efficiency_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+    defineGlobal("prev_fst_file", paste0(c(outDir,curr_rep,"_prevFst.csv")));
+    writeFile(prev_fst_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
     defineGlobal("dip_fitness_ratio_file_100", paste0(c(outDir,curr_rep,"_dipFitnessRatio100.csv")));
     writeFile(dip_fitness_ratio_file_100, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
     defineGlobal("dip_fitness_ratio_file_50", paste0(c(outDir,curr_rep,"_dipFitnessRatio50.csv")));
     writeFile(dip_fitness_ratio_file_50, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+    defineGlobal("repro_fails_file", paste0(c(outDir,curr_rep,"_reproFails.csv")));
+    writeFile(repro_fails_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
+
 
     defineGlobal("core_site_frequencies_file", paste0(c(outDir,curr_rep,"_coreSiteFrequencies.csv")));
     defineGlobal("core_selection_frequencies_file", paste0(c(outDir,curr_rep,"_coreSelectionFrequencies.csv")));
@@ -118,8 +125,11 @@ sub_exp_load_prop_5 = community.tick-start_exp_tick;
 sub_diploidization_mutations_mean = community.tick-start_exp_tick;
 sub_neutral_mutations_mean = community.tick-start_exp_tick;
 sub_dip_index_mean = community.tick-start_exp_tick;
+sub_pair_efficiency_mean = community.tick-start_exp_tick;
+sub_prev_fst_mean = community.tick-start_exp_tick;
 sub_dip_fitness_ratio_100 = community.tick-start_exp_tick;
 sub_dip_fitness_ratio_50 = community.tick-start_exp_tick;
+sub_repro_fails = community.tick-start_exp_tick;
 
 for (i in 2:(current_deme+1)){
     dip_fit_ratio = get_dip_fit_ratio(sim.subpopulations[i-1]);
@@ -138,6 +148,9 @@ for (i in 2:(current_deme+1)){
     temp_mean_diploidization_mutations = get_mutation_per_ind_type(sim.subpopulations[i-1], m3);
     temp_mean_neutral_mutations = get_mutation_per_ind_type(sim.subpopulations[i-1], m4);
     temp_mean_dip_index = get_dip_index_robust(sim.subpopulations[i-1]);
+    temp_mean_pair_efficiency = get_average_value(sim.subpopulations[i-1], "initial_efficiency");
+    temp_prev_fst = get_fst_to_previous(i-1);
+    temp_repro_fails = get_average_value(sim.subpopulations[i-1], "repro_fails");
 
     
     if(isNULL(temp_mean_fitness)){
@@ -162,8 +175,11 @@ for (i in 2:(current_deme+1)){
         sub_diploidization_mutations_mean = c(sub_diploidization_mutations_mean, 0);
         sub_neutral_mutations_mean = c(sub_neutral_mutations_mean, 0);
         sub_dip_index_mean = c(sub_dip_index_mean,0);
+        sub_pair_efficiency_mean = c(sub_pair_efficiency_mean,0);
+        sub_prev_fst_mean = c(sub_prev_fst_mean,0);
         sub_dip_fitness_ratio_100 = c(sub_dip_fitness_ratio_100,0);
         sub_dip_fitness_ratio_50 = c(sub_dip_fitness_ratio_50,0);
+        sub_repro_fails = c(sub_repro_fails,0);
 
 
     }
@@ -189,8 +205,11 @@ for (i in 2:(current_deme+1)){
         sub_diploidization_mutations_mean = c(sub_diploidization_mutations_mean, temp_mean_diploidization_mutations);
         sub_neutral_mutations_mean = c(sub_neutral_mutations_mean, temp_mean_neutral_mutations);
         sub_dip_index_mean = c(sub_dip_index_mean,temp_mean_dip_index);
+        sub_pair_efficiency_mean = c(sub_pair_efficiency_mean,temp_mean_pair_efficiency);
+        sub_prev_fst_mean = c(sub_prev_fst_mean,temp_prev_fst);
         sub_dip_fitness_ratio_100 = c(sub_dip_fitness_ratio_100,dip_fit_ratio[1]);
         sub_dip_fitness_ratio_50 = c(sub_dip_fitness_ratio_50,dip_fit_ratio[0]);
+        sub_repro_fails = c(sub_repro_fails,temp_repro_fails);
 
 
 
@@ -219,6 +238,10 @@ exp_load_prop_5_line = c(sub_exp_load_prop_5, extra_pops);
 dip_mean_mutations_line = c(sub_diploidization_mutations_mean, extra_pops);
 neutral_mean_mutations_line = c(sub_neutral_mutations_mean, extra_pops);
 dip_index_line = c(sub_dip_index_mean, extra_pops);
+pair_efficiency_line = c(sub_pair_efficiency_mean, extra_pops);
+prev_fst_line = c(sub_prev_fst_mean, extra_pops);
+repro_fails_line = c(sub_repro_fails, extra_pops);
+
 dip_fit_ratio_100_line = c(sub_dip_fitness_ratio_100, extra_pops);
 dip_fit_ratio_50_line = c(sub_dip_fitness_ratio_50, extra_pops);
 
@@ -243,6 +266,10 @@ writeFile(pop_size_file, paste(pop_size_line, sep=","), append = T);
 writeFile(mean_diploidization_mutations_file, paste(dip_mean_mutations_line, sep=","), append = T);
 writeFile(mean_neutral_mutations_file, paste(neutral_mean_mutations_line, sep=","), append = T);
 writeFile(dip_index_file, paste(dip_index_line, sep=","), append = T);
+writeFile(pair_efficiency_file, paste(pair_efficiency_line, sep=","), append = T);
+writeFile(prev_fst_file, paste(prev_fst_line, sep=","), append = T);
+writeFile(repro_fails_file, paste(repro_fails_line, sep=","), append = T);
+
 writeFile(dip_fitness_ratio_file_100, paste(dip_fit_ratio_100_line, sep=","), append = T);
 writeFile(dip_fitness_ratio_file_50, paste(dip_fit_ratio_50_line, sep=","), append = T);
 

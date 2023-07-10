@@ -100,12 +100,6 @@ function (integer)hartigan_dip_test_list(lifso<Subpopulation> x){
 	dip_muts_1 = unique(genomes.mutationsOfType(m3));
 	for(i in 0:(size(genomes)-1)){
 
-		//if(i == 0){
-	//		samples = seq(1,(size(genomes)-1));
-	//	}
-	//	else{
-	//		samples =c(seq(0,i-1),seq(i+1,(size(genomes)-1)));
-	//	}
 		samples = seq(0,(size(genomes)-1))[which(seq(0,(size(genomes)-1))!=i)];
 		
 		comp_genomes = genomes[sample(samples,20,replace=F)];
@@ -421,6 +415,44 @@ function (float)get_dip_index_robust(lifso<Subpopulation> x)
 		return 0.0;
 	else
 		return mean(x.individuals.getValue("dip_index"));
+}
+
+function (float)get_average_value(lifso<Subpopulation> x, lifso var)
+{
+	if(size(x.individuals) == 0)
+		return 0.0;
+	else
+		return mean(x.individuals.getValue(var));
+}
+
+function (float)get_average_value_nonMigs(lifso<Subpopulation> x, lifso var)
+{
+	if(size(x.individuals) == 0)
+		return 0.0;
+	inds = x.individuals[which(x.individuals.getValue("mig")==0)];
+	if(size(inds) == 0)
+		return 0.0;
+	else
+		return mean(inds.getValue(var));
+}
+
+function (float)get_fst_to_previous(lifso z){
+	if(z == 1)
+		return 0.0;
+	
+	x = sim.subpopulations[z];
+	y = sim.subpopulations[z-1];
+	current_inds = c(x.individuals,sim.subpopulations[0].individuals[x.individuals.tag]);
+	prev_inds = c(y.individuals,sim.subpopulations[0].individuals[y.individuals.tag]);
+
+	if(size(current_inds) == 0)
+		return 0.0;
+
+	if(size(prev_inds) == 0)
+		return 0.0;
+
+	return calcFST(current_inds.genomes,prev_inds.genomes);
+
 }
 
 function (float)calc_max_PHS(lifso<Subpopulation> x)

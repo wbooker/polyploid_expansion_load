@@ -102,11 +102,11 @@
 #done
 
 DIP_LAMBDA=(100)
-DOMINANCE=("DFE")
+DOMINANCE=("recessive")
 K=(100)
-d_s=(-0.005)
+d_s=(-0.005 0.01 0.0025)
 DIP_U=(0.001 0.002)
-D_MUT=(1)
+D_MUT=(0)
 for i in "${DIP_LAMBDA[@]}"
 do
     for d in "${DOMINANCE[@]}"

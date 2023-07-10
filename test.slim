@@ -5,7 +5,7 @@ initialize()
 	//defineGlobal("dom_pattern", "DFE");
 	//defineGlobal("dip_model", "diff"); // diploidization 
 	//defineGlobal("remove_dip_muts", 1); // diploidization model
-	defineGlobal("meiotic_fitness", 1); // does pairing efficiency affect fitness
+	defineGlobal("meiotic_errors", 1); // does pairing efficiency affect fitness
 
 	//set population parameters
 	//defineConstant("K", 100); // carrying-capacity density
@@ -358,7 +358,6 @@ late() {
 			//c_tag = runif(1);
 			sim.subpopulations[i - 1].individuals[j].tagF = c_tag;
 			sim.subpopulations[i - 1].individuals[j].setValue("pop", i);
-			sim.subpopulations[i - 1].individuals[j].setValue("og_pop", i);
 			sim.subpopulations[0].individuals[j+((i-2)*K)].tagF = c_tag;
 			sim.subpopulations[0].individuals[j+((i-2)*K)].setValue("pop", i);
 			//sim.subpopulations[i - 1].individuals[j].tag = c_tag;
@@ -414,7 +413,7 @@ early()
 	}
 	allPopSizes = sim.subpopulations.individualCount;
 	//all migration
-	for (i in 2:(size(sim.subpopulations)))
+	for (i in 2:(size(sim.subpopulations) - 1))
 	{
 		nIndividuals = allPopSizes[i-1];
 		if (nIndividuals > 0){		
@@ -431,11 +430,10 @@ early()
 						if(i==2)
 							dest = i;
 						if(i==6){
-							if(community.tick < start_exp_tick){
+							if(community.tick < start_exp_tick)
 								dest = i-2;
-							}
 						}
-						migrant.setValue("mig",1);
+						sim.subpopulations[i - 1].individuals.setValue("mig",1);
 						sim.subpopulations[dest].takeMigrants(migrant);
 						migrant.setValue("pop", i);
 					}
@@ -580,21 +578,16 @@ reproduction()
 								p2_pair = p_adbc;
 							}
 						}
-	
+
 						//average pair fitness for each parent and determine if offspring survived 
 						pair_fitness = (p1_pair / 100) * (p2_pair / 100);
-
-						if(repro_fail == 0){
-							first_pair_efficiency = pair_fitness;
-						}
-
 						if(pair_fitness != 0){
 						offspring_survived = sample(c(0,1),1,F,c((1-pair_fitness),pair_fitness));
 						}
 						else{
 							offspring_survived = 0;
 						}
-						if(meiotic_fitness == 0)
+						if(meiotic_errors == 0)
 							offspring_survived = 1;
 
 						//if offspring survive generate individual and exit while loop
@@ -610,19 +603,9 @@ reproduction()
 							offspring.tagF = c_tag; //these aren't getting set for some reason
 							other.tagF = c_tag;
 							offspring.setValue("pop", i);
-							offspring.setValue("og_pop", i);
 							other.setValue("pop", i);
 							offspring.setValue("mig", 0);
-							offspring.setValue("dip_index", (mean(c(p1_index, p2_index))/100));
-							offspring.setValue("initial_efficiency", first_pair_efficiency);
-							offspring.setValue("mig_parent", 0);
-							offspring.setValue("repro_fails", repro_fail);
-							if(parents1[j].getValue("og_pop") == (i-1)){
-								offspring.setValue("mig_parent", 1);
-							}	
-							if(parents2[j].getValue("og_pop") == (i-1)){
-								offspring.setValue("mig_parent", 1);
-							}						
+							offspring.setValue("dip_index", (mean(c(p1_index, p2_index))/100));				
 							produce_gametes = 0;
 						}
 
@@ -680,7 +663,7 @@ reproduction()
 	self.active = 0;
 }
 
-2500:3501 late()
+2501:3501 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
@@ -733,7 +716,7 @@ early(){
 }
 2501:3501 late()
 {
-	outDir_pre = paste0(c("output/test_pairFit2/diploidization-",dip_model,"_dipLambda-",dip_lambda,"_remDipMuts-",remove_dip_muts,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_u_dip-",u_dip,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
+	outDir_pre = paste0(c("output/test_pairFit/diploidization-meioticErrors-",meiotic_errors,"_",dip_model,"_dipLambda-",dip_lambda,"_remDipMuts-",remove_dip_muts,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_u_dip-",u_dip,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
 
 	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
 	if(match(community.tick, output_ticks) >= 0)
