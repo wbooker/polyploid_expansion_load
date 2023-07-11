@@ -99,25 +99,33 @@ function (integer)hartigan_dip_test_list(lifso<Subpopulation> x){
 	genomes = c(inds.genomes, other.genomes);
 	dip_muts_1 = unique(genomes.mutationsOfType(m3));
 	for(i in 0:(size(genomes)-1)){
-
 		samples = seq(0,(size(genomes)-1))[which(seq(0,(size(genomes)-1))!=i)];
 		
 		comp_genomes = genomes[sample(samples,20,replace=F)];
 		for(j in 0:(size(comp_genomes)-1)){
 			if(i == 0){
 				if(j == 0){
-					diff_vector = size(which(genomes[i].mutationCountsInGenomes(dip_muts_1) != comp_genomes[j].mutationCountsInGenomes(dip_muts_1)));
+					diff_vector = size(get_same_position_m3(genomes[i], comp_genomes[j], dip_positions));
 				}
 				else{
-					diff_vector = c(diff_vector, size(which(genomes[i].mutationCountsInGenomes(dip_muts_1) != comp_genomes[j].mutationCountsInGenomes(dip_muts_1))));
+					diff_vector = c(diff_vector, size(get_same_position_m3(genomes[i], comp_genomes[j], dip_positions)));
 				}
 			}
 			else{
-				diff_vector = c(diff_vector, size(which(genomes[i].mutationCountsInGenomes(dip_muts_1) != comp_genomes[j].mutationCountsInGenomes(dip_muts_1))));
+				diff_vector = c(diff_vector, size(get_same_position_m3(genomes[i], comp_genomes[j], dip_positions)));
 			}
 		}
 	}
 	 return diff_vector;
+}
+
+
+function (integer)get_same_position_m3(lifso genome_a, lifso genome_b, lifso positions)
+{
+	pos_a = match(positions,genome_a.positionsOfMutationsOfType(m3)) != -1;
+	pos_b = match(positions,genome_b.positionsOfMutationsOfType(m3)) != -1;
+
+	return which(pos_a != pos_b);
 }
 
 

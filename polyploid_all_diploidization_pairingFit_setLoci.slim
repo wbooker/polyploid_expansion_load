@@ -492,45 +492,44 @@ reproduction()
 							p1_pair = 100;
 							p1_index = 0;
 						}
-
 						else{
 						//get number of shared mutations of chromosomes to 1st sampled
-						p_ab = dip_lambda - size(which(p1_chroms[0].mutationCountsInGenomes(dip_muts_1) != p1_chroms[1].mutationCountsInGenomes(dip_muts_1)));
-						p_ac = dip_lambda - size(which(p1_chroms[0].mutationCountsInGenomes(dip_muts_1) != p1_chroms[2].mutationCountsInGenomes(dip_muts_1)));
-						p_ad = dip_lambda - size(which(p1_chroms[0].mutationCountsInGenomes(dip_muts_1) != p1_chroms[3].mutationCountsInGenomes(dip_muts_1)));
-						p_bc = dip_lambda - size(which(p1_chroms[1].mutationCountsInGenomes(dip_muts_1) != p1_chroms[2].mutationCountsInGenomes(dip_muts_1)));
-						p_bd = dip_lambda - size(which(p1_chroms[1].mutationCountsInGenomes(dip_muts_1) != p1_chroms[3].mutationCountsInGenomes(dip_muts_1)));
-						p_cd = dip_lambda - size(which(p1_chroms[2].mutationCountsInGenomes(dip_muts_1) != p1_chroms[3].mutationCountsInGenomes(dip_muts_1)));
+							p_ab = dip_lambda - size(get_same_position_m3(p1_chroms[0], p1_chroms[1], dip_positions));
+							p_ac = dip_lambda - size(get_same_position_m3(p1_chroms[0], p1_chroms[2], dip_positions));
+							p_ad = dip_lambda - size(get_same_position_m3(p1_chroms[0], p1_chroms[3], dip_positions));
+							p_bc = dip_lambda - size(get_same_position_m3(p1_chroms[1], p1_chroms[2], dip_positions));
+							p_bd = dip_lambda - size(get_same_position_m3(p1_chroms[1], p1_chroms[3], dip_positions));
+							p_cd = dip_lambda - size(get_same_position_m3(p1_chroms[2], p1_chroms[3], dip_positions));
 
-						//calculate pairing efficiency
-						p_ab = 	get_pairing_efficiency(p_ab / dip_lambda * 100);
-						p_ac = 	get_pairing_efficiency(p_ac / dip_lambda * 100);
-						p_ad = 	get_pairing_efficiency(p_ad / dip_lambda * 100);
-						p_bc = 	get_pairing_efficiency(p_bc / dip_lambda * 100);
-						p_bd = 	get_pairing_efficiency(p_bd / dip_lambda * 100);
-						p_cd = 	get_pairing_efficiency(p_cd / dip_lambda * 100);
+							//calculate pairing efficiency
+							p_ab = 	get_pairing_efficiency(p_ab / dip_lambda * 100);
+							p_ac = 	get_pairing_efficiency(p_ac / dip_lambda * 100);
+							p_ad = 	get_pairing_efficiency(p_ad / dip_lambda * 100);
+							p_bc = 	get_pairing_efficiency(p_bc / dip_lambda * 100);
+							p_bd = 	get_pairing_efficiency(p_bd / dip_lambda * 100);
+							p_cd = 	get_pairing_efficiency(p_cd / dip_lambda * 100);
 
-						//choose pairs weighted on pairing efficiency
-						p_abcd = mean(c(p_ab, p_cd));
-						p_acbd = mean(c(p_ac, p_bd));
-						p_adbc = mean(c(p_ad, p_bc));
-						p1_index = sort(c(p_abcd,p_acbd,p_adbc));
-						p1_index = p1_index[2] - p1_index[1];
+							//choose pairs weighted on pairing efficiency
+							p_abcd = mean(c(p_ab, p_cd));
+							p_acbd = mean(c(p_ac, p_bd));
+							p_adbc = mean(c(p_ad, p_bc));
+							p1_index = sort(c(p_abcd,p_acbd,p_adbc));
+							p1_index = p1_index[2] - p1_index[1];
 
-						p_pairs = sample(c(1,2,3),1,F,c(p_abcd,p_acbd,p_adbc));
-						
-						if(p_pairs == 1){
-							p1_order = abcd_pairs;
-							p1_pair = p_abcd;
-						}
+							p_pairs = sample(c(1,2,3),1,F,c(p_abcd,p_acbd,p_adbc));
+							
+							if(p_pairs == 1){
+								p1_order = abcd_pairs;
+								p1_pair = p_abcd;
+							}
 
-						if(p_pairs == 2){
-							p1_order = acbd_pairs;
-							p1_pair = p_acbd;
-						}
-						if(p_pairs == 3){
-							p1_order = adbc_pairs;
-							p1_pair = p_adbc;
+							if(p_pairs == 2){
+								p1_order = acbd_pairs;
+								p1_pair = p_acbd;
+							}
+							if(p_pairs == 3){
+								p1_order = adbc_pairs;
+								p1_pair = p_adbc;
 						}
 					}
 						// if no diploidization mutations then pairing is random as previously shuffled
@@ -542,13 +541,14 @@ reproduction()
 
 						else{
 							//get number of shared mutations of chromosomes to 1st sampled
-							p_ab = dip_lambda - size(which(p2_chroms[0].mutationCountsInGenomes(dip_muts_2) != p2_chroms[1].mutationCountsInGenomes(dip_muts_2)));
-							p_ac = dip_lambda - size(which(p2_chroms[0].mutationCountsInGenomes(dip_muts_2) != p2_chroms[2].mutationCountsInGenomes(dip_muts_2)));
-							p_ad = dip_lambda - size(which(p2_chroms[0].mutationCountsInGenomes(dip_muts_2) != p2_chroms[3].mutationCountsInGenomes(dip_muts_2)));
-							p_bc = dip_lambda - size(which(p2_chroms[1].mutationCountsInGenomes(dip_muts_2) != p2_chroms[2].mutationCountsInGenomes(dip_muts_2)));
-							p_bd = dip_lambda - size(which(p2_chroms[1].mutationCountsInGenomes(dip_muts_2) != p2_chroms[3].mutationCountsInGenomes(dip_muts_2)));
-							p_cd = dip_lambda - size(which(p2_chroms[2].mutationCountsInGenomes(dip_muts_2) != p2_chroms[3].mutationCountsInGenomes(dip_muts_2)));
 							
+							p_ab = dip_lambda - size(get_same_position_m3(p2_chroms[0], p2_chroms[1], dip_positions));
+							p_ac = dip_lambda - size(get_same_position_m3(p2_chroms[0], p2_chroms[2], dip_positions));
+							p_ad = dip_lambda - size(get_same_position_m3(p2_chroms[0], p2_chroms[3], dip_positions));
+							p_bc = dip_lambda - size(get_same_position_m3(p2_chroms[1], p2_chroms[2], dip_positions));
+							p_bd = dip_lambda - size(get_same_position_m3(p2_chroms[1], p2_chroms[3], dip_positions));
+							p_cd = dip_lambda - size(get_same_position_m3(p2_chroms[2], p2_chroms[3], dip_positions));
+
 							//calculate pairing efficiency
 							p_ab = 	get_pairing_efficiency(p_ab / dip_lambda * 100);
 							p_ac = 	get_pairing_efficiency(p_ac / dip_lambda * 100);
