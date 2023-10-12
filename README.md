@@ -1,4 +1,4 @@
-# polyploid_expansion_load
+# The genetic consequences of expansion and its influence on diploidization in polyploids
 SLiM simulator for polyploid expansion load study. All sims were run using SLiM v 4.0.1 https://messerlab.org/slim/
 
 Once cloned, the scripts polyploid_expansion.slim and polyploid_single_population.slim scripts should run with the following commands as an example (if slim is installed and added to your path). variables can be changed to alter parameters of the script. 
