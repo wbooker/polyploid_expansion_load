@@ -2,4 +2,4 @@
 *.err
 *.out
 output/
-logs/*
+logs/
