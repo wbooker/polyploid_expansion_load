@@ -44,6 +44,24 @@ function (float)get_sfs(lifso x)
 		return freqs;
 }
 
+function (float)get_sfs_single(lifso x)
+{
+	//gets site frequency spectrum of the focal clade and the two clades surrounding
+	tags = sim.subpopulations[x-1].individuals.tag;
+	genomes = c(sim.subpopulations[x-1].genomes,sim.subpopulations[0].individuals[tags].genomes);
+	if(size(genomes)<1)
+		return NULL;
+	mutations_ben = unique(genomes.mutationsOfType(m1));
+	mutations_del = unique(genomes.mutationsOfType(m2));
+	freqs = genomes.mutationFrequenciesInGenomes(c(mutations_ben,mutations_del));
+	if(inheritance == "diploid")
+		//multiply by two here because we have 2 empty dip chromosomes
+		return freqs * 2;
+	
+	else
+		return freqs;
+}
+
 
 function(float)get_pairing_efficiency(lifso x)
 {
@@ -71,6 +89,36 @@ function (float)get_h_frequency_spectrum(lifso x)
 	//gets selection coefficient frequency spectrum of the focal clade and the two clades surrounding
 	tags = sim.subpopulations[(x-2):(x+2)].individuals.tag;
 	genomes = c(sim.subpopulations[(x-2):(x+2)].genomes,sim.subpopulations[0].individuals[tags].genomes);
+	if(size(genomes)<1)
+		return NULL;
+	mutations_ben = unique(genomes.mutationsOfType(m1));
+	mutations_del = unique(genomes.mutationsOfType(m2));
+	mutations = c(mutations_del,mutations_ben);
+	h = mutations.getValue("dom");
+	return h;
+}
+
+function (float)get_selection_frequency_spectrum_single(lifso x)
+{
+	//gets selection coefficient frequency spectrum of the focal clade and the two clades surrounding
+	tags = sim.subpopulations[x-1].individuals.tag;
+	genomes = c(sim.subpopulations[x-1].genomes,sim.subpopulations[0].individuals[tags].genomes);
+	if(size(genomes)<1)
+		return NULL;
+	mutations_ben = unique(genomes.mutationsOfType(m1));
+	mutations_del = unique(genomes.mutationsOfType(m2));
+	mutations = c(mutations_del,mutations_ben);
+	if(size(mutations)<1)
+		return NULL;
+	s = mutations.getValue("s");
+	return s;
+}
+
+function (float)get_h_frequency_spectrum_single(lifso x)
+{
+	//gets selection coefficient frequency spectrum of the focal clade and the two clades surrounding
+	tags = sim.subpopulations[x-1].individuals.tag;
+	genomes = c(sim.subpopulations[x-1].genomes,sim.subpopulations[0].individuals[tags].genomes);
 	if(size(genomes)<1)
 		return NULL;
 	mutations_ben = unique(genomes.mutationsOfType(m1));
@@ -428,6 +476,8 @@ function (float)get_dip_index_robust(lifso<Subpopulation> x)
 function (float)get_average_value(lifso<Subpopulation> x, lifso var)
 {
 	if(size(x.individuals) == 0)
+		return 0.0;
+	if(isNULL(x.individuals.getValue(var)))
 		return 0.0;
 	else
 		return mean(x.individuals.getValue(var));

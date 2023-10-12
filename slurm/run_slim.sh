@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --partition=dschridelab
+#SBATCH --partition=general
 #SBATCH -N 1
 #SBATCH -n 1 
 #SBATCH --time=72:00:00
@@ -14,6 +14,7 @@ INHERITANCE=${1}
 DOMINANCE=${2}
 K=$3
 BS=$4
-SCRIPT=$5
+RHO=$5
+SCRIPT=$6
 
-slim -d g_size=999999 -d K=$K -d "r=log(2)" -d mig_rate=0.005 -d u_del=2.5e-8 -d u_ben=2.5e-9 -d b_s=$BS -d d_s=-0.005 -d "inheritance='$INHERITANCE'" -d "dom_pattern='$DOMINANCE'" $SCRIPT  
+slim -d g_size=999999 -d K=$K -d "r=log(2)" -d mig_rate=0.005 -d u_del=2.5e-8 -d u_ben=2.5e-9 -d b_s=$BS -d d_s=-0.005 -d rho=$RHO -d "inheritance='$INHERITANCE'" -d "dom_pattern='$DOMINANCE'" $SCRIPT  

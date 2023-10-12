@@ -4,11 +4,11 @@ avg_mat <- NULL
 track_mat <- NULL
 neut_avgs <- NULL
 deme_plot <- 1000
-sim <- 25
+sim <- 100
 demes <- seq(1:300)
 z = NULL
 #plot_colors = viridis(64,option = "C")
-mod_dirs <- list.dirs(path = "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/dipAllo/allo_DFE_K-100_m-0.05_r-0.693147_u_del-5.0e-08_u_ben-5.0e-09_rho-5.0e-08_bs-0.0_ds--0.005_g-999999_start-2501", full.names = TRUE, recursive = FALSE)
+#mod_dirs <- list.dirs(path = "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED/test_recomb/no_s", full.names = TRUE, recursive = FALSE)
 #setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/test_diploidization_3_17_2023/diploidization-dom_dipLambda-1_remDipMuts-1_additive_K-50_m-0.05_r-0.693147_u_r-5.0e-08_u_d-5.0e-10_rho-5.0e-08_bs-0.0_ds--0.001472_g-999999_start-2501")
 #dirs <- list.dirs(path = "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/full_run_12_22_2022/allo_DFE_K-50_m-0.05_r-0.693147_u-2.5e-08_rho-2.5e-08_bs-0.0_ds--0.0045_g-999999_start-2501", full.names = TRUE)
 #file <- "_fixedMutations"
@@ -20,19 +20,26 @@ starts <- c(0)
 ends <- c(1)
 for(stat in 1:length(stats)){
   file <- stats[stat]
-  mod <- "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/dipAllo/allo_DFE_chunk_K-100_m-0.05_r-0.693147_u_del-5.0e-08_u_ben-5.0e-09_rho-5.0e-08_bs-0.0_ds--0.005_g-999999_start-2501"
+  mod <- "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/basic/auto_bd_dr_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-2.75e-08_bs-0.005_ds--0.005_g-999999_start-2501"
   #for(mod in mod_dirs){
     setwd(mod)
-    for(i in c(1:4, 6:10)){
+   init_count = 1
+
+#    for(i in c(1:11,13:18,20,23:25)){
+  for(i in c(1:25)){
       print(c(file,i))
       dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
       dat <- dat[1:(deme_plot/10),demes]
       pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
       pops <- pops[1:(deme_plot/10),demes]
+      if(length(na.omit(pops[,1])) < 100){
+        next
+      }
       #neut <- read.csv(paste(c(i,"/",i,"_meanNeutralMutations",".csv"),sep="", collapse=""), row.names = 1)
       #neut <- neut[1:(deme_plot/10),demes]
       track_mat_temp <- (pops != 0)*1
-      if(i == 1){
+      if(init_count == 1){
+        init_count = 0
         avg_mat <- dat
         track_mat <- track_mat_temp
         #neut_avgs <- neut
@@ -50,13 +57,14 @@ for(stat in 1:length(stats)){
     x = as.integer(row.names(dat))
     y = demes
     z = single_mat
-    png(file=paste(c(i,"/",i,i,file,".png"),sep="", collapse=""), width = 1050, height = 1000)
+    #z[z>0.3] = 0.3
+    png(file=paste(c(i,"/",i,i,file,".png"),sep="", collapse=""))
     #image.plot(x,y,as.matrix(z), zlim=c(starts[i],ends[i]), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(1,70), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(1e-07, 0.001), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(0, 0.01), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(0,75), xlab="Generation", ylab="Deme")
-    image.plot(x,y,as.matrix(z), zlim=c(0.8,1.05), xlab="Generation", ylab="Deme", cex.lab = 2, cex.axis = 2, cex.sub = 2, cex.main = 2)
+    image.plot(x,y,as.matrix(z), zlim=c(0.8,1.05), xlab="Generation", ylab="Deme", las = 1)
     #image.plot(x,y,as.matrix(z), zlim=c(0, 0.05), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(0.000000001, 0.0001), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(-5, 5), xlab="Generation", ylab="Deme")
@@ -64,20 +72,24 @@ for(stat in 1:length(stats)){
 
 
     dev.off()
+    pdf(file=paste(c(i,"/",i,i,file,".pdf"),sep="", collapse=""))
+    image.plot(x,y,as.matrix(z), zlim=c(0.8,1.05), xlab="Generation", ylab="Deme", las = 1)
+    dev.off()
   
     #}
     }
     avgs_mat <- avg_mat / track_mat
-    x = as.integer(row.names(dat))
+    #x = as.integer(row.names(dat))
     y = demes
     z = avgs_mat
-    png(file=paste(c("all",file,".png"),sep="", collapse=""), width = 1050, height = 1000)
+    #z[z>0.3] = 0.3
+    png(file=paste(c("all",file,".png"),sep="", collapse=""))
     #image.plot(x,y,as.matrix(z), zlim=c(starts[i],ends[i]), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(1,70), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(1e-07, 0.001), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(0, 0.01), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(0,75), xlab="Generation", ylab="Deme")
-    image.plot(x,y,as.matrix(z), zlim=c(0.8,1.05), xlab="Generation", ylab="Deme", cex.lab = 2, cex.axis = 2, cex.sub = 2, cex.main = 2)
+    image.plot(x,y,as.matrix(z), zlim=c(0.8,1.05), xlab="Generation", ylab="Deme", las = 1)
     #image.plot(x,y,as.matrix(z), zlim=c(0, 0.05), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(0.000000001, 0.0001), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(-5, 5), xlab="Generation", ylab="Deme")
@@ -86,7 +98,7 @@ for(stat in 1:length(stats)){
 
     dev.off()
     pdf(file=paste(c("all",file,".pdf"),sep="", collapse=""))
-    image.plot(x,y,as.matrix(z), zlim=c(0.8,1.05), xlab="Generation", ylab="Deme")
+    image.plot(x,y,as.matrix(z), zlim=c(0.8,1.05), xlab="Generation", ylab="Deme", las = 1)
     dev.off()
 
   }

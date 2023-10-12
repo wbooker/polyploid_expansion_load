@@ -5,7 +5,7 @@ initialize()
 	//defineGlobal("dom_pattern", "DFE");
 	//defineGlobal("dip_model", "diff"); // diploidization 
 	//defineGlobal("remove_dip_muts", 1); // diploidization model
-	defineGlobal("meiotic_errors", 1); // does pairing efficiency affect fitness
+	defineGlobal("meiotic_fitness", 1); // does pairing efficiency affect fitness
 
 	//set population parameters
 	//defineConstant("K", 100); // carrying-capacity density
@@ -58,13 +58,14 @@ initialize()
 	if(b_s > 0)
 	{
 		defineGlobal("u_t", (u_del + u_ben));
-		defineConstant("rho", (u_del+u_ben));
+		//defineConstant("rho", (u_del+u_ben));
 	}
 	else
 	{
 		defineGlobal("u_t", u_del);
-		defineConstant("rho", (u_del));
-		//defineConstant("rho", 2e-7);
+		//defineConstant("rho", (u_del));
+		//if(u_del < 1e-9)
+			//defineConstant("rho", 2.5e-8);
 	}
 
 	//
@@ -358,6 +359,7 @@ late() {
 			//c_tag = runif(1);
 			sim.subpopulations[i - 1].individuals[j].tagF = c_tag;
 			sim.subpopulations[i - 1].individuals[j].setValue("pop", i);
+			sim.subpopulations[i - 1].individuals[j].setValue("og_pop", i);
 			sim.subpopulations[0].individuals[j+((i-2)*K)].tagF = c_tag;
 			sim.subpopulations[0].individuals[j+((i-2)*K)].setValue("pop", i);
 			//sim.subpopulations[i - 1].individuals[j].tag = c_tag;
@@ -413,7 +415,7 @@ early()
 	}
 	allPopSizes = sim.subpopulations.individualCount;
 	//all migration
-	for (i in 2:(size(sim.subpopulations) - 1))
+	for (i in 2:(size(sim.subpopulations)))
 	{
 		nIndividuals = allPopSizes[i-1];
 		if (nIndividuals > 0){		
@@ -430,10 +432,11 @@ early()
 						if(i==2)
 							dest = i;
 						if(i==6){
-							if(community.tick < start_exp_tick)
+							if(community.tick < start_exp_tick){
 								dest = i-2;
+							}
 						}
-						sim.subpopulations[i - 1].individuals.setValue("mig",1);
+						migrant.setValue("mig",1);
 						sim.subpopulations[dest].takeMigrants(migrant);
 						migrant.setValue("pop", i);
 					}
@@ -490,45 +493,44 @@ reproduction()
 							p1_pair = 100;
 							p1_index = 0;
 						}
-
 						else{
 						//get number of shared mutations of chromosomes to 1st sampled
-						p_ab = dip_lambda - size(which(p1_chroms[0].mutationCountsInGenomes(dip_muts_1) != p1_chroms[1].mutationCountsInGenomes(dip_muts_1)));
-						p_ac = dip_lambda - size(which(p1_chroms[0].mutationCountsInGenomes(dip_muts_1) != p1_chroms[2].mutationCountsInGenomes(dip_muts_1)));
-						p_ad = dip_lambda - size(which(p1_chroms[0].mutationCountsInGenomes(dip_muts_1) != p1_chroms[3].mutationCountsInGenomes(dip_muts_1)));
-						p_bc = dip_lambda - size(which(p1_chroms[1].mutationCountsInGenomes(dip_muts_1) != p1_chroms[2].mutationCountsInGenomes(dip_muts_1)));
-						p_bd = dip_lambda - size(which(p1_chroms[1].mutationCountsInGenomes(dip_muts_1) != p1_chroms[3].mutationCountsInGenomes(dip_muts_1)));
-						p_cd = dip_lambda - size(which(p1_chroms[2].mutationCountsInGenomes(dip_muts_1) != p1_chroms[3].mutationCountsInGenomes(dip_muts_1)));
+							p_ab = dip_lambda - size(get_same_position_m3(p1_chroms[0], p1_chroms[1], dip_positions));
+							p_ac = dip_lambda - size(get_same_position_m3(p1_chroms[0], p1_chroms[2], dip_positions));
+							p_ad = dip_lambda - size(get_same_position_m3(p1_chroms[0], p1_chroms[3], dip_positions));
+							p_bc = dip_lambda - size(get_same_position_m3(p1_chroms[1], p1_chroms[2], dip_positions));
+							p_bd = dip_lambda - size(get_same_position_m3(p1_chroms[1], p1_chroms[3], dip_positions));
+							p_cd = dip_lambda - size(get_same_position_m3(p1_chroms[2], p1_chroms[3], dip_positions));
 
-						//calculate pairing efficiency
-						p_ab = 	get_pairing_efficiency(p_ab / dip_lambda * 100);
-						p_ac = 	get_pairing_efficiency(p_ac / dip_lambda * 100);
-						p_ad = 	get_pairing_efficiency(p_ad / dip_lambda * 100);
-						p_bc = 	get_pairing_efficiency(p_bc / dip_lambda * 100);
-						p_bd = 	get_pairing_efficiency(p_bd / dip_lambda * 100);
-						p_cd = 	get_pairing_efficiency(p_cd / dip_lambda * 100);
+							//calculate pairing efficiency
+							p_ab = 	get_pairing_efficiency(p_ab / dip_lambda * 100);
+							p_ac = 	get_pairing_efficiency(p_ac / dip_lambda * 100);
+							p_ad = 	get_pairing_efficiency(p_ad / dip_lambda * 100);
+							p_bc = 	get_pairing_efficiency(p_bc / dip_lambda * 100);
+							p_bd = 	get_pairing_efficiency(p_bd / dip_lambda * 100);
+							p_cd = 	get_pairing_efficiency(p_cd / dip_lambda * 100);
 
-						//choose pairs weighted on pairing efficiency
-						p_abcd = mean(c(p_ab, p_cd));
-						p_acbd = mean(c(p_ac, p_bd));
-						p_adbc = mean(c(p_ad, p_bc));
-						p1_index = sort(c(p_abcd,p_acbd,p_adbc));
-						p1_index = p1_index[2] - p1_index[1];
+							//choose pairs weighted on pairing efficiency
+							p_abcd = mean(c(p_ab, p_cd));
+							p_acbd = mean(c(p_ac, p_bd));
+							p_adbc = mean(c(p_ad, p_bc));
+							p1_index = sort(c(p_abcd,p_acbd,p_adbc));
+							p1_index = p1_index[2] - p1_index[1];
 
-						p_pairs = sample(c(1,2,3),1,F,c(p_abcd,p_acbd,p_adbc));
-						
-						if(p_pairs == 1){
-							p1_order = abcd_pairs;
-							p1_pair = p_abcd;
-						}
+							p_pairs = sample(c(1,2,3),1,F,c(p_abcd,p_acbd,p_adbc));
+							
+							if(p_pairs == 1){
+								p1_order = abcd_pairs;
+								p1_pair = p_abcd;
+							}
 
-						if(p_pairs == 2){
-							p1_order = acbd_pairs;
-							p1_pair = p_acbd;
-						}
-						if(p_pairs == 3){
-							p1_order = adbc_pairs;
-							p1_pair = p_adbc;
+							if(p_pairs == 2){
+								p1_order = acbd_pairs;
+								p1_pair = p_acbd;
+							}
+							if(p_pairs == 3){
+								p1_order = adbc_pairs;
+								p1_pair = p_adbc;
 						}
 					}
 						// if no diploidization mutations then pairing is random as previously shuffled
@@ -540,13 +542,14 @@ reproduction()
 
 						else{
 							//get number of shared mutations of chromosomes to 1st sampled
-							p_ab = dip_lambda - size(which(p2_chroms[0].mutationCountsInGenomes(dip_muts_2) != p2_chroms[1].mutationCountsInGenomes(dip_muts_2)));
-							p_ac = dip_lambda - size(which(p2_chroms[0].mutationCountsInGenomes(dip_muts_2) != p2_chroms[2].mutationCountsInGenomes(dip_muts_2)));
-							p_ad = dip_lambda - size(which(p2_chroms[0].mutationCountsInGenomes(dip_muts_2) != p2_chroms[3].mutationCountsInGenomes(dip_muts_2)));
-							p_bc = dip_lambda - size(which(p2_chroms[1].mutationCountsInGenomes(dip_muts_2) != p2_chroms[2].mutationCountsInGenomes(dip_muts_2)));
-							p_bd = dip_lambda - size(which(p2_chroms[1].mutationCountsInGenomes(dip_muts_2) != p2_chroms[3].mutationCountsInGenomes(dip_muts_2)));
-							p_cd = dip_lambda - size(which(p2_chroms[2].mutationCountsInGenomes(dip_muts_2) != p2_chroms[3].mutationCountsInGenomes(dip_muts_2)));
 							
+							p_ab = dip_lambda - size(get_same_position_m3(p2_chroms[0], p2_chroms[1], dip_positions));
+							p_ac = dip_lambda - size(get_same_position_m3(p2_chroms[0], p2_chroms[2], dip_positions));
+							p_ad = dip_lambda - size(get_same_position_m3(p2_chroms[0], p2_chroms[3], dip_positions));
+							p_bc = dip_lambda - size(get_same_position_m3(p2_chroms[1], p2_chroms[2], dip_positions));
+							p_bd = dip_lambda - size(get_same_position_m3(p2_chroms[1], p2_chroms[3], dip_positions));
+							p_cd = dip_lambda - size(get_same_position_m3(p2_chroms[2], p2_chroms[3], dip_positions));
+
 							//calculate pairing efficiency
 							p_ab = 	get_pairing_efficiency(p_ab / dip_lambda * 100);
 							p_ac = 	get_pairing_efficiency(p_ac / dip_lambda * 100);
@@ -578,16 +581,21 @@ reproduction()
 								p2_pair = p_adbc;
 							}
 						}
-
+	
 						//average pair fitness for each parent and determine if offspring survived 
 						pair_fitness = (p1_pair / 100) * (p2_pair / 100);
+
+						if(repro_fail == 0){
+							first_pair_efficiency = pair_fitness;
+						}
+
 						if(pair_fitness != 0){
 						offspring_survived = sample(c(0,1),1,F,c((1-pair_fitness),pair_fitness));
 						}
 						else{
 							offspring_survived = 0;
 						}
-						if(meiotic_errors == 0)
+						if(meiotic_fitness == 0)
 							offspring_survived = 1;
 
 						//if offspring survive generate individual and exit while loop
@@ -603,9 +611,19 @@ reproduction()
 							offspring.tagF = c_tag; //these aren't getting set for some reason
 							other.tagF = c_tag;
 							offspring.setValue("pop", i);
+							offspring.setValue("og_pop", i);
 							other.setValue("pop", i);
 							offspring.setValue("mig", 0);
-							offspring.setValue("dip_index", (mean(c(p1_index, p2_index))/100));				
+							offspring.setValue("dip_index", (mean(c(p1_index, p2_index))/100));
+							offspring.setValue("initial_efficiency", first_pair_efficiency);
+							offspring.setValue("mig_parent", 0);
+							offspring.setValue("repro_fails", repro_fail);
+							if(parents1[j].getValue("og_pop") == (i-1)){
+								offspring.setValue("mig_parent", 1);
+							}	
+							if(parents2[j].getValue("og_pop") == (i-1)){
+								offspring.setValue("mig_parent", 1);
+							}						
 							produce_gametes = 0;
 						}
 
@@ -663,7 +681,7 @@ reproduction()
 	self.active = 0;
 }
 
-2501:3501 late()
+2500:3501 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
@@ -716,7 +734,7 @@ early(){
 }
 2501:3501 late()
 {
-	outDir_pre = paste0(c("output/test_pairFit/diploidization-meioticErrors-",meiotic_errors,"_",dip_model,"_dipLambda-",dip_lambda,"_remDipMuts-",remove_dip_muts,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_u_dip-",u_dip,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
+	outDir_pre = paste0(c("output/paper_run/pair_fit_dip_FIXED/test_recomb/DFE_standard/diploidization-",dip_model,"_dipLambda-",dip_lambda,"_remDipMuts-",remove_dip_muts,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_u_dip-",u_dip,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
 
 	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
 	if(match(community.tick, output_ticks) >= 0)

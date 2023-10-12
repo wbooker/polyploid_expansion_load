@@ -32,9 +32,9 @@ if(community.tick == start_exp_tick){
     log.addCustomColumn("start_fitness", "mean(sim.subpopulations[1].cachedFitness(NULL));");
     log.addCustomColumn("mid_fitness", "mean(sim.subpopulations[round((current_deme)/2)].cachedFitness(NULL));");
     log.addCustomColumn("edge_fitness", "mean(sim.subpopulations[current_deme].cachedFitness(NULL));");
-    log.addCustomColumn("start_het", "calc_het(2);");
-    log.addCustomColumn("mid_het", "calc_het(((current_deme)/2)+1);");
-    log.addCustomColumn("edge_het", "calc_het(current_deme+1);");
+    //log.addCustomColumn("start_het", "calc_het(2);");
+    //log.addCustomColumn("mid_het", "calc_het(((current_deme)/2)+1);");
+    //log.addCustomColumn("edge_het", "calc_het(current_deme+1);");
     log.addCustomColumn("current_deme", "current_deme;"); //need to subtract 1 here so we don't count the first population holding all the extra chromosomes
     
     // intitialize log for calcs of each subpop
@@ -204,15 +204,21 @@ writeFile(pop_size_file, paste(pop_size_line, sep=","), append = T);
 
 
 //// SFS calcs
-
-sfs_core = get_sfs(3);
-if(current_deme > 6){
-    sfs_mid = get_sfs(current_deme/2);
-    sfs_edge = get_sfs(current_deme-2);
+if(size(sim.subpopulations) == 2){
+    sfs_core = get_sfs_single(2);
+    sfs_mid = get_sfs_single(2);
+    sfs_edge = get_sfs_single(2);
 }
 else{
-    sfs_mid = 0.0;
-    sfs_edge = 0.0;
+    sfs_core = get_sfs(3);
+    if(current_deme > 6){
+        sfs_mid = get_sfs(current_deme/2);
+        sfs_edge = get_sfs(current_deme-2);
+    }
+    else{
+        sfs_mid = 0.0;
+        sfs_edge = 0.0;
+    }
 }
 n_mutations = size(sim.mutations);
 writeFile(num_mutations_file, paste(c((community.tick-start_exp_tick),n_mutations), sep=","), append = T);
