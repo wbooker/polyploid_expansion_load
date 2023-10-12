@@ -206,18 +206,18 @@ for(file in file_list){
 }
 
 nrep <- 10
-deme_plot <- 500
+deme_plot <- 10000
 stderr <- function(x, na.rm=FALSE) {
   if (na.rm) x <- na.omit(x)
   sqrt(var(x)/length(x))
 }
-file_list <- c("_meanFitnessScaled")
+file_list <- c("_varFitness")
 edge_lab <- "Value"
 
 ########### Core dip/auto only #############
 for(file in file_list){
     print(file)
-    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/tests/auto_recessive_K-100_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-2.5e-08_bs-0.0_ds--0.0_g-999999_start-2501")
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-2.5e-08_bs-0.0_ds--0.005_g-999999_start-1000")
     edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
     for(i in 1:nrep){
         dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
@@ -235,7 +235,7 @@ for(file in file_list){
     auto_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
 
 
-    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/tests/diploid_recessive_K-100_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-2.5e-08_bs-0.0_ds--0.0_g-999999_start-2501")
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-2.5e-08_bs-0.0_ds--0.005_g-999999_start-1000")
     edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
     for(i in 1:nrep){
         dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
@@ -254,15 +254,17 @@ for(file in file_list){
 
     x <- as.integer(row.names(dat))
     
-    png(file=paste(c("all",file,"_byDeme_core.png"),sep="", collapse=""), width = 1000, height = 500)
-    #plot((x),auto_mean, type="l", col="blue", lwd=5, xlab="Generation", ylab="Edge Value", ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd))))
-    plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=paste(c("Core", edge_lab), collapse = " "), ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd))))
-    lines(x, auto_mean+auto_sd, lty = 'dashed', col = '#2B6F59')
-    lines(x, auto_mean-auto_sd, lty = 'dashed', col = '#2B6F59')
+    png(file=paste(c("all",file,"_byDeme_core.png"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),auto_mean, type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5)
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Core Var Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, auto_mean/auto_mean[1]+auto_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, auto_mean/auto_mean[1]-auto_sd, lty = 'dashed', col = '#2B6F59')
     #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
     lines(x,diploid_mean,col="black",lwd=5)
-    lines(x, diploid_mean+diploid_sd, lty = 'dashed', col = 'black')
-    lines(x, diploid_mean-diploid_sd, lty = 'dashed', col = 'black')
+    lines(x, diploid_mean/diploid_mean[1]+diploid_sd, lty = 'dashed', col = 'black')
+    lines(x, diploid_mean/diploid_mean[1]-diploid_sd, lty = 'dashed', col = 'black')
     #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
     #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
     #legend(1, 450, legend=c("Diploid", "Auto"),
@@ -271,17 +273,19 @@ for(file in file_list){
     dev.off()
 
     pdf(file=paste(c("all",file,"_byDeme_core.pdf"),sep="", collapse=""))
-    #plot((x),auto_mean, type="l", col="blue", lwd=5, xlab="Generation", ylab="Edge Value", ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd))))
-    plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=paste(c("Core", edge_lab), collapse = " "), ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
-    lines(x, auto_mean+auto_sd, lty = 'dashed', col = '#2B6F59')
-    lines(x, auto_mean-auto_sd, lty = 'dashed', col = '#2B6F59')
+    par( mar=c(7,5,2,2)) 
+    plot((x),auto_mean/auto_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd))))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Core Ver Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, auto_mean/auto_mean[1]+auto_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, auto_mean/auto_mean[1]-auto_sd, lty = 'dashed', col = '#2B6F59')
     #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
-    lines(x,diploid_mean,col="black",lwd=5)
-    lines(x, diploid_mean+diploid_sd, lty = 'dashed', col = 'black')
-    lines(x, diploid_mean-diploid_sd, lty = 'dashed', col = 'black')
-    lines(x,allo_mean,col="#DCA92E",lwd=5)
-    lines(x, allo_mean+allo_sd, lty = 'dashed', col = '#DCA92E')
-    lines(x, allo_mean-allo_sd, lty = 'dashed', col = '#DCA92E')
+    lines(x,diploid_mean/diploid_mean[1],col="black",lwd=5)
+    lines(x, diploid_mean/diploid_mean[1]+diploid_sd, lty = 'dashed', col = 'black')
+    lines(x, diploid_mean/diploid_mean[1]-diploid_sd, lty = 'dashed', col = 'black')
+    #lines(x,allo_mean,col="#DCA92E",lwd=5)
+    #lines(x, allo_mean+allo_sd, lty = 'dashed', col = '#DCA92E')
+    #lines(x, allo_mean-allo_sd, lty = 'dashed', col = '#DCA92E')
     #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
     #    col=c("Black", "2B6F59", "DCA92E"), lty=1, cex=0.8)
     #legend(1, 450, legend=c("Diploid", "Auto"),
@@ -1053,3 +1057,1414 @@ for(file in file_list){
     dev.off()
 
 }
+
+############### recombination fig ########################
+nrep <- 10
+deme_plot <- 10000
+stderr <- function(x, na.rm=FALSE) {
+  if (na.rm) x <- na.omit(x)
+  sqrt(var(x)/length(x))
+}
+file <- "_fixedMutations"
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-05_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en5_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en5_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-06_bs-0.0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en6_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en6_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-07_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en7_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en7_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-08_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en8_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en8_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-09_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en9_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en9_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-10_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en10_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en10_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    x <- as.integer(seq(10,deme_plot,10))
+    
+    png(file=paste(c("all",file,"_byDeme_singlePop_rho.png"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean, type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(min(rho_1en5_mean),max(rho_1en10_mean)))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Heterozygosity", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+    png(file=paste(c("all",file,"_byDeme_singlePop_rho.png"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean, type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0,10))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="fixed mutations", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, rho_1en5_mean+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean,col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean,col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean,col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean,col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    #lines(x,rho_1en10_mean,col="gray",lwd=5)
+    #lines(x, rho_1en10_mean+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #lines(x, rho_1en10_mean-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+    pdf(file=paste(c("all",file,"_byDeme_singlePop_rho.pdf"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5)
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+     lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    dev.off()
+
+    pdf(file=paste(c("all",file,"_byDeme_singlePop_rho.pdf"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5)
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Heterozygosity", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, rho_1en5_mean+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean,col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean,col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean,col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean,col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean,col="gray",lwd=5)
+    lines(x, rho_1en10_mean+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    dev.off()
+
+############### recombination fig auto additive ########################
+nrep <- 10
+deme_plot <- 10000
+stderr <- function(x, na.rm=FALSE) {
+  if (na.rm) x <- na.omit(x)
+  sqrt(var(x)/length(x))
+}
+file <- "_heterozygosity"
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_additive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-05_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en5_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en5_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_additive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-06_bs-0.0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en6_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en6_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_additive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-07_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en7_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en7_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_additive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-08_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en8_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en8_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_additive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-09_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en9_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en9_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_additive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-10_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en10_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en10_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    x <- as.integer(seq(10,deme_plot,10))
+    
+    png(file=paste(c("all",file,"_byDeme_singlePop_rho.png"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0.6,1.0))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+    pdf(file=paste(c("all",file,"_byDeme_singlePop_rho.pdf"),sep="", collapse=""))
+      par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0.6,1.0))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+      lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+    png(file=paste(c("all",file,"_byDeme_singlePop_rho.png"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean, type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim=c(1e-6,4e-5))#, ylim = c(min(rho_1en5_mean),max(rho_1en10_mean)))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Heterozygosity", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, rho_1en5_mean+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean,col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean,col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean,col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean,col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean,col="gray",lwd=5)
+    lines(x, rho_1en10_mean+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+    pdf(file=paste(c("all",file,"_byDeme_singlePop_rho.pdf"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean, type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim=c(1e-6,4e-5))#, ylim = c(min(rho_1en5_mean),max(rho_1en10_mean)))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Heterozygosity", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, rho_1en5_mean+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean,col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean,col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean,col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean,col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean,col="gray",lwd=5)
+    lines(x, rho_1en10_mean+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+    dev.off()
+
+############### recombination fig auto duplex ########################
+nrep <- 10
+deme_plot <- 10000
+stderr <- function(x, na.rm=FALSE) {
+  if (na.rm) x <- na.omit(x)
+  sqrt(var(x)/length(x))
+}
+file <- "_meanFitnessScaled"
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_duplex_K-500_m-0.005_r-0.693147_u_del-5.0e-08_u_ben-2.5e-09_rho-1.0e-05_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en5_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en5_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_duplex_K-500_m-0.005_r-0.693147_u_del-5.0e-08_u_ben-2.5e-09_rho-1.0e-06_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en6_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en6_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_duplex_K-500_m-0.005_r-0.693147_u_del-5.0e-08_u_ben-2.5e-09_rho-1.0e-07_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en7_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en7_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_duplex_K-500_m-0.005_r-0.693147_u_del-5.0e-08_u_ben-2.5e-09_rho-1.0e-08_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en8_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en8_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_duplex_K-500_m-0.005_r-0.693147_u_del-5.0e-08_u_ben-2.5e-09_rho-1.0e-09_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en9_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en9_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/auto_duplex_K-500_m-0.005_r-0.693147_u_del-5.0e-08_u_ben-2.5e-09_rho-1.0e-10_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en10_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en10_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    x <- as.integer(seq(10,deme_plot,10))
+    
+    png(file=paste(c("all",file,"_byDeme_singlePop_rho.png"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0.6,1.0))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+    pdf(file=paste(c("all",file,"_byDeme_singlePop_rho.pdf"),sep="", collapse=""))
+      par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0.6,1.0))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+      lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+
+############### recombination fig diploid recessive ########################
+nrep <- 10
+deme_plot <- 10000
+stderr <- function(x, na.rm=FALSE) {
+  if (na.rm) x <- na.omit(x)
+  sqrt(var(x)/length(x))
+}
+file <- "_meanFitnessScaled"
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-05_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en5_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en5_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-06_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en6_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en6_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-07_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en7_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en7_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-08_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en8_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en8_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-09_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en9_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en9_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_recessive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-10_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en10_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en10_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    x <- as.integer(seq(10,deme_plot,10))
+    
+    png(file=paste(c("all",file,"_byDeme_singlePop_rho.png"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0.6,1.0))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+    pdf(file=paste(c("all",file,"_byDeme_singlePop_rho.pdf"),sep="", collapse=""))
+      par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0.6,1.0))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+      lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+############### recombination fig diploid additive ########################
+nrep <- 10
+deme_plot <- 10000
+stderr <- function(x, na.rm=FALSE) {
+  if (na.rm) x <- na.omit(x)
+  sqrt(var(x)/length(x))
+}
+file <- "_meanFitnessScaled"
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_additive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-05_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en5_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en5_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_additive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-06_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en6_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en6_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_additive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-07_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en7_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en7_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_additive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-08_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en8_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en8_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_additive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-09_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en9_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en9_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/single_pop/diploid_additive_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-10_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en10_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en10_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    x <- as.integer(seq(10,deme_plot,10))
+    
+    png(file=paste(c("all",file,"_byDeme_singlePop_rho.png"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0.6,1.0))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+    pdf(file=paste(c("all",file,"_byDeme_singlePop_rho.pdf"),sep="", collapse=""))
+      par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0.6,1.0))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+      lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+############### recombination fig auto DFE ########################
+nrep <- 10
+deme_plot <- 10000
+stderr <- function(x, na.rm=FALSE) {
+  if (na.rm) x <- na.omit(x)
+  sqrt(var(x)/length(x))
+}
+file <- "_meanFitnessScaled"
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/single_pop_recombination_10_23/auto_DFE_K-500_m-0.005_r-0.693147_u_del-5.0e-08_u_ben-2.5e-09_rho-1.0e-05_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en5_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en5_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/single_pop_recombination_10_23/auto_DFE_K-500_m-0.005_r-0.693147_u_del-5.0e-08_u_ben-2.5e-09_rho-1.0e-06_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en6_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en6_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/single_pop_recombination_10_23/auto_DFE_K-500_m-0.005_r-0.693147_u_del-5.0e-08_u_ben-2.5e-09_rho-1.0e-07_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en7_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en7_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/single_pop_recombination_10_23/auto_DFE_K-500_m-0.005_r-0.693147_u_del-5.0e-08_u_ben-2.5e-09_rho-1.0e-08_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en8_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en8_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/single_pop_recombination_10_23/auto_DFE_K-500_m-0.005_r-0.693147_u_del-5.0e-08_u_ben-2.5e-09_rho-1.0e-09_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en9_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en9_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/single_pop_recombination_10_23/auto_DFE_K-500_m-0.005_r-0.693147_u_del-5.0e-08_u_ben-2.5e-09_rho-1.0e-10_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en10_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en10_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    x <- as.integer(seq(10,deme_plot,10))
+    
+    png(file=paste(c("all",file,"_byDeme_singlePop_rho.png"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0.85,1.0))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+    pdf(file=paste(c("all",file,"_byDeme_singlePop_rho.pdf"),sep="", collapse=""))
+      par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0.85,1.0))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+      lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+############### recombination fig auto bd_dr ########################
+nrep <- 10
+deme_plot <- 10000
+stderr <- function(x, na.rm=FALSE) {
+  if (na.rm) x <- na.omit(x)
+  sqrt(var(x)/length(x))
+}
+file <- "_meanFitnessScaled"
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/single_pop_recombination_10_23/auto_bd_dr_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-05_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en5_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en5_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/single_pop_recombination_10_23/auto_bd_dr_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-06_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en6_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en6_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/single_pop_recombination_10_23/auto_bd_dr_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-07_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en7_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en7_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/single_pop_recombination_10_23/auto_bd_dr_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-08_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en8_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en8_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/single_pop_recombination_10_23/auto_bd_dr_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-09_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en9_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en9_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    setwd("/proj/dschridelab/wwbooker/polyploid_expansion_load/output/single_pop_recombination_10_23/auto_bd_dr_K-500_m-0.005_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-1.0e-10_bs-0_ds--0.005_g-999999_start-1000")
+    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    for(i in 1:nrep){
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        edge_deme <- NULL
+        for(gen in 1:length(pops[,1])){
+            edge_mat[gen,i] <- dat[gen,1]
+        }
+        print(i)
+    }
+
+    rho_1en10_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    rho_1en10_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
+
+    x <- as.integer(seq(10,deme_plot,10))
+    
+    png(file=paste(c("all",file,"_byDeme_singlePop_rho.png"),sep="", collapse=""))
+    par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0.6,1.0))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()
+
+    pdf(file=paste(c("all",file,"_byDeme_singlePop_rho.pdf"),sep="", collapse=""))
+      par( mar=c(7,5,2,2)) 
+    plot((x),rho_1en5_mean/rho_1en5_mean[1], type="l", col="#2B6F59", lwd=5,  xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(0.6,1.0))
+    mtext(side=1, text="Generation", line=3.5, cex = 1.5)
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=core_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+      lines(x, rho_1en5_mean/rho_1en5_mean[1]+rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    lines(x, rho_1en5_mean/rho_1en5_mean[1]-rho_1en5_sd, lty = 'dashed', col = '#2B6F59')
+    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+
+    lines(x,rho_1en6_mean/rho_1en6_mean[1],col="#4A8D75",lwd=5)
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]+rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    lines(x, rho_1en6_mean/rho_1en6_mean[1]-rho_1en6_sd, lty = 'dashed', col = '#4A8D75')
+    
+    lines(x,rho_1en7_mean/rho_1en7_mean[1],col="#68AC93",lwd=5)
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]+rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+    lines(x, rho_1en7_mean/rho_1en7_mean[1]-rho_1en7_sd, lty = 'dashed', col = '#68AC93')
+
+    lines(x,rho_1en8_mean/rho_1en8_mean[1],col="#87CCB2",lwd=5)
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]+rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+    lines(x, rho_1en8_mean/rho_1en8_mean[1]-rho_1en8_sd, lty = 'dashed', col = '#87CCB2')
+
+    lines(x,rho_1en9_mean/rho_1en9_mean[1],col="#A6ECD2",lwd=5)
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]+rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+    lines(x, rho_1en9_mean/rho_1en9_mean[1]-rho_1en9_sd, lty = 'dashed', col = '#A6ECD2')
+
+    lines(x,rho_1en10_mean/rho_1en10_mean[1],col="gray",lwd=5)
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]+rho_1en10_sd, lty = 'dashed', col = 'gray')
+    lines(x, rho_1en10_mean/rho_1en10_mean[1]-rho_1en10_sd, lty = 'dashed', col = 'gray')
+    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+    #legend(1, 450, legend=c("Diploid", "Auto"),
+    #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+    dev.off()

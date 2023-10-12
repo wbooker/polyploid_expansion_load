@@ -20,7 +20,7 @@ starts <- c(0)
 ends <- c(1)
 for(stat in 1:length(stats)){
   file <- stats[stat]
-  mod <- "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/basic/auto_bd_dr_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-2.75e-08_bs-0.005_ds--0.005_g-999999_start-2501"
+  mod <- "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/basic/diploid_bd_dr_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_rho-2.75e-08_bs-0.005_ds--0.005_g-999999_start-2501"
   #for(mod in mod_dirs){
     setwd(mod)
    init_count = 1
@@ -64,7 +64,7 @@ for(stat in 1:length(stats)){
     #image.plot(x,y,as.matrix(z), zlim=c(1e-07, 0.001), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(0, 0.01), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(0,75), xlab="Generation", ylab="Deme")
-    image.plot(x,y,as.matrix(z), zlim=c(0.8,1.05), xlab="Generation", ylab="Deme", las = 1)
+    image.plot(x,y,as.matrix(z), zlim=c(0.6,1.05), xlab="Generation", ylab="Deme", las = 1)
     #image.plot(x,y,as.matrix(z), zlim=c(0, 0.05), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(0.000000001, 0.0001), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(-5, 5), xlab="Generation", ylab="Deme")
@@ -73,7 +73,7 @@ for(stat in 1:length(stats)){
 
     dev.off()
     pdf(file=paste(c(i,"/",i,i,file,".pdf"),sep="", collapse=""))
-    image.plot(x,y,as.matrix(z), zlim=c(0.8,1.05), xlab="Generation", ylab="Deme", las = 1)
+    image.plot(x,y,as.matrix(z), zlim=c(0.6,1.05), xlab="Generation", ylab="Deme", las = 1)
     dev.off()
   
     #}
@@ -89,7 +89,7 @@ for(stat in 1:length(stats)){
     #image.plot(x,y,as.matrix(z), zlim=c(1e-07, 0.001), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(0, 0.01), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(0,75), xlab="Generation", ylab="Deme")
-    image.plot(x,y,as.matrix(z), zlim=c(0.8,1.05), xlab="Generation", ylab="Deme", las = 1)
+    image.plot(x,y,as.matrix(z), zlim=c(0.6,1.05), xlab="Generation", ylab="Deme", las = 1)
     #image.plot(x,y,as.matrix(z), zlim=c(0, 0.05), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(0.000000001, 0.0001), xlab="Generation", ylab="Deme")
     #image.plot(x,y,as.matrix(z), zlim=c(-5, 5), xlab="Generation", ylab="Deme")
@@ -98,7 +98,7 @@ for(stat in 1:length(stats)){
 
     dev.off()
     pdf(file=paste(c("all",file,".pdf"),sep="", collapse=""))
-    image.plot(x,y,as.matrix(z), zlim=c(0.8,1.05), xlab="Generation", ylab="Deme", las = 1)
+    image.plot(x,y,as.matrix(z), zlim=c(0.6,1.05), xlab="Generation", ylab="Deme", las = 1)
     dev.off()
 
   }
