@@ -204,7 +204,7 @@ fitnessEffect()
 
 1 early()
 {
-	if(match(dom_pattern, c("recessive", "additive", "duplex", "overdominance_1", "overdominance_2", "overdominance_3", "underdominance_1", "underdominance_2", "br_dd", "bd_dr")))
+	if(match(dom_pattern, c("recessive", "additive", "duplex", "overdominance_1", "overdominance_2", "overdominance_3", "underdominance_1", "underdominance_2", "br_dd", "bd_dr", "DFE")))
 		stop("late(): error for dominance " + dom_pattern);
 	if(match(inheritance, c("auto", "allo", "diploid")))
 		stop("late(): error for inheritance " + inheritance);
