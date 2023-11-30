@@ -17,4 +17,4 @@ BS=$4
 RHO=$5
 SCRIPT=$6
 
-slim -d "out_dir='output'" -d g_size=999999 -d K=$K -d "r=log(2)" -d mig_rate=0.005 -d u_del=2.5e-8 -d u_ben=2.5e-9 -d b_s=$BS -d d_s=-0.005 -d rho=$RHO -d "inheritance='$INHERITANCE'" -d "dom_pattern='$DOMINANCE'" $SCRIPT  
+slim -d "out_dir='output/test_recomb_11_30'" -d g_size=999999 -d K=$K -d "r=log(2)" -d mig_rate=0.005 -d u_del=2.5e-8 -d u_ben=2.5e-9 -d b_s=$BS -d d_s=-0.005 -d rho=$RHO -d "inheritance='$INHERITANCE'" -d "dom_pattern='$DOMINANCE'" $SCRIPT  

@@ -59,11 +59,11 @@
 #    done
 #done
 
-INHERITANCE=("auto")
-DOMINANCE=("bd_dr")
-K=(500)
-b_s=(0.005)
-rho=(1e-7 1e-8 1e-9 1e-10 1e-6 1e-5)
+INHERITANCE=("allo" "diploid")
+DOMINANCE=("recessive" "additive" "DFE")
+K=(100)
+b_s=(0.000)
+rho=(2.5e-8)
 for i in "${INHERITANCE[@]}"
 do
    for d in "${DOMINANCE[@]}"
@@ -72,9 +72,9 @@ do
        do
            for r in "${rho[@]}"
            do
-               for j in {1..30}
+               for j in {1..4}
                do
-               sbatch slurm/run_slim.sh $i $d $k 0 $r polyploid_single_population.slim
+               sbatch slurm/run_slim.sh $i $d $k 0 $r polyploid_expansion.slim
                done
            done
        done
