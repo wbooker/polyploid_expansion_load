@@ -12,12 +12,12 @@ initialize()
 	//defineConstant("mig_rate", 0.05); //mig rate
 	//defineConstant("r", log(2)); //growth rate
 	//defineConstant("u_del", 2.5e-8); // deleterious mutation_rate
-	//defineConstant("u_dip", 2.5e-11); // diploidization mutation_rate
+	//defineConstant("u_dip", 1e-3); // diploidization mutation_rate
 	//defineConstant("u_ben", 2.5e-9); // beneficial mutation_rate
 	//defineConstant("b_s", 0.000); // beneficial selection coefficient
-	//defineConstant("d_s", -0.0045); // deleterious selection coefficient
+	//defineConstant("d_s", -0.005); // deleterious selection coefficient
 	//defineConstant("g_size", 999999); // genome size
-	//defineConstant("dip_lambda", 0.5); // n_mutations required for dom model, lambda coefficient for diff model
+	//defineConstant("dip_lambda", 100); // number of loci tracking diploidization mutations
 
 
 	if(dip_model == "diff")
@@ -668,7 +668,7 @@ reproduction()
 					breakpoints1 = sim.chromosome.drawBreakpoints();
 					breakpoints2 = sim.chromosome.drawBreakpoints();
 					other = sim.subpopulations[0].addRecombinant(p1_chroms[p1_order[2]], p1_chroms[p1_order[3]], breakpoints1, p2_chroms[p2_order[2]], p2_chroms[p2_order[3]], breakpoints2);					defineGlobal("c_tag", (c_tag+1));
-					offspring.tagF = c_tag; //these aren't getting set for some reason
+					offspring.tagF = c_tag; 
 					other.tagF = c_tag;
 					offspring.setValue("pop", i);
 					offspring.setValue("dip_index", mean(c(n_dip_muts_1/dip_lambda,n_dip_muts_2/dip_lambda)));				

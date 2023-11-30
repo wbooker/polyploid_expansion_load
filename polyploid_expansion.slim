@@ -10,7 +10,7 @@ initialize()
 	//defineConstant("u_del", 2.5e-8); // deleterious mutation_rate
 	//defineConstant("u_ben", 2.5e-9); // beneficial mutation_rate
 	//defineConstant("u", 2.5e-8); // deleterious mutation_rate	
-	//defineConstant("b_s", 0.005); // beneficial selection coefficient
+	//defineConstant("b_s", 0.000); // beneficial selection coefficient
 	//defineConstant("d_s", -0.005); // deleterious selection coefficient
 	//defineConstant("g_size", 999999); // genome size
 
@@ -346,7 +346,7 @@ reproduction()
 				other = sim.subpopulations[0].addRecombinant(parents1[j].genome1, sim.subpopulations[0].individuals[parents1[j].tag].genome2, breakpoints1, parents2[j].genome1, sim.subpopulations[0].individuals[parents2[j].tag].genome2, breakpoints2);
 				defineGlobal("c_tag", (c_tag+1));
 				//c_tag = runif(1);
-				offspring.tagF = c_tag; //these aren't getting set for some reason
+				offspring.tagF = c_tag; 
 				other.tagF = c_tag;
 				offspring.setValue("pop", i);				
 				other.setValue("pop", i);
