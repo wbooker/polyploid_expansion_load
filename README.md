@@ -5,12 +5,29 @@ Once cloned, the scripts polyploid_expansion.slim and polyploid_single_populatio
 
 For keyword parameters, the following are accepted:
 
-| inheritance         | Description                                                                 |
+| inheritance         |                                                                  |
 |:-------------------|:----------------------------------------------------------------------------|
 | __auto__          |  autotetraploid                                       |
 | __allo__               |  allotetraploid         |
 | __diploid__                |  diploid    |
 
+| dom_pattern         |  h_vector                                                                |
+|:-------------------|:----------------------------------------------------------------------------|
+| __additive__          |  beneficial: (0.0, 0.25, 0.5, 0.75, 1.0), deleterious: (0.0, 0.25, 0.5, 0.75, 1.0)                                      |
+| __recessive__               |  beneficial: (0.0, 0.0, 0.0, 0.0, 1.0), deleterious: beneficial: (0.0, 0.0, 0.0, 0.0, 1.0)|
+| __bd_dr__                |  beneficial: (0.0, 1.0, 1.0, 1.0, 1.0), deleterious (0.0, 0.0, 0.0, 0.0, 1.0)    |
+| __br_dd__          |  beneficial: (0.0, 0.0, 0.0, 0.0, 1.0), deleterious (0.0, 1.0, 1.0, 1.0, 1.0)                                      |
+| __duplex__               |  beneficial: (0.0, 1.0, 1.0, 1.0, 1.0), deleterious (0.0, 0.0, 0.0, 1.0, 1.0)         |
+| __DFE__               |  beneficial: (0.0, 1.0, 1.0, 1.0, 1.0), deleterious (estimated h-s relationship)         |
+
+| s_dist         |                                                                  |
+|:-------------------|:----------------------------------------------------------------------------|
+| __fixed__          |  both beneficial and deleterious set to b_s and d_s, respectively                                       |
+| __exp__               |  deleterious set to exponential dist. with mean d_s, beneficial fixed at b_s         |
+| __gamma__                |  deleterious set to gamma distribution at mean -0.001472, beneficial fixed at b_s   |
+
+
+To run each of the scripts, the following will work as examples 
 ```
 slim -d "out_dir='out'" -d g_size=999999 -d K=100 -d "r=log(2)" -d mig_rate=0.005 -d u_del=2.5e-8 -d u_ben=2.5e-9 -d b_s=0.005 -d d_s=-0.005 -d rho=2.5e-8 -d "inheritance='auto'" -d "dom_pattern='bd_dr'" -d "s_dist='gamma'" polyploid_expansion.slim 
 
