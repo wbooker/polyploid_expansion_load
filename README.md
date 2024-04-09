@@ -32,7 +32,7 @@ NOTE: for the paper, bd_dr is used for the recessive model as deleterious are re
 
 To run each of the scripts, the following will work as examples 
 ```
-slim -d "out_dir='out'" -d g_size=999999 -d K=100 -d "r=log(2)" -d mig_rate=0.005 -d u_del=2.5e-8 -d u_ben=2.5e-9 -d b_s=0.005 -d d_s=-0.005 -d rho=2.5e-8 -d "inheritance='auto'" -d "dom_pattern='bd_dr'" -d "s_dist='gamma'" polyploid_expansion.slim 
+slim -d "out_dir='out'" -d g_size=999999 -d K=100 -d "r=log(2)" -d mig_rate=0.05 -d u_del=2.5e-8 -d u_ben=2.5e-9 -d b_s=0.005 -d d_s=-0.005 -d rho=2.5e-8 -d "inheritance='auto'" -d "dom_pattern='bd_dr'" -d "s_dist='gamma'" polyploid_expansion.slim 
 
 ```
 
