@@ -26,7 +26,7 @@ NOTE: for the paper, bd_dr is used for the recessive model as deleterious are re
 | s_dist         |                                                                  |
 |:-------------------|:----------------------------------------------------------------------------|
 | __fixed__          |  both beneficial and deleterious set to b_s and d_s, respectively                                       |
-| __exp__               |  deleterious drawn from an exponential dist. with mean d_s, beneficial fixed at b_s         |
+| __exp__               |  deleterious drawn from an exponential distribution with mean d_s, beneficial fixed at b_s         |
 | __gamma__                |  deleterious drawn from a gamma distribution at mean -0.001472, beneficial fixed at b_s   |
 
 
