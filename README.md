@@ -20,6 +20,9 @@ For keyword parameters, the following are accepted:
 | __duplex__               |  beneficial: (0.0, 1.0, 1.0, 1.0, 1.0), deleterious (0.0, 0.0, 0.0, 1.0, 1.0)         |
 | __DFE__               |  beneficial: (0.0, 1.0, 1.0, 1.0, 1.0), deleterious (estimated h-s relationship)         |
 
+NOTE: for the paper, bd_dr is used for the recessive model as deleterious are recessive and beneficial are dominant
+
+
 | s_dist         |                                                                  |
 |:-------------------|:----------------------------------------------------------------------------|
 | __fixed__          |  both beneficial and deleterious set to b_s and d_s, respectively                                       |
