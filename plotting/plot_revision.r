@@ -789,7 +789,7 @@ edge_lab <- c("Nucleotide Diversity")
 
 ################ diff model prop disomic and mean dip by s #################
 
-nrep <- 100
+nrep <- 25
 deme_plot <- 1000
 stderr <- function(x, na.rm=FALSE) {
   if (na.rm) x <- na.omit(x)
@@ -800,7 +800,7 @@ edge_lab <- "Dip Index"
 #mod_dir <- list.dirs(path = "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED", full.names = TRUE, recursive = FALSE)
 #file_list <- c("_fixedMutations","_meanBenMutationsPerGenome","_meanBenMutationsPerInd","_unscaledFitness","_maxPhs","_heterozygosity","_fixedMutations","_meanDelMutationsPerGenome","_meanDelMutationsPerInd","_meanFitnessScaled")
 #for(mod in mod_dir){
-    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-dom_dipLambda-2_remDipMuts-1_bd_drexp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-5.0e-10_rho-1.0e-08_bs-0.01_ds--0.01_g-999999_start-5001"
+    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/no_PAFC/diploidization-diff_dipLambda-1000_remDipMuts-1_meioticfFitness-0_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.001_rho-1.0e-08_bs-0.01_ds--0.01_g-999999_start-5001"
     file <- file_list[1]
     rep_count <- 0
     #mod <- "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED/diploidization-diff_dipLambda-100_remDipMuts-1_recessive_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-2.5e-08_bs-0.0_ds--0.01_g-999999_start-2501"
@@ -867,7 +867,7 @@ edge_lab <- "Dip Index"
     prop_1_edge_1e2 <- apply(prop_1_mat_edge, 1, sum, na.rm = TRUE) / rep_count
     prop_1_core_1e2 <- apply(prop_1_mat_core, 1, sum, na.rm = TRUE) / rep_count
 
-    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-dom_dipLambda-2_remDipMuts-1_bd_drexp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-5.0e-10_rho-1.0e-08_bs-0.005_ds--0.005_g-999999_start-5001"
+    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/no_PAFC/diploidization-diff_dipLambda-1000_remDipMuts-1_meioticfFitness-0_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.001_rho-1.0e-08_bs-0.005_ds--0.005_g-999999_start-5001"
     file <- file_list[1]
     rep_count <- 0
     #mod <- "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED/diploidization-diff_dipLambda-100_remDipMuts-1_recessive_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-2.5e-08_bs-0.0_ds--0.01_g-999999_start-2501"
@@ -934,7 +934,7 @@ edge_lab <- "Dip Index"
     prop_1_edge_5e3 <- apply(prop_1_mat_edge, 1, sum, na.rm = TRUE) / rep_count
     prop_1_core_5e3 <- apply(prop_1_mat_core, 1, sum, na.rm = TRUE) / rep_count
 
-    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-dom_dipLambda-2_remDipMuts-1_bd_drexp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-5.0e-10_rho-1.0e-08_bs-0.001_ds--0.001_g-999999_start-5001"
+    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/no_PAFC/diploidization-diff_dipLambda-1000_remDipMuts-1_meioticfFitness-0_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.001_rho-1.0e-08_bs-0.001_ds--0.001_g-999999_start-5001"
     file <- file_list[1]
     rep_count <- 0
     #mod <- "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED/diploidization-diff_dipLambda-100_remDipMuts-1_recessive_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-2.5e-08_bs-0.0_ds--0.01_g-999999_start-2501"
@@ -1003,12 +1003,12 @@ edge_lab <- "Dip Index"
     x <- as.integer(row.names(dat))
     
     png(file=paste(c("all",file,"_prop_disomic_byDeme_by_s_n100.png"),sep="", collapse=""), width = 1000, height = 500)
-    plot((x),prop_1_edge_1e3, type="l", col="gray", lwd=5, xlab="Generation", ylab="Proportion of Simulations Disomic", ylim = c(0,1))
-    lines(x, prop_1_edge_5e3,col="#87CCB2",lwd=5)
-    lines(x, prop_1_edge_1e2,col="#2B6F59",lwd=5)
-    lines(x, prop_1_core_1e3,col="gray", lwd=5, lty = 'twodash')
-    lines(x, prop_1_core_5e3,col="#87CCB2", lwd=5, lty = 'twodash')
-    lines(x, prop_1_core_1e2,col="#2B6F59", lwd=5, lty = 'twodash')
+    plot((x),prop_1_edge_1e3, type="l", col="#A1B5D8", lwd=5, xlab="Generation", ylab="Proportion of Simulations Disomic", ylim = c(0,1))
+    lines(x, prop_1_edge_5e3,col="#2B6F59",lwd=5)
+    lines(x, prop_1_edge_1e2,col="black",lwd=5)
+    lines(x, prop_1_core_1e3,col="#A1B5D8", lwd=5, lty = 'twodash')
+    lines(x, prop_1_core_5e3,col="#2B6F59", lwd=5, lty = 'twodash')
+    lines(x, prop_1_core_1e2,col="black", lwd=5, lty = 'twodash')
 
     #plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=edge_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
     #lines(x, edge_mean+edge_sd, lty = 'dashed', col = 'gray')
@@ -1025,24 +1025,24 @@ edge_lab <- "Dip Index"
     dev.off()
 
     pdf(file=paste(c("all",file,"_prop_disomic_byDeme_by_s_n100.pdf"),sep="", collapse=""))
-    plot((x),prop_1_edge_1e3, type="l", col="gray", lwd=5, xlab="Generation", ylab="Proportion of Simulations Disomic", ylim = c(0,1))
-    lines(x, prop_1_edge_5e3,col="#87CCB2",lwd=5)
-    lines(x, prop_1_edge_1e2,col="#2B6F59",lwd=5)
-    lines(x, prop_1_core_1e3,col="gray", lwd=5, lty = 'twodash')
-    lines(x, prop_1_core_5e3,col="#87CCB2", lwd=5, lty = 'twodash')
-    lines(x, prop_1_core_1e2,col="#2B6F59", lwd=5, lty = 'twodash')
+    plot((x),prop_1_edge_1e3, type="l", col="#A1B5D8", lwd=5, xlab="Generation", ylab="Proportion of Simulations Disomic", ylim = c(0,1))
+    lines(x, prop_1_edge_5e3,col="#2B6F59",lwd=5)
+    lines(x, prop_1_edge_1e2,col="black",lwd=5)
+    lines(x, prop_1_core_1e3,col="#A1B5D8", lwd=5, lty = 'twodash')
+    lines(x, prop_1_core_5e3,col="#2B6F59", lwd=5, lty = 'twodash')
+    lines(x, prop_1_core_1e2,col="black", lwd=5, lty = 'twodash')
 
     dev.off()
 
     x <- seq(0,990,10)
     
     png(file=paste(c("all",file,"_mean_by_s_n100.png"),sep="", collapse=""), width = 1000, height = 500)
-    plot((x),edge_mean_1e3, type="l", col="gray", lwd=5, xlab="Generation", ylab="Mean Diploidization Index", ylim = c(0,1))
-    lines(x, edge_mean_5e3,col="#87CCB2",lwd=5)
-    lines(x, edge_mean_1e2,col="#2B6F59",lwd=5)
-    lines(x, core_mean_1e3,col="gray", lwd=5, lty = 'twodash')
-    lines(x, core_mean_5e3,col="#87CCB2", lwd=5, lty = 'twodash')
-    lines(x, core_mean_1e2,col="#2B6F59", lwd=5, lty = 'twodash')
+    plot((x),edge_mean_1e3, type="l", col="#A1B5D8", lwd=5, xlab="Generation", ylab="Mean Diploidization Index", ylim = c(0,1))
+    lines(x, edge_mean_5e3,col="#2B6F59",lwd=5)
+    lines(x, edge_mean_1e2,col="black",lwd=5)
+    lines(x, core_mean_1e3,col="#A1B5D8", lwd=5, lty = 'twodash')
+    lines(x, core_mean_5e3,col="#2B6F59", lwd=5, lty = 'twodash')
+    lines(x, core_mean_1e2,col="black", lwd=5, lty = 'twodash')
     #plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=edge_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
     #lines(x, edge_mean+edge_sd, lty = 'dashed', col = 'gray')
     #lines(x, edge_mean-edge_sd, lty = 'dashed', col = 'gray')
@@ -1058,376 +1058,12 @@ edge_lab <- "Dip Index"
     dev.off()
 
     pdf(file=paste(c("all",file,"_mean_by_s_n100.pdf"),sep="", collapse=""))
-    plot((x),edge_mean_1e3, type="l", col="gray", lwd=5, xlab="Generation", ylab="Mean Diploidization Index", ylim = c(0,1))
-    lines(x, edge_mean_5e3,col="#87CCB2",lwd=5)
-    lines(x, edge_mean_1e2,col="#2B6F59",lwd=5)
-    lines(x, core_mean_1e3,col="gray", lwd=5, lty = 'twodash')
-    lines(x, core_mean_5e3,col="#87CCB2", lwd=5, lty = 'twodash')
-    lines(x, core_mean_1e2,col="#2B6F59", lwd=5, lty = 'twodash')
-
-
-    dev.off()
- 
-
-#### Prop disomic by rho ####
-
-nrep <- 100
-deme_plot <- 1000
-stderr <- function(x, na.rm=FALSE) {
-  if (na.rm) x <- na.omit(x)
-  sqrt(var(x)/length(x))
-}
-file_list <- c("_dipIndex")
-edge_lab <- "Dip Index"
-#mod_dir <- list.dirs(path = "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED", full.names = TRUE, recursive = FALSE)
-#file_list <- c("_fixedMutations","_meanBenMutationsPerGenome","_meanBenMutationsPerInd","_unscaledFitness","_maxPhs","_heterozygosity","_fixedMutations","_meanDelMutationsPerGenome","_meanDelMutationsPerInd","_meanFitnessScaled")
-#for(mod in mod_dir){
-    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-1_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-06_bs-0.01_ds--0.01_g-999999_start-5001"
-    file <- file_list[1]
-    rep_count <- 0
-    #mod <- "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED/diploidization-diff_dipLambda-100_remDipMuts-1_recessive_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-2.5e-08_bs-0.0_ds--0.01_g-999999_start-2501"
-    setwd(mod)
-    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
-    core_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
-    for(i in 1:nrep){
-        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
-        dat <- dat[1:(deme_plot/10),]
-        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
-        pops <- pops[1:(deme_plot/10),]
-
-        if(length(na.omit(pops[,1])) < 100){
-            next
-        }
-        rep_count <- rep_count + 1
-
-        for(gen in 1:length(pops[,1])){
-            edge_mat[gen,rep_count] <- dat[gen,(max(which(pops[gen,] > 0)))]
-            core_mat[gen,rep_count] <- dat[gen,1]
-
-        }
-        print(i)
-    }
-
-    prop_mat <- matrix(nrow = 100, ncol = rep_count)
-    equal_mat <- matrix(nrow = 100, ncol = rep_count)
-    prop_1_mat_edge <- matrix(nrow = 100, ncol = rep_count)
-    prop_1_mat_core <- matrix(nrow = 100, ncol = rep_count)
-
-    for(i in 1:100){
-        for(j in 1:rep_count){
-            if(edge_mat[i,j]>=core_mat[i,j]){
-                prop_mat[i,j] <- 1
-            }
-            else{
-                prop_mat[i,j] <- 0
-            }
-            if(edge_mat[i,j]==core_mat[i,j]){
-                equal_mat[i,j] <- 1
-            }
-            if(edge_mat[i,j] >= 0.9){
-                prop_1_mat_edge[i,j] = 1
-            }
-            if(core_mat[i,j] >= 0.9){
-                prop_1_mat_core[i,j] = 1
-            }
-        }
-    }
-    prop <- apply(prop_mat, 1, sum, na.rm = TRUE)
-    prop_1_edge_1e6 <- apply(prop_1_mat_edge, 1, sum, na.rm = TRUE) / rep_count
-    prop_1_core_1e6 <- apply(prop_1_mat_core, 1, sum, na.rm = TRUE) / rep_count
-
-    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-1_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-07_bs-0.01_ds--0.01_g-999999_start-5001"
-    file <- file_list[1]
-    rep_count <- 0
-    #mod <- "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED/diploidization-diff_dipLambda-100_remDipMuts-1_recessive_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-2.5e-08_bs-0.0_ds--0.01_g-999999_start-2501"
-    setwd(mod)
-    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
-    core_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
-    for(i in 1:nrep){
-        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
-        dat <- dat[1:(deme_plot/10),]
-        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
-        pops <- pops[1:(deme_plot/10),]
-
-        if(length(na.omit(pops[,1])) < 100){
-            next
-        }
-        rep_count <- rep_count + 1
-
-        for(gen in 1:length(pops[,1])){
-            edge_mat[gen,rep_count] <- dat[gen,(max(which(pops[gen,] > 0)))]
-            core_mat[gen,rep_count] <- dat[gen,1]
-
-        }
-        print(i)
-    }
-
-    prop_mat <- matrix(nrow = 100, ncol = rep_count)
-    equal_mat <- matrix(nrow = 100, ncol = rep_count)
-    prop_1_mat_edge <- matrix(nrow = 100, ncol = rep_count)
-    prop_1_mat_core <- matrix(nrow = 100, ncol = rep_count)
-
-    for(i in 1:100){
-        for(j in 1:rep_count){
-            if(edge_mat[i,j]>=core_mat[i,j]){
-                prop_mat[i,j] <- 1
-            }
-            else{
-                prop_mat[i,j] <- 0
-            }
-            if(edge_mat[i,j]==core_mat[i,j]){
-                equal_mat[i,j] <- 1
-            }
-            if(edge_mat[i,j] >= 0.9){
-                prop_1_mat_edge[i,j] = 1
-            }
-            if(core_mat[i,j] >= 0.9){
-                prop_1_mat_core[i,j] = 1
-            }
-        }
-    }
-    prop <- apply(prop_mat, 1, sum, na.rm = TRUE)
-    prop_1_edge_1e7 <- apply(prop_1_mat_edge, 1, sum, na.rm = TRUE) / rep_count
-    prop_1_core_1e7 <- apply(prop_1_mat_core, 1, sum, na.rm = TRUE) / rep_count
-
-    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-1_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-08_bs-0.01_ds--0.01_g-999999_start-5001"
-    file <- file_list[1]
-    rep_count <- 0
-    #mod <- "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED/diploidization-diff_dipLambda-100_remDipMuts-1_recessive_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-2.5e-08_bs-0.0_ds--0.01_g-999999_start-2501"
-    setwd(mod)
-    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
-    core_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
-    for(i in 1:nrep){
-        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
-        dat <- dat[1:(deme_plot/10),]
-        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
-        pops <- pops[1:(deme_plot/10),]
-
-        if(length(na.omit(pops[,1])) < 100){
-            next
-        }
-        rep_count <- rep_count + 1
-
-        for(gen in 1:length(pops[,1])){
-            edge_mat[gen,rep_count] <- dat[gen,(max(which(pops[gen,] > 0)))]
-            core_mat[gen,rep_count] <- dat[gen,1]
-
-        }
-        print(i)
-    }
-
-    prop_mat <- matrix(nrow = 100, ncol = rep_count)
-    equal_mat <- matrix(nrow = 100, ncol = rep_count)
-    prop_1_mat_edge <- matrix(nrow = 100, ncol = rep_count)
-    prop_1_mat_core <- matrix(nrow = 100, ncol = rep_count)
-
-    for(i in 1:100){
-        for(j in 1:rep_count){
-            if(edge_mat[i,j]>=core_mat[i,j]){
-                prop_mat[i,j] <- 1
-            }
-            else{
-                prop_mat[i,j] <- 0
-            }
-            if(edge_mat[i,j]==core_mat[i,j]){
-                equal_mat[i,j] <- 1
-            }
-            if(edge_mat[i,j] >= 0.9){
-                prop_1_mat_edge[i,j] = 1
-            }
-            if(core_mat[i,j] >= 0.9){
-                prop_1_mat_core[i,j] = 1
-            }
-        }
-    }
-    prop <- apply(prop_mat, 1, sum, na.rm = TRUE)
-    prop_1_edge_1e8 <- apply(prop_1_mat_edge, 1, sum, na.rm = TRUE) / rep_count
-    prop_1_core_1e8 <- apply(prop_1_mat_core, 1, sum, na.rm = TRUE) / rep_count
-
-    x <- as.integer(row.names(dat))
-    
-    png(file=paste(c("all",file,"_prop_disomic_byDeme_by_rho.png"),sep="", collapse=""), width = 1000, height = 500)
-    plot((x),prop_1_edge_1e6, type="l", col="gray", lwd=5, xlab="Generation", ylab="Proportion of Simulations Disomic", ylim = c(0,1))
-    lines(x, prop_1_edge_1e7,col="#87CCB2",lwd=5)
-    lines(x, prop_1_edge_1e8,col="#2B6F59",lwd=5)
-    lines(x, prop_1_core_1e6,col="gray", lwd=5, lty = 'twodash')
-    lines(x, prop_1_core_1e7,col="#87CCB2", lwd=5, lty = 'twodash')
-    lines(x, prop_1_core_1e8,col="#2B6F59", lwd=5, lty = 'twodash')
-
-    #plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=edge_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
-    #lines(x, edge_mean+edge_sd, lty = 'dashed', col = 'gray')
-    #lines(x, edge_mean-edge_sd, lty = 'dashed', col = 'gray')
-    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
-    #lines(x,prop_equal,col='blue',lwd=5)
-    #lines(x, core_mean+core_sd, lty = 'dashed', col = 'black')
-    #lines(x, core_mean-core_sd, lty = 'dashed', col = 'black')
-    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
-    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
-    #legend(1, 450, legend=c("Diploid", "Auto"),
-    #     col=c("Black", "Blue"), lty=1, cex=0.8)
-
-    dev.off()
-
-    pdf(file=paste(c("all",file,"_prop_disomic_byDeme_by_rho.pdf"),sep="", collapse=""))
-    plot((x),prop_1_edge_1e6, type="l", col="gray", lwd=3, xlab="Generation", ylab="Proportion of Simulations Disomic", ylim = c(0,1))
-    lines(x, prop_1_edge_1e7,col="#87CCB2",lwd=3)
-    lines(x, prop_1_edge_1e8,col="#2B6F59",lwd=3)
-    lines(x, prop_1_core_1e6,col="gray", lwd=3, lty = 'twodash')
-    lines(x, prop_1_core_1e7,col="#87CCB2", lwd=3, lty = 'twodash')
-    lines(x, prop_1_core_1e8,col="#2B6F59", lwd=3, lty = 'twodash')
-
-    dev.off()
-
-
-#### avg dip by s ####
-
-nrep <- 50
-deme_plot <- 1000
-stderr <- function(x, na.rm=FALSE) {
-  if (na.rm) x <- na.omit(x)
-  sqrt(var(x)/length(x))
-}
-file_list <- c("_dipIndex")
-edge_lab <- "Dip Index"
-
-    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-1_pe_inflection-70_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-07_bs-0.01_ds--0.01_g-999999_start-5001"
-    file <- file_list[1]
-    setwd(mod)
-    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
-    core_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
-    rep_count <- 0
-    for(i in 1:100){
-        if(rep_count == nrep){
-            next
-        }
-        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = NULL)
-        if(length(which(duplicated(dat[,1]))) > 0){
-            next
-        }
-        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
-        dat <- dat[1:(deme_plot/10),]
-        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
-        pops <- pops[1:(deme_plot/10),]
-        if(length(na.omit(pops[,1])) < 100){
-            next
-        }
-        for(gen in 1:length(pops[,1])){
-            edge_mat[gen,i] <- dat[gen,(max(which(pops[gen,] > 0)))]
-            core_mat[gen,i] <- dat[gen,1]
-
-        }
-        rep_count <- rep_count + 1
-        print(i)
-    }
-
-    edge_mean_5e3 <- apply(edge_mat, 1, mean, na.rm = TRUE)
-    edge_sd_5e3 <- apply(edge_mat, 1, sd, na.rm = TRUE)
-
-    core_mean_5e3 <- apply(core_mat, 1, mean, na.rm = TRUE)
-    core_sd_5e3 <- apply(core_mat, 1, sd, na.rm = TRUE)
-
-    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-1_pe_inflection-70_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-07_bs-0.005_ds--0.005_g-999999_start-5001"
-    file <- file_list[1]
-    setwd(mod)
-    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
-    core_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
-    rep_count <- 0
-    for(i in 1:100){
-        if(rep_count == nrep){
-            next
-        }
-        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = NULL)
-        if(length(which(duplicated(dat[,1]))) > 0){
-            next
-        }
-        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
-        dat <- dat[1:(deme_plot/10),]
-        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
-        pops <- pops[1:(deme_plot/10),]
-        if(length(na.omit(pops[,1])) < 100){
-            next
-        }
-        for(gen in 1:length(pops[,1])){
-            edge_mat[gen,i] <- dat[gen,(max(which(pops[gen,] > 0)))]
-            core_mat[gen,i] <- dat[gen,1]
-
-        }
-        rep_count <- rep_count + 1
-        print(i)
-    }
-
-    edge_mean_1e2 <- apply(edge_mat, 1, mean, na.rm = TRUE)
-    edge_sd_1e2 <- apply(edge_mat, 1, sd, na.rm = TRUE)
-
-    core_mean_1e2 <- apply(core_mat, 1, mean, na.rm = TRUE)
-    core_sd_1e2 <- apply(core_mat, 1, sd, na.rm = TRUE)
-
-    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-1_pe_inflection-70_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-07_bs-0.001_ds--0.001_g-999999_start-5001"
-    file <- file_list[1]
-    setwd(mod)
-    edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
-    core_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
-    rep_count <- 0
-    for(i in 1:100){
-        if(rep_count == nrep){
-            next
-        }
-        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = NULL)
-        if(length(which(duplicated(dat[,1]))) > 0){
-            next
-        }
-        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
-        dat <- dat[1:(deme_plot/10),]
-        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
-        pops <- pops[1:(deme_plot/10),]
-        if(length(na.omit(pops[,1])) < 100){
-            next
-        }
-        for(gen in 1:length(pops[,1])){
-            edge_mat[gen,i] <- dat[gen,(max(which(pops[gen,] > 0)))]
-            core_mat[gen,i] <- dat[gen,1]
-
-        }
-        rep_count <- rep_count + 1
-        print(i)
-    }
-
-    edge_mean_1e3 <- apply(edge_mat, 1, mean, na.rm = TRUE)
-    edge_sd_1e3 <- apply(edge_mat, 1, sd, na.rm = TRUE)
-
-    core_mean_1e3 <- apply(core_mat, 1, mean, na.rm = TRUE)
-    core_sd_1e3 <- apply(core_mat, 1, sd, na.rm = TRUE)
-
-    x <- seq(0,990,10)
-    
-    png(file=paste(c("all",file,"_mean_by_s.png"),sep="", collapse=""), width = 1000, height = 500)
-    plot((x),edge_mean_1e3, type="l", col="gray", lwd=5, xlab="Generation", ylab="Mean Diploidization Index", ylim = c(0,1))
-    lines(x, edge_mean_5e3,col="#87CCB2",lwd=5)
-    lines(x, edge_mean_1e2,col="#2B6F59",lwd=5)
-    lines(x, core_mean_1e3,col="gray", lwd=5, lty = 'twodash')
-    lines(x, core_mean_5e3,col="#87CCB2", lwd=5, lty = 'twodash')
-    lines(x, core_mean_1e2,col="#2B6F59", lwd=5, lty = 'twodash')
-    #plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=edge_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
-    #lines(x, edge_mean+edge_sd, lty = 'dashed', col = 'gray')
-    #lines(x, edge_mean-edge_sd, lty = 'dashed', col = 'gray')
-    #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
-    #lines(x,prop_equal,col='blue',lwd=5)
-    #lines(x, core_mean+core_sd, lty = 'dashed', col = 'black')
-    #lines(x, core_mean-core_sd, lty = 'dashed', col = 'black')
-    #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
-    #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
-    #legend(1, 450, legend=c("Diploid", "Auto"),
-    #     col=c("Black", "Blue"), lty=1, cex=0.8)
-
-    dev.off()
-
-    pdf(file=paste(c("all",file,"_mean_by_s.pdf"),sep="", collapse=""))
-    plot((x),edge_mean_1e3, type="l", col="gray", lwd=5, xlab="Generation", ylab="Mean Diploidization Index", ylim = c(0,1))
-    lines(x, edge_mean_5e3,col="#87CCB2",lwd=5)
-    lines(x, edge_mean_1e2,col="#2B6F59",lwd=5)
-    lines(x, core_mean_1e3,col="gray", lwd=5, lty = 'twodash')
-    lines(x, core_mean_5e3,col="#87CCB2", lwd=5, lty = 'twodash')
-    lines(x, core_mean_1e2,col="#2B6F59", lwd=5, lty = 'twodash')
+    plot((x),edge_mean_1e3, type="l", col="#A1B5D8", lwd=5, xlab="Generation", ylab="Mean Diploidization Index", ylim = c(0,1))
+    lines(x, edge_mean_5e3,col="#2B6F59",lwd=5)
+    lines(x, edge_mean_1e2,col="black",lwd=5)
+    lines(x, core_mean_1e3,col="#A1B5D8", lwd=5, lty = 'twodash')
+    lines(x, core_mean_5e3,col="#2B6F59", lwd=5, lty = 'twodash')
+    lines(x, core_mean_1e2,col="black", lwd=5, lty = 'twodash')
 
 
     dev.off()
@@ -1435,13 +1071,13 @@ edge_lab <- "Dip Index"
 
 
 ####### plot edge non vs. dip fitness ########    
-nrep <- 49
+nrep <- 25
 deme_plot <- 1000
 stderr <- function(x, na.rm=FALSE) {
   if (na.rm) x <- na.omit(x)
   sqrt(var(x)/length(x))
 }
-file_list <- c("_heterozygosity")
+file_list <- c("_meanFitnessScaled")
 edge_lab <- "Value"
 #file_list <- c("_fixedMutations","_unscaledFitness","_heterozygosity","_fixedMutations","_meanDelMutationsPerGenome","_meanDelMutationsPerInd","_meanFitnessScaled")
 
@@ -1505,7 +1141,7 @@ for(file in file_list){
     diploidized_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
     diploidized_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
 
-    setwd("/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/no_PAFC/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-0_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-06_bs-0.005_ds--0.005_g-999999_start-5001")
+    setwd("/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/no_PAFC/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-1_pe_inflection-85_pe_slope-1_recessive_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-0_u_dip-0.002_rho-1.0e-06_bs-0.005_ds--0.005_g-999999_start-5001")
     edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
     rep_count <- 0
     for(i in c(1:100)){
@@ -1535,7 +1171,7 @@ for(file in file_list){
     x <- as.integer(row.names(dat))
     
     png(file=paste(c("dip_not_fitness",file,"_byDeme_edge.png"),sep="", collapse=""))
-    plot((x),auto_mean, type="l", col="black", lwd=5, xlab="Generation", ylab="Heterozygosity", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(min(c(auto_mean-auto_sd,diploidized_mean-diploidized_sd,noPAFC_mean-noPAFC_sd)),max(c(auto_mean+auto_sd,diploidized_mean+diploidized_sd,noPAFC_mean+noPAFC_sd))))
+    plot((x),auto_mean, type="l", col="black", lwd=5, xlab="Generation", ylab="Mean Fitness", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(min(c(auto_mean-auto_sd,diploidized_mean-diploidized_sd,noPAFC_mean-noPAFC_sd)),max(c(auto_mean+auto_sd,diploidized_mean+diploidized_sd,noPAFC_mean+noPAFC_sd))))
     par( mar=c(5,5,2,2), omi=c(0,0,0,0)) 
     #mtext(side=1, text="Generation", line=3.5, cex = 1.5)
     #mtext(side=2, text="Heterozygosity", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=edge_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
@@ -1560,7 +1196,7 @@ for(file in file_list){
     par( mar=c(5,5,2,2)) 
     plot((x),auto_mean, type="l", col="black", lwd=5, xlab="", ylab="", las=1, cex.axis=1.5, cex.lab=1.5, ylim = c(min(c(auto_mean-auto_sd,diploidized_mean-diploidized_sd,noPAFC_mean-noPAFC_sd)),max(c(auto_mean+auto_sd,diploidized_mean+diploidized_sd,noPAFC_mean+noPAFC_sd))))
     mtext(side=1, text="Generation", line=3.5, cex = 1.5)
-    mtext(side=2, text="Heterozygosity", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=edge_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+    mtext(side=2, text="Mean Fitness", line=3.5, cex = 1.5)#plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=edge_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
     lines(x, auto_mean+auto_sd, lty = 'dashed', col = 'black')
     lines(x, auto_mean-auto_sd, lty = 'dashed', col = 'black')
     #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
@@ -1581,13 +1217,13 @@ for(file in file_list){
 
 
  ####### plot core non vs. dip fitness ########    
-nrep <- 50
+nrep <- 25
 deme_plot <- 1000
 stderr <- function(x, na.rm=FALSE) {
   if (na.rm) x <- na.omit(x)
   sqrt(var(x)/length(x))
 }
-file_list <- c("_heterozygosity")
+file_list <- c("_meanFitnessScaled")
 edge_lab <- "Value"
 for(file in file_list){
     print(file)
@@ -1620,7 +1256,7 @@ for(file in file_list){
     auto_sd <- apply(core_mat, 1, sd, na.rm = TRUE)
 
 
-    setwd("/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-1_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-06_bs-0.005_ds--0.005_g-999999_start-5001")
+    setwd("/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-1_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-08_bs-0.005_ds--0.005_g-999999_start-5001")
     core_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
     rep_count <- 0
     for(i in c(1:100)){
@@ -1648,7 +1284,7 @@ for(file in file_list){
     diploidized_mean <- apply(core_mat, 1, mean, na.rm = TRUE)
     diploidized_sd <- apply(core_mat, 1, sd, na.rm = TRUE)
 
-    setwd("/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/no_PAFC/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-0_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-06_bs-0.005_ds--0.005_g-999999_start-5001")
+    setwd("/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/no_PAFC/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-0_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-08_bs-0.005_ds--0.005_g-999999_start-5001")
     core_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
     rep_count <- 0
     for(i in c(1:100)){
@@ -1761,7 +1397,7 @@ edge_lab <- "Pairing Efficiency"
 #mod_dir <- list.dirs(path = "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED", full.names = TRUE, recursive = FALSE)
 #file_list <- c("_fixedMutations","_meanBenMutationsPerGenome","_meanBenMutationsPerInd","_unscaledFitness","_maxPhs","_heterozygosity","_fixedMutations","_meanDelMutationsPerGenome","_meanDelMutationsPerInd","_meanFitnessScaled")
 #for(mod in mod_dir){
-    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/no_PAFC/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-0_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-06_bs-0.005_ds--0.005_g-999999_start-5001"
+    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-1_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-08_bs-0.005_ds--0.005_g-999999_start-5001"
 
     file <- file_list[1]
     setwd(mod)
@@ -1965,7 +1601,7 @@ edge_lab <- "Pairing Efficiency"
 
 
 ###### PE and DI singles #####
-nrep <- 100
+nrep <- 50
 deme_plot <- 1000
 stderr <- function(x, na.rm=FALSE) {
   if (na.rm) x <- na.omit(x)
@@ -1974,7 +1610,7 @@ stderr <- function(x, na.rm=FALSE) {
 file_list <- c("_dipIndex")
 edge_lab <- "Dip Index"
 
-    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-1_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-06_bs-0.005_ds--0.005_g-999999_start-5001"
+    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-diff_dipLambda-1000_remDipMuts-1_meioticfFitness-1_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.001_rho-1.0e-08_bs-0.005_ds--0.005_g-999999_start-5001"
     file <- file_list[1]
     file2 <- "_pairEfficiency"
     setwd(mod)
@@ -2007,13 +1643,13 @@ edge_lab <- "Dip Index"
         print(i)
         x <- as.integer(row.names(dat))
         png(paste(c(i,"/",i,"_dipIndex_PE_single.png"),sep="", collapse=""), width = 500, height = 500)
-        par( mar=c(3,5,3,5)) 
-        plot((x),d_mat[,i], type="l",las=1, col="gray", lwd=5, xlab="Generation", ylab="Pairing Efficiency", ylim = c(0,1))
+        par( mar=c(5,5,3,5)) 
+        plot((x),d_mat[,i], type="l",las=1, col="gray", lwd=5, xlab="Generation", ylab="Pairing Efficiency", ylim = c(0,1), cex.lab = 1.5, cex.axis = 1.5)
         #plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=edge_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
         #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
         lines(x, p_mat[,i],col="black",lwd=5)
-        axis(side = 4, at = seq(0,1,0.2), las=1)
-        mtext("Diploidization Index", side = 4, line = 3)   
+        axis(side = 4, at = seq(0,1,0.2), las=1, cex.axis = 1.5)
+        mtext("Diploidization Index", side = 4, line = 3, cex=1.5)   
         #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
         #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
         #legend(1, 450, legend=c("Diploid", "Auto"),
@@ -2022,13 +1658,86 @@ edge_lab <- "Dip Index"
         dev.off()
 
         pdf(paste(c(i,"/",i,"_dipIndex_PE_single.pdf"),sep="", collapse=""))
-        par( mar=c(3,5,3,5)) 
-        plot((x),d_mat[,i], type="l",las=1, col="gray", lwd=5, xlab="Generation", ylab="Pairing Efficiency", ylim = c(0,1))
+        par( mar=c(5,5,3,5)) 
+        plot((x),d_mat[,i], type="l",las=1, col="gray", lwd=5, xlab="Generation", ylab="Pairing Efficiency", ylim = c(0,1), cex.lab = 1.5, cex.axis = 1.5)
         #plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=edge_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
         #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
         lines(x, p_mat[,i],col="black",lwd=5)
-        axis(side = 4, at = seq(0,1,0.2), las=1)
-        mtext("Diploidization Index", side = 4, line = 3)   
+        axis(side = 4, at = seq(0,1,0.2), las=1, cex.axis = 1.5)
+        mtext("Diploidization Index", side = 4, line = 3, cex=1.5)   
+        #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+        #legend(1, 450, legend=c("Diploid", "Auto"),
+        #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+        dev.off()
+    
+    }
+
+###### PE and DI singles CORE #####
+nrep <- 50
+deme_plot <- 1000
+stderr <- function(x, na.rm=FALSE) {
+  if (na.rm) x <- na.omit(x)
+  sqrt(var(x)/length(x))
+}
+file_list <- c("_dipIndex")
+edge_lab <- "Dip Index"
+
+    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/dip/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-1_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-08_bs-0.005_ds--0.005_g-999999_start-5001"
+    file <- file_list[1]
+    file2 <- "_pairEfficiency"
+    setwd(mod)
+    d_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    p_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
+    rep_count <- 0
+    for(i in 1:100){
+        if(rep_count == nrep){
+            next
+        }
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = NULL)
+        if(length(which(duplicated(dat[,1]))) > 0){
+            next
+        }
+        dat <- read.csv(paste(c(i,"/",i,file,".csv"),sep="", collapse=""), row.names = 1)
+        dat <- dat[1:(deme_plot/10),]
+        dat2 <- read.csv(paste(c(i,"/",i,file2,".csv"),sep="", collapse=""), row.names = 1)
+        dat2 <- dat2[1:(deme_plot/10),]       
+        pops <- read.csv(paste(c(i,"/",i,"_popSize",".csv"),sep="", collapse=""), row.names = 1)
+        pops <- pops[1:(deme_plot/10),]
+        if(length(na.omit(pops[,1])) < 100){
+            next
+        }
+        for(gen in 1:length(pops[,1])){
+            d_mat[gen,i] <- dat[gen,1]
+            p_mat[gen,i] <- dat2[gen,1]
+
+        }
+        rep_count <- rep_count + 1
+        print(i)
+        x <- as.integer(row.names(dat))
+        png(paste(c(i,"/",i,"_dipIndex_PE_single_CORE.png"),sep="", collapse=""), width = 500, height = 500)
+        par( mar=c(5,5,3,5)) 
+        plot((x),d_mat[,i], type="l",las=1, col="gray", lwd=5, xlab="Generation", ylab="Pairing Efficiency", ylim = c(0,1), cex.lab = 1.5, cex.axis = 1.5)
+        #plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=edge_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+        #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+        lines(x, p_mat[,i],col="black",lwd=5)
+        axis(side = 4, at = seq(0,1,0.2), las=1, cex.axis = 1.5)
+        mtext("Diploidization Index", side = 4, line = 3, cex=1.5)   
+        #legend(1, 450, legend=c("Diploid", "Auto", "Allo"),
+        #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
+        #legend(1, 450, legend=c("Diploid", "Auto"),
+        #     col=c("Black", "Blue"), lty=1, cex=0.8)
+
+        dev.off()
+
+        pdf(paste(c(i,"/",i,"_dipIndex_PE_single_CORE.pdf"),sep="", collapse=""))
+        par( mar=c(5,5,3,5)) 
+        plot((x),d_mat[,i], type="l",las=1, col="gray", lwd=5, xlab="Generation", ylab="Pairing Efficiency", ylim = c(0,1), cex.lab = 1.5, cex.axis = 1.5)
+        #plot((x),auto_mean, type="l", col="#2B6F59", lwd=5, xlab="Generation", ylab=edge_lab, ylim = c(min(c(auto_mean-auto_sd,diploid_mean-diploid_sd,allo_mean-allo_sd)),max(c(auto_mean+auto_sd,diploid_mean+diploid_sd,allo_mean+allo_sd))))
+        #plot((x_diploid),y_diploid, type="l", col="black", lwd=5, xlab="Generation", ylab="Deme", main="Deme by Generation")
+        lines(x, p_mat[,i],col="black",lwd=5)
+        axis(side = 4, at = seq(0,1,0.2), las=1, cex.axis = 1.5)
+        mtext("Diploidization Index", side = 4, line = 3, cex=1.5)   
         #    col=c("Black", "#2B6F59", "#DCA92E"), lty=1, cex=0.8)
         #legend(1, 450, legend=c("Diploid", "Auto"),
         #     col=c("Black", "Blue"), lty=1, cex=0.8)

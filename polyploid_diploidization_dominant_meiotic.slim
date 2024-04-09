@@ -2,7 +2,7 @@ initialize()
 {
 	//set inheritance
 	defineGlobal("inheritance", "auto");
-	//defineGlobal("dom_pattern", "DFE");
+	//defineGlobal("dom_pattern", "bd_dr");
 	//defineGlobal("dip_model", "dom"); // diploidization 
 	//defineGlobal("remove_dip_muts", 1); // diploidization model
 
@@ -14,12 +14,12 @@ initialize()
 	//defineConstant("u_del", 2.5e-8); // deleterious mutation_rate
 	//defineConstant("u_dip", 2.5e-10); // diploidization mutation_rate
 	//defineConstant("u_ben", 2.5e-9); // beneficial mutation_rate
-	//defineConstant("b_s", 0.000); // beneficial selection coefficient
+	//defineConstant("b_s", 0.005); // beneficial selection coefficient
 	//defineConstant("d_s", -0.005); // deleterious selection coefficient
 	//defineConstant("g_size", 999999); // genome size
 	//defineConstant("rho", 1e-6); //recombination rate
 	//defineConstant("s_dist", "exp"); //distribution type for d_s
-	//defineConstant("dip_lambda", 2); // n_mutations required for dom model
+	//defineConstant("dip_lambda", 1); // n_mutations required for dom model
 
 	//tick to start expanding
 	defineConstant("start_exp_tick", 5001); //make sure to change the 2 tick events triggered here if this changes too
@@ -63,7 +63,7 @@ initialize()
 	else
 		initializeGenomicElementType("g1", c(m2,m3,m4), c((u_del/u_t),(u_dip/u_t),(u_dip/u_t)));
 	
-	// uniform chromosome of length 10 kb with uniform recombination
+	// uniform chromosome of length 10 g_size
 	initializeGenomicElement(g1, 0, g_size);
 	initializeRecombinationRate(rho);
 
@@ -181,9 +181,6 @@ fitnessEffect()
 
 mutation(m4)
 {
-	//if diff model, add all mutations
-	if(dip_model == "diff")
-		return T;
 	// if we already have an m3 mutation at the site, allow
 	// the new m4 mutation; we will remove the stack below
 	if (genome.containsMarkerMutation(m3, mut.position))
@@ -243,12 +240,10 @@ late() {
 		//create individual tags to keep track of chromosomes
 		for(j in seqLen(sim.subpopulations[i - 1].individualCount)){
 			defineGlobal("c_tag", (c_tag+1));
-			//c_tag = runif(1);
 			sim.subpopulations[i - 1].individuals[j].tagF = c_tag;
 			sim.subpopulations[i - 1].individuals[j].setValue("pop", i);
 			sim.subpopulations[0].individuals[j+((i-2)*K)].tagF = c_tag;
 			sim.subpopulations[0].individuals[j+((i-2)*K)].setValue("pop", i);
-			//sim.subpopulations[i - 1].individuals[j].tag = c_tag;
 			sim.subpopulations[i - 1].individuals[j].setValue("mig",0);
 		}
 	}
@@ -371,7 +366,6 @@ reproduction()
 					breakpoints2 = sim.chromosome.drawBreakpoints();
 					other = sim.subpopulations[0].addRecombinant(p1_chroms[p1_order[2]], p1_chroms[p1_order[3]], breakpoints1, p2_chroms[p2_order[2]], p2_chroms[p2_order[3]], breakpoints2);
 					defineGlobal("c_tag", (c_tag+1));
-					//c_tag = runif(1);
 					offspring.tagF = c_tag; 
 					other.tagF = c_tag;
 					offspring.setValue("pop", i);

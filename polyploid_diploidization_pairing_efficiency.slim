@@ -2,7 +2,7 @@ initialize()
 {
 	//set inheritance
 	defineGlobal("inheritance", "auto");
-	//defineGlobal("dom_pattern", "DFE");
+	//defineGlobal("dom_pattern", "bd_dr");
 	//defineGlobal("dip_model", "diff"); // diploidization 
 	//defineGlobal("remove_dip_muts", 1); // diploidization model
 	//defineGlobal("meiotic_fitness", 1); // does pairing efficiency affect fitness
@@ -14,7 +14,7 @@ initialize()
 	//defineConstant("u_del", 2.5e-8); // deleterious mutation_rate
 	//defineConstant("u_dip", 1e-3); // diploidization mutation_rate
 	//defineConstant("u_ben", 2.5e-9); // beneficial mutation_rate
-	//defineConstant("b_s", 0.000); // beneficial selection coefficient
+	//defineConstant("b_s", 0.005); // beneficial selection coefficient
 	//defineConstant("d_s", -0.005); // deleterious selection coefficient
 	//defineConstant("g_size", 999999); // genome size
 	//defineConstant("rho", 1e-6); //recombination rate
@@ -28,7 +28,6 @@ initialize()
 	{
 		remake_dips = 0;
 		dip_pos = sort(sample(seq(0,g_size+dip_lambda,1), dip_lambda, replace = F));
-		//dip_pos = asInteger(seq(round((((g_size+1)/2)-1)), g_size, by = round(g_size/dip_lambda)));
 		if(dip_pos[0] == 0){
 			remake_dips = 1;
 		}
@@ -71,8 +70,6 @@ initialize()
 		//if(u_del < 1e-9)
 			//defineConstant("rho", 2.5e-8);
 	}
-
-	//
 	
 	//beneficial
 	initializeMutationType("m1", 0.5, "f", 0.0);
@@ -143,7 +140,6 @@ initialize()
 				if(dip_positions[pos]==(dip_positions[pos-1]+1))
 				{
 					initializeGenomicElement(g2, dip_positions[pos], dip_positions[pos]);
-					//mut_rate = c(mut_rate, u_del,u_dip);
 					mut_map[size(mut_map)-1] = mut_map[size(mut_map)-1]+1;
 				}
 				else
@@ -319,7 +315,6 @@ fitnessEffect()
 }
 
 mutation(m3){
-	//if dom model, add all mutations
 	if(match(mut.position, dip_positions) <= 0)
 		return F;
 
@@ -395,13 +390,11 @@ late() {
 		//create individual tags to keep track of chromosomes
 		for(j in seqLen(sim.subpopulations[i - 1].individualCount)){
 			defineGlobal("c_tag", (c_tag+1));
-			//c_tag = runif(1);
 			sim.subpopulations[i - 1].individuals[j].tagF = c_tag;
 			sim.subpopulations[i - 1].individuals[j].setValue("pop", i);
 			sim.subpopulations[i - 1].individuals[j].setValue("og_pop", i);
 			sim.subpopulations[0].individuals[j+((i-2)*K)].tagF = c_tag;
 			sim.subpopulations[0].individuals[j+((i-2)*K)].setValue("pop", i);
-			//sim.subpopulations[i - 1].individuals[j].tag = c_tag;
 			sim.subpopulations[i - 1].individuals[j].setValue("mig",0);
 		}
 	}
@@ -438,7 +431,7 @@ survival(p1) {
 	}
 }
 
-//open up other populations after 10k generations
+//open up other populations after 10N generations
 
 
 early()
@@ -483,7 +476,6 @@ early()
 }
 
 
-//set reproduction
 
 //set reproduction
 reproduction()
@@ -539,15 +531,6 @@ reproduction()
 							p_cd = dip_lambda - size(get_same_position_m3(p1_chroms[2], p1_chroms[3], dip_positions));
 
 							//calculate pairing efficiency
-							/*
-							p_ab = 	get_pairing_efficiency(p_ab / dip_lambda * 100);
-							p_ac = 	get_pairing_efficiency(p_ac / dip_lambda * 100);
-							p_ad = 	get_pairing_efficiency(p_ad / dip_lambda * 100);
-							p_bc = 	get_pairing_efficiency(p_bc / dip_lambda * 100);
-							p_bd = 	get_pairing_efficiency(p_bd / dip_lambda * 100);
-							p_cd = 	get_pairing_efficiency(p_cd / dip_lambda * 100);
-							*/
-							
 							//for original equation params, use pe_inflection=85 and pe_slope=1
 							p_ab = 	get_pairing_efficiency_modified((p_ab / dip_lambda * 100), pe_inflection, pe_slope);
 							p_ac = 	get_pairing_efficiency_modified((p_ac / dip_lambda * 100), pe_inflection, pe_slope);
@@ -596,16 +579,7 @@ reproduction()
 							p_bd = dip_lambda - size(get_same_position_m3(p2_chroms[1], p2_chroms[3], dip_positions));
 							p_cd = dip_lambda - size(get_same_position_m3(p2_chroms[2], p2_chroms[3], dip_positions));
 
-							/*
 							//calculate pairing efficiency
-							p_ab = 	get_pairing_efficiency(p_ab / dip_lambda * 100);
-							p_ac = 	get_pairing_efficiency(p_ac / dip_lambda * 100);
-							p_ad = 	get_pairing_efficiency(p_ad / dip_lambda * 100);
-							p_bc = 	get_pairing_efficiency(p_bc / dip_lambda * 100);
-							p_bd = 	get_pairing_efficiency(p_bd / dip_lambda * 100);
-							p_cd = 	get_pairing_efficiency(p_cd / dip_lambda * 100);
-							*/
-							
 							//for original equation params, use pe_inflection=85 and pe_slope=1
 							p_ab = 	get_pairing_efficiency_modified((p_ab / dip_lambda * 100), pe_inflection, pe_slope);
 							p_ac = 	get_pairing_efficiency_modified((p_ac / dip_lambda * 100), pe_inflection, pe_slope);
@@ -664,8 +638,7 @@ reproduction()
 							breakpoints2 = sim.chromosome.drawBreakpoints();
 							other = sim.subpopulations[0].addRecombinant(p1_chroms[p1_order[2]], p1_chroms[p1_order[3]], breakpoints1, p2_chroms[p2_order[2]], p2_chroms[p2_order[3]], breakpoints2);
 							defineGlobal("c_tag", (c_tag+1));
-							//c_tag = runif(1);
-							offspring.tagF = c_tag; //these aren't getting set for some reason
+							offspring.tagF = c_tag; 
 							other.tagF = c_tag;
 							offspring.setValue("pop", i);
 							offspring.setValue("og_pop", i);
@@ -799,9 +772,6 @@ early(){
 
 	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
 	if(match(community.tick, output_ticks) >= 0){
-		//if(d_s == 0.0)
-		//	source("src/output_test.slim");
-		//else
 		source("src/output_dip.slim");
 	}
 }

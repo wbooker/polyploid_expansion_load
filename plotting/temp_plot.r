@@ -131,6 +131,8 @@ for(file in file_list){
 
     dev.off()
 
+
+
 addTrans <- function(color,trans)
 {
   # This function adds transparancy to a color.
@@ -196,7 +198,7 @@ addTrans <- function(color,trans)
 }
 
 
-nrep <- 10
+nrep <- 5
 deme_plot <- 1000
 stderr <- function(x, na.rm=FALSE) {
   if (na.rm) x <- na.omit(x)
@@ -204,10 +206,10 @@ stderr <- function(x, na.rm=FALSE) {
 }
 file_list <- c("_pairEfficiency")
 edge_lab <- "Pair Efficiency"
-mod_dir <- list.dirs(path = "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED", full.names = TRUE, recursive = FALSE)
+#mod_dir <- list.dirs(path = "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED", full.names = TRUE, recursive = FALSE)
 #file_list <- c("_fixedMutations","_meanBenMutationsPerGenome","_meanBenMutationsPerInd","_unscaledFitness","_maxPhs","_heterozygosity","_fixedMutations","_meanDelMutationsPerGenome","_meanDelMutationsPerInd","_meanFitnessScaled")
-for(mod in mod_dir){
-    #mod <- "/proj/dschridelab/wwbooker/polyploid_expansion_load/output/paper_run/pair_fit_dip_FIXED/test_recomb/no_peFit/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-0_recessive_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.001_rho-1.0e-06_bs-0.0_ds--0.01_g-999999_start-2501"
+#for(mod in mod_dir){
+    mod <- "/work/users/w/w/wwbooker/polyploid_expansion_load/output/revision_run/no_PAFC/diploidization-diff_dipLambda-100_remDipMuts-1_meioticfFitness-0_pe_inflection-85_pe_slope-1_bd_dr_exp_K-100_m-0.05_r-0.693147_u_del-2.5e-08_u_ben-2.5e-09_u_dip-0.002_rho-1.0e-06_bs-0.005_ds--0.005_g-999999_start-5001"
     file <- file_list[1]
     setwd(mod)
     edge_mat <- matrix(nrow=deme_plot/10,ncol = nrep)
