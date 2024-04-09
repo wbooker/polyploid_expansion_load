@@ -1,16 +1,21 @@
 defineGlobal("current_deme", (size(sim.subpopulations)-1));
-while(isNULL(mean(sim.subpopulations[current_deme].cachedFitness(NULL)))){
+while(isNULL(mean(sim.subpopulations[current_deme].cachedFitness(NULL))))
+    {
     defineGlobal("current_deme", (current_deme-1));
-}
+    }
 speed = (current_deme - previous_deme) / 10;
 defineGlobal("previous_deme", current_deme);
 fitness_start = mean(sim.subpopulations[1].cachedFitness(NULL));
 fitness_mid = mean(sim.subpopulations[round((current_deme)/2)].cachedFitness(NULL));
 fitness_edge = mean(sim.subpopulations[current_deme].cachedFitness(NULL));
-            
-
-if(community.tick == start_exp_tick){
-    defineGlobal("fitness_scalar", mean(sim.subpopulations[current_deme-1].cachedFitness(NULL)));
+    
+defineGlobal("fitness_scalar", 1);
+if(community.tick == 2){
+     //sometimes on HPC runs they happen so quickly/in sync the files are written at the same time. this is in attempt to mitigate that
+    trackfile_lag = clock(type = "mono") + runif(1, 1,30);
+    while(clock(type = "mono") < trackfile_lag){
+        //do nothing
+    }
     createDirectory(outDir_pre);
     if(isNULL(readFile(paste0(outDir_pre,"trackFile.txt")))){
         writeFile(paste0(outDir_pre,"trackFile.txt"), "0", append = F);
@@ -23,7 +28,7 @@ if(community.tick == start_exp_tick){
     }
     outDir = paste0(outDir_pre,"/",curr_rep,"/");
     createDirectory(outDir);
-//log output
+    //log output
 
     outfile = paste0(c(outDir,curr_rep,"_log.csv"));			
     log = community.createLogFile(outfile, logInterval=10);
@@ -31,12 +36,12 @@ if(community.tick == start_exp_tick){
     log.addCustomColumn("start_fitness", "mean(sim.subpopulations[1].cachedFitness(NULL));");
     log.addCustomColumn("mid_fitness", "mean(sim.subpopulations[round((current_deme)/2)].cachedFitness(NULL));");
     log.addCustomColumn("edge_fitness", "mean(sim.subpopulations[current_deme].cachedFitness(NULL));");
-    log.addCustomColumn("start_het", "calc_het(2);");
-    log.addCustomColumn("mid_het", "calc_het(((current_deme)/2)+1);");
-    log.addCustomColumn("edge_het", "calc_het(current_deme+1);");
+    //log.addCustomColumn("start_het", "calc_het(2);");
+    //log.addCustomColumn("mid_het", "calc_het(((current_deme)/2)+1);");
+    //log.addCustomColumn("edge_het", "calc_het(current_deme+1);");
     log.addCustomColumn("current_deme", "current_deme;"); //need to subtract 1 here so we don't count the first population holding all the extra chromosomes
     
-    // intitialize log  for fitnesses of each subpop
+    // intitialize log for calcs of each subpop
     defineGlobal("mean_fitness_file", paste0(c(outDir,curr_rep,"_meanFitnessScaled.csv")));
     writeFile(mean_fitness_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
     defineGlobal("var_fitness_file", paste0(c(outDir,curr_rep,"_varFitness.csv")));
@@ -50,10 +55,6 @@ if(community.tick == start_exp_tick){
     defineGlobal("mean_ben_per_del_mutations_file", paste0(c(outDir,curr_rep,"_meanBenPerDelMutationsPerInd.csv")));
     defineGlobal("mean_mutations_file_genome", paste0(c(outDir,curr_rep,"_meanMutationsPerGenome.csv")));
     writeFile(mean_mutations_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-    defineGlobal("mean_diploidization_mutations_file", paste0(c(outDir,curr_rep,"_meanDiploidizationMutations.csv")));
-    writeFile(mean_diploidization_mutations_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-    defineGlobal("mean_neutral_mutations_file", paste0(c(outDir,curr_rep,"_meanNeutralMutations.csv")));
-    writeFile(mean_neutral_mutations_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
     defineGlobal("mean_ben_mutations_file_genome", paste0(c(outDir,curr_rep,"_meanBenMutationsPerGenome.csv")));
     writeFile(mean_ben_mutations_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
     defineGlobal("mean_del_mutations_file_genome", paste0(c(outDir,curr_rep,"_meanDelMutationsPerGenome.csv")));
@@ -76,63 +77,40 @@ if(community.tick == start_exp_tick){
     writeFile(exp_load_1_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
     defineGlobal("exp_load_5_file", paste0(c(outDir,curr_rep,"_exp_load_prop_5.csv")));
     writeFile(exp_load_5_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-    defineGlobal("dip_index_file", paste0(c(outDir,curr_rep,"_dipIndex.csv")));
-    writeFile(dip_index_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-    defineGlobal("pair_efficiency_file", paste0(c(outDir,curr_rep,"_pairEfficiency.csv")));
-    writeFile(pair_efficiency_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-    defineGlobal("prev_fst_file", paste0(c(outDir,curr_rep,"_prevFst.csv")));
-    writeFile(prev_fst_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-    defineGlobal("dip_fitness_ratio_file_100", paste0(c(outDir,curr_rep,"_dipFitnessRatio100.csv")));
-    writeFile(dip_fitness_ratio_file_100, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-    defineGlobal("dip_fitness_ratio_file_50", paste0(c(outDir,curr_rep,"_dipFitnessRatio50.csv")));
-    writeFile(dip_fitness_ratio_file_50, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-    defineGlobal("repro_fails_file", paste0(c(outDir,curr_rep,"_reproFails.csv")));
-    writeFile(repro_fails_file, paste(seq(from = 1, to = 2000, by = 1), sep=","), append = F);
-
-
-    defineGlobal("core_site_frequencies_file", paste0(c(outDir,curr_rep,"_coreSiteFrequencies.csv")));
-    defineGlobal("core_selection_frequencies_file", paste0(c(outDir,curr_rep,"_coreSelectionFrequencies.csv")));
-    defineGlobal("middle_site_frequencies_file", paste0(c(outDir,curr_rep,"_midSiteFrequencies.csv")));
-    defineGlobal("middle_selection_frequencies_file", paste0(c(outDir,curr_rep,"_midSelectionFrequencies.csv")));
-    defineGlobal("edge_site_frequencies_file", paste0(c(outDir,curr_rep,"_edgeSiteFrequencies.csv")));
-    defineGlobal("edge_selection_frequencies_file", paste0(c(outDir,curr_rep,"_edgeSelectionFrequencies.csv")));
     defineGlobal("num_mutations_file", paste0(c(outDir,curr_rep,"_numMutations.csv")));
-
-    defineGlobal("core_diptest_file", paste0(c(outDir,curr_rep,"_coreDipTest.csv")));
-    defineGlobal("middle_diptest_file", paste0(c(outDir,curr_rep,"_midDipTest.csv")));
-    defineGlobal("edge_diptest_file", paste0(c(outDir,curr_rep,"_edgeDipTest.csv")));
+    defineGlobal("core_selection_frequencies_file", paste0(c(outDir,curr_rep,"_coreSelectionFrequencies.csv")));
+    defineGlobal("core_het_frequencies_file", paste0(c(outDir,curr_rep,"_coreHetFrequencies.csv")));
+    defineGlobal("middle_selection_frequencies_file", paste0(c(outDir,curr_rep,"_midSelectionFrequencies.csv")));
+    defineGlobal("middle_het_frequencies_file", paste0(c(outDir,curr_rep,"_midHetFrequencies.csv")));
+    defineGlobal("edge_selection_frequencies_file", paste0(c(outDir,curr_rep,"_edgeSelectionFrequencies.csv")));
+    defineGlobal("edge_het_frequencies_file", paste0(c(outDir,curr_rep,"_edgeHetFrequencies.csv")));
+    defineGlobal("core_site_frequencies_file", paste0(c(outDir,curr_rep,"_coreSiteFrequencies.csv")));
+    defineGlobal("middle_site_frequencies_file", paste0(c(outDir,curr_rep,"_midSiteFrequencies.csv")));
+    defineGlobal("edge_site_frequencies_file", paste0(c(outDir,curr_rep,"_edgeSiteFrequencies.csv")));
 
 }
+
 //update fitness file
-sub_fitnesses_mean = community.tick-start_exp_tick;
-sub_fitnesses_var = community.tick-start_exp_tick;
-sub_mutations_mean = community.tick-start_exp_tick;
-sub_ben_mutations_mean = community.tick-start_exp_tick;
-sub_del_mutations_mean = community.tick-start_exp_tick;
-sub_ben_del_mutations_mean = community.tick-start_exp_tick;
-sub_mutations_mean_genome = community.tick-start_exp_tick;
-sub_ben_mutations_mean_genome = community.tick-start_exp_tick;
-sub_del_mutations_mean_genome = community.tick-start_exp_tick;
-sub_ben_del_mutations_mean_genome = community.tick-start_exp_tick;
-sub_mutations_fixed = community.tick-start_exp_tick;
-sub_max_phs = community.tick-start_exp_tick;
-sub_heterozygosity = community.tick-start_exp_tick;
-sub_pop_size = community.tick-start_exp_tick;
-sub_man_fitness = community.tick-start_exp_tick;
-sub_unscaled_fitness = community.tick-start_exp_tick;
-sub_exp_load_prop_1 = community.tick-start_exp_tick;
-sub_exp_load_prop_5 = community.tick-start_exp_tick;
-sub_diploidization_mutations_mean = community.tick-start_exp_tick;
-sub_neutral_mutations_mean = community.tick-start_exp_tick;
-sub_dip_index_mean = community.tick-start_exp_tick;
-sub_pair_efficiency_mean = community.tick-start_exp_tick;
-sub_prev_fst_mean = community.tick-start_exp_tick;
-sub_dip_fitness_ratio_100 = community.tick-start_exp_tick;
-sub_dip_fitness_ratio_50 = community.tick-start_exp_tick;
-sub_repro_fails = community.tick-start_exp_tick;
+sub_fitnesses_mean = community.tick-2;
+sub_fitnesses_var = community.tick-2;
+sub_mutations_mean = community.tick-2;
+sub_ben_mutations_mean = community.tick-2;
+sub_del_mutations_mean = community.tick-2;
+sub_ben_del_mutations_mean = community.tick-2;
+sub_mutations_mean_genome = community.tick-2;
+sub_ben_mutations_mean_genome = community.tick-2;
+sub_del_mutations_mean_genome = community.tick-2;
+sub_ben_del_mutations_mean_genome = community.tick-2;
+sub_mutations_fixed = community.tick-2;
+sub_max_phs = community.tick-2;
+sub_heterozygosity = community.tick-2;
+sub_pop_size = community.tick-2;
+sub_man_fitness = community.tick-2;
+sub_unscaled_fitness = community.tick-2;
+sub_exp_load_prop_1 = community.tick-2;
+sub_exp_load_prop_5 = community.tick-2;
 
 for (i in 2:(current_deme+1)){
-    dip_fit_ratio = get_dip_fit_ratio(sim.subpopulations[i-1]);
     temp_mean_fitness = mean(sim.subpopulations[i-1].cachedFitness(NULL));
     temp_var_fitness = variance(sim.subpopulations[i-1].cachedFitness(NULL));
     temp_mean_mutations = get_mutation_per_ind(sim.subpopulations[i-1]);
@@ -143,15 +121,7 @@ for (i in 2:(current_deme+1)){
     temp_max_phs = calc_max_PHS(sim.subpopulations[i-1]);
     temp_heterozygosity = calc_het(i);
     temp_pop_size = size(sim.subpopulations[i-1].individuals);
-    fitness_exp_load = c(0.0,0.0,0.0);
-    //fitness_exp_load = calc_fitness_exp_load(sim.subpopulations[i-1]);
-    temp_mean_diploidization_mutations = get_mutation_per_ind_type(sim.subpopulations[i-1], m3);
-    temp_mean_neutral_mutations = get_mutation_per_ind_type(sim.subpopulations[i-1], m4);
-    temp_mean_dip_index = get_dip_index_robust(sim.subpopulations[i-1]);
-    temp_mean_pair_efficiency = get_average_value(sim.subpopulations[i-1], "initial_efficiency");
-    temp_prev_fst = get_fst_to_previous(i-1);
-    temp_repro_fails = get_average_value(sim.subpopulations[i-1], "repro_fails");
-
+    fitness_exp_load = calc_fitness_exp_load(sim.subpopulations[i-1]);
     
     if(isNULL(temp_mean_fitness)){
         sub_fitnesses_mean = c(sub_fitnesses_mean, 0);
@@ -172,15 +142,6 @@ for (i in 2:(current_deme+1)){
         sub_unscaled_fitness = c(sub_unscaled_fitness, 0);
         sub_exp_load_prop_1 = c(sub_exp_load_prop_1, 0);
         sub_exp_load_prop_5 = c(sub_exp_load_prop_5, 0);
-        sub_diploidization_mutations_mean = c(sub_diploidization_mutations_mean, 0);
-        sub_neutral_mutations_mean = c(sub_neutral_mutations_mean, 0);
-        sub_dip_index_mean = c(sub_dip_index_mean,0);
-        sub_pair_efficiency_mean = c(sub_pair_efficiency_mean,0);
-        sub_prev_fst_mean = c(sub_prev_fst_mean,0);
-        sub_dip_fitness_ratio_100 = c(sub_dip_fitness_ratio_100,0);
-        sub_dip_fitness_ratio_50 = c(sub_dip_fitness_ratio_50,0);
-        sub_repro_fails = c(sub_repro_fails,0);
-
 
     }
     else{
@@ -202,20 +163,9 @@ for (i in 2:(current_deme+1)){
         sub_unscaled_fitness = c(sub_unscaled_fitness, temp_mean_fitness);
         sub_exp_load_prop_1 = c(sub_exp_load_prop_1, fitness_exp_load[1]);
         sub_exp_load_prop_5 = c(sub_exp_load_prop_5, fitness_exp_load[2]);
-        sub_diploidization_mutations_mean = c(sub_diploidization_mutations_mean, temp_mean_diploidization_mutations);
-        sub_neutral_mutations_mean = c(sub_neutral_mutations_mean, temp_mean_neutral_mutations);
-        sub_dip_index_mean = c(sub_dip_index_mean,temp_mean_dip_index);
-        sub_pair_efficiency_mean = c(sub_pair_efficiency_mean,temp_mean_pair_efficiency);
-        sub_prev_fst_mean = c(sub_prev_fst_mean,temp_prev_fst);
-        sub_dip_fitness_ratio_100 = c(sub_dip_fitness_ratio_100,dip_fit_ratio[1]);
-        sub_dip_fitness_ratio_50 = c(sub_dip_fitness_ratio_50,dip_fit_ratio[0]);
-        sub_repro_fails = c(sub_repro_fails,temp_repro_fails);
-
-
 
     }
 }
-
 extra_pops = rep(0, (2000-size(sim.subpopulations)));
 mean_fitness_line = c(sub_fitnesses_mean, extra_pops);
 var_fitness_line = c(sub_fitnesses_var, extra_pops);
@@ -235,15 +185,7 @@ man_fitness_line = c(sub_man_fitness, extra_pops);
 unscaled_fitness_line = c(sub_unscaled_fitness, extra_pops);
 exp_load_prop_1_line = c(sub_exp_load_prop_1, extra_pops);
 exp_load_prop_5_line = c(sub_exp_load_prop_5, extra_pops);
-dip_mean_mutations_line = c(sub_diploidization_mutations_mean, extra_pops);
-neutral_mean_mutations_line = c(sub_neutral_mutations_mean, extra_pops);
-dip_index_line = c(sub_dip_index_mean, extra_pops);
-pair_efficiency_line = c(sub_pair_efficiency_mean, extra_pops);
-prev_fst_line = c(sub_prev_fst_mean, extra_pops);
-repro_fails_line = c(sub_repro_fails, extra_pops);
 
-dip_fit_ratio_100_line = c(sub_dip_fitness_ratio_100, extra_pops);
-dip_fit_ratio_50_line = c(sub_dip_fitness_ratio_50, extra_pops);
 
 writeFile(mean_fitness_file, paste(mean_fitness_line, sep=","), append = T);
 writeFile(var_fitness_file, paste(var_fitness_line, sep=","), append = T);
@@ -263,24 +205,60 @@ writeFile(unscaled_fitness_file, paste(unscaled_fitness_line, sep=","), append =
 writeFile(exp_load_1_file, paste(exp_load_prop_1_line, sep=","), append = T);
 writeFile(exp_load_5_file, paste(exp_load_prop_5_line, sep=","), append = T);
 writeFile(pop_size_file, paste(pop_size_line, sep=","), append = T);
-writeFile(mean_diploidization_mutations_file, paste(dip_mean_mutations_line, sep=","), append = T);
-writeFile(mean_neutral_mutations_file, paste(neutral_mean_mutations_line, sep=","), append = T);
-writeFile(dip_index_file, paste(dip_index_line, sep=","), append = T);
-writeFile(pair_efficiency_file, paste(pair_efficiency_line, sep=","), append = T);
-writeFile(prev_fst_file, paste(prev_fst_line, sep=","), append = T);
-writeFile(repro_fails_file, paste(repro_fails_line, sep=","), append = T);
-
-writeFile(dip_fitness_ratio_file_100, paste(dip_fit_ratio_100_line, sep=","), append = T);
-writeFile(dip_fitness_ratio_file_50, paste(dip_fit_ratio_50_line, sep=","), append = T);
 
 
-core_dip_test_line = hartigan_dip_test_list(sim.subpopulations[1]);
-mid_dip_test_line = hartigan_dip_test_list(sim.subpopulations[round(current_deme/2)]);
-edge_dip_test_line = hartigan_dip_test_list(sim.subpopulations[current_deme-3]);
-writeFile(core_diptest_file, paste(c((community.tick-start_exp_tick),core_dip_test_line), sep=","), append = T);
-writeFile(middle_diptest_file, paste(c((community.tick-start_exp_tick),mid_dip_test_line), sep=","), append = T);
-writeFile(edge_diptest_file, paste(c((community.tick-start_exp_tick),edge_dip_test_line), sep=","), append = T);
+//// SFS calcs
+if(size(sim.subpopulations) == 2){
+    sfs_core = get_sfs_single(2);
+    sfs_mid = get_sfs_single(2);
+    sfs_edge = get_sfs_single(2);
+}
+else{
+    sfs_core = get_sfs(3);
+    if(current_deme > 6){
+        sfs_mid = get_sfs(current_deme/2);
+        sfs_edge = get_sfs(current_deme-2);
+    }
+    else{
+        sfs_mid = 0.0;
+        sfs_edge = 0.0;
+    }
+}
+n_mutations = size(sim.mutations);
+writeFile(num_mutations_file, paste(c((community.tick-2),n_mutations), sep=","), append = T);
+writeFile(core_site_frequencies_file, paste(c((community.tick-2),sfs_core), sep=","), append = T);
+writeFile(middle_site_frequencies_file, paste(c((community.tick-2),sfs_mid), sep=","), append = T);
+writeFile(edge_site_frequencies_file, paste(c((community.tick-2),sfs_edge), sep=","), append = T);
 
+if(dom_pattern == "DFE"){
+
+
+
+    selection_fs_core = get_selection_frequency_spectrum(3);
+    het_fs_core = get_h_frequency_spectrum(3);
+
+    if(current_deme > 6){
+        selection_fs_mid = get_selection_frequency_spectrum(current_deme/2);
+        het_fs_mid = get_h_frequency_spectrum(current_deme/2);
+        selection_fs_edge = get_selection_frequency_spectrum(current_deme-2);
+        het_fs_edge = get_h_frequency_spectrum(current_deme-2);
+    }
+    else{
+        selection_fs_mid = 0.0;
+        het_fs_mid = 0.0;
+        selection_fs_edge = 0.0;
+        het_fs_edge = 0.0;
+    }
+
+
+    writeFile(core_selection_frequencies_file, paste(c((community.tick-2),selection_fs_core), sep=","), append = T);
+    writeFile(core_het_frequencies_file, paste(c((community.tick-2),het_fs_core), sep=","), append = T);
+    writeFile(middle_selection_frequencies_file, paste(c((community.tick-2),selection_fs_mid), sep=","), append = T);
+    writeFile(middle_het_frequencies_file, paste(c((community.tick-2),het_fs_mid), sep=","), append = T);
+    writeFile(edge_selection_frequencies_file, paste(c((community.tick-2),selection_fs_edge), sep=","), append = T);
+    writeFile(edge_het_frequencies_file, paste(c((community.tick-2),het_fs_edge), sep=","), append = T);
+}
+//////////
 
 //print to std out
 print("tick: " + community.tick + " time: " + time() + " start: " + fitness_start + " mid: " + fitness_mid + " edge: " + fitness_edge + " demes: " + (current_deme+1) + " speed: " + speed);

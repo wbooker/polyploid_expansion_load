@@ -1,21 +1,49 @@
 #########run a series of models with different porameters
 
-#INHERITANCE=("diploid" "allo" "auto")
-#DOMINANCE=("DFE")
-#K=(100)
-#for i in "${INHERITANCE[@]}"
-#do
-#    for d in "${DOMINANCE[@]}"
-#    do
-#       for k in "${K[@]}"
-#        do
-#           for j in {1..25}
-#            do
-#            sbatch slurm/run_slim.sh $i $d $k 0.000 polyploid_all_DFE.slim
-#           done
-#       done
-#   done
-#done
+# INHERITANCE=("auto")
+# DOMINANCE=("bd_dr")
+# K=(100)
+# for i in "${INHERITANCE[@]}"
+# do
+#     for d in "${DOMINANCE[@]}"
+#     do
+#        for k in "${K[@]}"
+#         do
+#            for j in {1..55}
+#             do
+#             sbatch slurm/run_slim.sh $i $d $k -0.005 0.005 2.5e-08 2.5e-09 1.0e-06 exp polyploid_expansion.slim
+#            done
+#        done
+#    done
+# done
+
+SEL=(0.001 0.01 0.005)
+RHO=(1e-8 1e-7 1e-6)
+for s in "${SEL[@]}"
+do
+    for r in "${RHO[@]}"
+    do
+        for j in {1..30}
+        do
+            sbatch slurm/run_dip_slim.sh diff 1000 bd_dr 100 $s -$s 2.5e-8 2.5e-9 1e-3 $r exp 1 0 85 1 output/revision_run/no_PAFC
+        done
+    done
+done
+
+# SEL=(0.01 0.001 0.005)
+# RHO=(1e-6 1e-7 1e-8)
+# for s in "${SEL[@]}"
+# do
+#     for r in "${RHO[@]}"
+#     do
+#         for j in {1..65}
+#         do
+#             sbatch slurm/run_dip_slim_dom.sh dom 4 bd_dr 100 $s -$s 2.5e-8 2.5e-9 1e-9 $r exp 1 output/revision_run/dip
+#         done
+#     done
+# done        
+
+ 
 
 #INHERITANCE=("diploid" "auto")
 #DOMINANCE=("recessive")
@@ -58,28 +86,6 @@
 #        done
 #    done
 #done
-
-INHERITANCE=("allo" "diploid")
-DOMINANCE=("recessive" "additive" "DFE")
-K=(100)
-b_s=(0.000)
-rho=(2.5e-8)
-for i in "${INHERITANCE[@]}"
-do
-   for d in "${DOMINANCE[@]}"
-   do
-       for k in "${K[@]}"
-       do
-           for r in "${rho[@]}"
-           do
-               for j in {1..4}
-               do
-               sbatch slurm/run_slim.sh $i $d $k 0 $r polyploid_expansion.slim
-               done
-           done
-       done
-   done
-done
 
 # INHERITANCE=("diploid" "auto")
 # DOMINANCE=("recessive" "additive")

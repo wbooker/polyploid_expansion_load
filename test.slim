@@ -1,80 +1,96 @@
 initialize()
 {
-	//set inheritance
-	defineGlobal("inheritance", "auto");
-	//defineGlobal("dom_pattern", "DFE");
-	//defineGlobal("dip_model", "dom"); // diploidization 
-	//defineGlobal("remove_dip_muts", 1); // diploidization model
-
+	//defineGlobal("inheritance", "diploid");
+	//defineGlobal("dom_pattern", "additive");
 
 	//set population parameters
 	//defineConstant("K", 100); // carrying-capacity density
 	//defineConstant("mig_rate", 0.05); //mig rate
 	//defineConstant("r", log(2)); //growth rate
 	//defineConstant("u_del", 2.5e-8); // deleterious mutation_rate
-	//defineConstant("u_dip", 2.5e-10); // diploidization mutation_rate
 	//defineConstant("u_ben", 2.5e-9); // beneficial mutation_rate
+	//defineConstant("u", 2.5e-8); // deleterious mutation_rate	
 	//defineConstant("b_s", 0.000); // beneficial selection coefficient
 	//defineConstant("d_s", -0.005); // deleterious selection coefficient
 	//defineConstant("g_size", 999999); // genome size
-	//defineConstant("rho", 1e-6); //recombination rate
-	//defineConstant("s_dist", "exp"); //distribution type for d_s
-	//defineConstant("dip_lambda", 2); // n_mutations required for dom model
 
-	//tick to start expanding
-	defineConstant("start_exp_tick", 5001); //make sure to change the 2 tick events triggered here if this changes too
-
+	defineConstant("start_exp_tick", 10001); //make sure to change the 2 tick events triggered here if this changes too
 
 	//set as nonWF model
 	initializeSLiMModelType("nonWF");
 	
-	//set mutation rate, u_t is rate with all mutations
 	if(b_s > 0)
-	{
-		defineGlobal("u_t", (u_del + u_dip + u_ben));
-	}
+		defineGlobal("u_t", (u_del + u_ben));
 	else
-	{
-		defineGlobal("u_t", (u_del + u_dip));
-	}
+		defineGlobal("u_t", u_del);
 
-	//
+	//defineConstant("rho", u_t); // recombination_rate
+
+	//set mutation rate
 	initializeMutationRate(u_t);
 	
-	//beneficial
+	// m1 mutation type: beneficial
 	initializeMutationType("m1", 0.5, "f", 0.0);
-
-	//deleterious
+	m1.color = "green"; 
+	
+	// m2 mutation type: deleterious
 	initializeMutationType("m2", 0.5, "f", 0.0);
-
-	initializeMutationType("m3", 0.5, "f", 0.0);
-	m3.color = "cornflowerblue"; 
-
-	initializeMutationType("m4", 0.5, "f", 0.0);
-
-	//make sure mutations don't fix permanently
+	m2.color = "red"; 
+	//ensure mutations don't convert for tracking
 	m1.convertToSubstitution = F;
 	m2.convertToSubstitution = F;
-	m3.convertToSubstitution = F;
-	m4.convertToSubstitution = F;
-
+	
+	
 	if(b_s > 0)
-		initializeGenomicElementType("g1", c(m1, m2, m3, m4), c((u_ben/u_t),(u_del/u_t),(u_dip/u_t),(u_dip/u_t)));
+		initializeGenomicElementType("g1", c(m1, m2), c((u_ben/u_t),(u_del/u_t)));
 	else
-		initializeGenomicElementType("g1", c(m2,m3,m4), c((u_del/u_t),(u_dip/u_t),(u_dip/u_t)));
+		initializeGenomicElementType("g1", m2, 1);
 	
 	// uniform chromosome of length 10 kb with uniform recombination
 	initializeGenomicElement(g1, 0, g_size);
 	initializeRecombinationRate(rho);
-
 	
+
 	defineGlobal("c_tag", 0);
 	defineGlobal("previous_deme", 0);
 	source("src/model_functions.slim");
 
 	// define heterozygote coefficients depending on inheritance and dominance pattern, if not DFE
+	
+	
+	if(inheritance == "diploid"){
+    	defineGlobal("h_m1", c(0.0, 0.5, 1.0)); // additive default
+		if(dom_pattern == "recessive")
+			defineGlobal("h_m1", c(0.0, 0.0, 1.0));
+		if(dom_pattern == "overdominance_1")
+			defineGlobal("h_m1", c(0.0, 1.0, 0.0));
+		if(dom_pattern == "overdominance_2")
+			defineGlobal("h_m1", c(0.0, 1.0, 0.8));
+		if(dom_pattern == "overdominance_3")
+			defineGlobal("h_m1", c(0.0, 1.0, 0.5)); 
+		if(dom_pattern == "underdominance_1")
+			defineGlobal("h_m1", c(0.0, -0.5, 1.0)); 
+		if(dom_pattern == "underdominance_2")
+			defineGlobal("h_m1", c(0.0, -1.0, 1.0));
 
-	defineGlobal("h_m1", c(0.0, 0.25, 0.5, 0.75, 1.0)); // additive default
+        defineGlobal("h_m2", h_m1);
+
+		if(dom_pattern == "br_dd"){
+			defineGlobal("h_m1", c(0.0, 0.0, 1.0));
+			defineGlobal("h_m2", c(0.0, 1.0, 1.0));
+        }
+		if(dom_pattern == "bd_dr"){
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0));
+			defineGlobal("h_m2", c(0.0, 0.0, 1.0));
+		}
+		if(dom_pattern == "DFE"){
+			//beneficial are dominant here
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0));
+		}
+    }
+	else
+	{
+		defineGlobal("h_m1", c(0.0, 0.25, 0.5, 0.75, 1.0)); // additive default
 		if(dom_pattern == "recessive")
 			defineGlobal("h_m1", c(0.0, 0.0, 0.0, 0.0, 1.0));
 		if(dom_pattern == "duplex")
@@ -102,6 +118,7 @@ initialize()
 			//beneficial are dominant here
 			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 1.0));
 		}
+	}
 
 }
 
@@ -153,15 +170,13 @@ mutation(m2)
 		if(s_dist=="gamma"){
 			mut_s = rgamma(1,d_s,0.16);
 		}
-		if(s_dist=="exp"){
-			mut_s = rexp(1,d_s);
-		}		
 		mut.setValue("s", mut_s);
 		mut.setValue("h_m",h_m2);
 		mut.setValue("dom",0.0);
 	}
 	return T;
 }
+
 
 fitnessEffect()
 {
@@ -179,46 +194,6 @@ fitnessEffect()
 	return product(fit_vector);
 }
 
-mutation(m4)
-{
-	//if diff model, add all mutations
-	if(dip_model == "diff")
-		return T;
-	// if we already have an m3 mutation at the site, allow
-	// the new m4 mutation; we will remove the stack below
-	if (genome.containsMarkerMutation(m3, mut.position))
-		return T;
-
-	// no m3 mutation is present, so unique down
-	return DIP_MUTS[mut.position]; 
-}
-
-late() {
-	if(dip_model == "dom")
-	{	
-		// implement back-mutations from A to a
-		m4_muts = sim.mutationsOfType(m4);
-
-		// do we have any m3 mutations segregating?
-		// if so, we have m2/m3 stacked mutations to remove
-		if (m4_muts.length() > 0)
-		{
-			genomes = sim.subpopulations.genomes;
-			counts = genomes.countOfMutationsOfType(m4);
-			hasStacked = genomes[counts > 0];
-
-			for (genome in hasStacked)
-			{
-				stacked_m4 = genome.mutationsOfType(m4);
-				stackPositions = stacked_m4.position;
-				all_m3 = genome.mutationsOfType(m3);
-				s = (match(all_m3.position, stackPositions) >= 0);
-				stacked_m3 = all_m3[s];
-				genome.removeMutations(c(stacked_m4, stacked_m3));
-			}
-		}
-	}
-}
 
 1 early()
 {
@@ -227,12 +202,16 @@ late() {
 		stop("late(): error for dominance " + dom_pattern);
 	if(match(inheritance, c("auto", "allo", "diploid")) == -1)
 		stop("late(): error for inheritance " + inheritance);
-	if(match(s_dist, c("gamma", "fixed", "exp")) == -1)
-		stop("late(): error for s distribution " + s_dist);
 
 	print(inheritance);
 	print(dom_pattern);
-	print("k: " + K +  " r: " + r + " m: " + mig_rate + " reg_mu: " + u_del + " dip_mu: " + u_dip);
+	print("k: " + K +  " r: " + r + " m: " + mig_rate);
+	if(dom_pattern != "DFE"){
+    	print("h_m1");
+    	print(h_m1);
+    	print("h_m2");
+    	print(h_m2);
+	}
 	//first deme holds extra chromosomes of every individual. individuals don't migrate from or into here
 	sim.addSubpop(1, K*5);
 
@@ -252,15 +231,18 @@ late() {
 			sim.subpopulations[i - 1].individuals[j].setValue("mig",0);
 		}
 	}
-
-	if(dip_model == "dom"){
-		target = p1.genomes[0];
-		target.addNewDrawnMutation(m3, 0:g_size);
- 		defineConstant("DIP_MUTS", target.mutations); 
-		target.removeMutations();
-	}
-
 }
+
+
+//remove mutations from 1 genome in each diploid population (reservoir and local) to make it effectively diploid if diploid inheritance
+early() {
+	if(inheritance == "diploid")
+	{
+		sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals.genome2.removeMutations();
+		sim.subpopulations[0].individuals.genome1.removeMutations();
+	}
+}
+
 
 survival(p1) {
 // since p1 has fitness of 1 for calc purposes, we need to kill them if age is greater than 1
@@ -270,16 +252,29 @@ survival(p1) {
  return NULL;
 }
 
-1:5000 early()
-{
-	if(remove_dip_muts == 1)
-	{
-		dip_muts = sim.mutationsOfType(m3);
-		neut_muts = sim.mutationsOfType(m4);
-		sim.subpopulations.genomes.removeMutations(dip_muts);
-		sim.subpopulations.genomes.removeMutations(neut_muts);
-	}
+
+// need to set tags for new individuals after selection induced mortality
+early(){
+
+	inds = sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	inds.tag = tag;
 }
+
+2: first() {
+
+	inds = sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	inds.tag = tag;
+}
+
+2: late() {
+
+	inds = sim.subpopulations[1:(size(sim.subpopulations)-1)].individuals;
+	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
+	inds.tag = tag;
+}
+
 
 //open up other populations after 10k generations
 
@@ -291,9 +286,10 @@ early()
 		inds = sim.subpopulations[i - 1].individuals;
 		inds[inds.age > 0].fitnessScaling = 0.0;
 	}
+	
 	allPopSizes = sim.subpopulations.individualCount;
 	//all migration
-	for (i in 2:(size(sim.subpopulations) - 1))
+	for (i in 2:(size(sim.subpopulations)))
 	{
 		nIndividuals = allPopSizes[i-1];
 		if (nIndividuals > 0){		
@@ -308,7 +304,7 @@ early()
 					{
 						dest = sample(c(i,i-2),1);
 						if(i==2)
-							dest = i;
+							dest = sample(c(i,i-1),1);
 						if(i==6){
 							if(community.tick < start_exp_tick)
 								dest = i-2;
@@ -323,6 +319,7 @@ early()
 	}
 }
 
+
 //set reproduction
 reproduction()
 {
@@ -331,6 +328,7 @@ reproduction()
 	for (i in 2:size(sim.subpopulations))
 	{
 		N_star = (exp(r) * sim.subpopulations[i - 1].individualCount) / (1 + ((exp(r) - 1) * sim.subpopulations[i - 1].individualCount / K));
+		//N_star = sim.subpopulations[i-1].individualCount + (r * sim.subpopulations[i-1].individualCount * (1 - (sim.subpopulations[i-1].individualCount / K)));		
 		if (N_star > 0)
 		{
 			N_prime = rpois(1, N_star);
@@ -338,32 +336,43 @@ reproduction()
 			fitness = sim.subpopulations[i - 1].cachedFitness(NULL);
 			parents1 = sample(inds, N_prime, replace=T);
 			parents2 = sample(inds, N_prime, replace=T);
-			if(dip_model == "dom")
+			if(inheritance == "diploid")
+			{
+				for (j in seqLen(N_prime))
+				{
+				p1_offspring_order = sample(seqLen(2),2);
+				p2_offspring_order = sample(seqLen(2),2);
+
+				p1_chroms = c(parents1[j].genome1, sim.subpopulations[0].individuals[parents1[j].tag].genome2);
+				p2_chroms = c(parents2[j].genome1, sim.subpopulations[0].individuals[parents2[j].tag].genome2);
+
+				breakpoints1 = sim.chromosome.drawBreakpoints();
+				breakpoints2 = sim.chromosome.drawBreakpoints();
+				offspring = sim.subpopulations[i - 1].addRecombinant(p1_chroms[p1_offspring_order[0]], p1_chroms[p1_offspring_order[1]], breakpoints1, p2_chroms[p2_offspring_order[0]], p2_chroms[p2_offspring_order[1]], breakpoints2);
+				other = sim.subpopulations[0].addRecombinant(p1_chroms[p1_offspring_order[0]], p1_chroms[p1_offspring_order[1]], breakpoints1, p2_chroms[p2_offspring_order[0]], p2_chroms[p2_offspring_order[1]], breakpoints2);
+				defineGlobal("c_tag", (c_tag+1));
+				//c_tag = runif(1);
+				offspring.tagF = c_tag; 
+				other.tagF = c_tag;
+				offspring.setValue("pop", i);				
+				other.setValue("pop", i);
+				offspring.setValue("mig", 0);
+				}
+			}
+			else
 			{
 				for (j in seqLen(N_prime))
 				{
 					p1_chroms = c(parents1[j].genomes, sim.subpopulations[0].individuals[parents1[j].tag].genomes);
 					p2_chroms = c(parents2[j].genomes, sim.subpopulations[0].individuals[parents2[j].tag].genomes);
-					p1_order = seq(from = 0, to = 3, by = 1);
-					p2_order = seq(from = 0, to = 3, by = 1);
-
-					dip_muts_1 = unique(p1_chroms.mutationsOfType(m3));
-					dip_muts_2 = unique(p2_chroms.mutationsOfType(m3));					
-					n_dip_muts_1 = size(which(p1_chroms.mutationCountsInGenomes(dip_muts_1)>0));
-					n_dip_muts_2 = size(which(p2_chroms.mutationCountsInGenomes(dip_muts_2)>0));
-
-					if(n_dip_muts_1 > dip_lambda)
-						n_dip_muts_1 = dip_lambda;
-					if(n_dip_muts_2 > dip_lambda)
-						n_dip_muts_2 = dip_lambda;
-					dip_prob_seq_1 = c(rep(1, n_dip_muts_1), rep(0,(dip_lambda-n_dip_muts_1)));
-					dip_prob_seq_2 = c(rep(1, n_dip_muts_2), rep(0,(dip_lambda-n_dip_muts_2)));
-
-					if(sample(dip_prob_seq_1, 1, replace = F) == 0)
+					p1_order = c(sample(seq(from = 0, to = 1, by = 1),2),sample(seq(from = 2, to = 3, by = 1),2));
+					p2_order = c(sample(seq(from = 0, to = 1, by = 1),2),sample(seq(from = 2, to = 3, by = 1),2));
+					//p1_order = seq(from = 0, to = 3, by = 1);
+					//p2_order = seq(from = 0, to = 3, by = 1);
+					if(inheritance == "auto"){
 						p1_order = sample(seqLen(4), 4);
-					if(sample(dip_prob_seq_2, 1, replace = F) == 0)
-						p2_order = sample(seqLen(4), 4);	
-
+						p2_order = sample(seqLen(4), 4);
+					}
 					breakpoints1 = sim.chromosome.drawBreakpoints();
 					breakpoints2 = sim.chromosome.drawBreakpoints();
 					offspring = sim.subpopulations[i - 1].addRecombinant(p1_chroms[p1_order[0]], p1_chroms[p1_order[1]], breakpoints1, p2_chroms[p2_order[0]], p2_chroms[p2_order[1]], breakpoints2);
@@ -372,10 +381,9 @@ reproduction()
 					other = sim.subpopulations[0].addRecombinant(p1_chroms[p1_order[2]], p1_chroms[p1_order[3]], breakpoints1, p2_chroms[p2_order[2]], p2_chroms[p2_order[3]], breakpoints2);
 					defineGlobal("c_tag", (c_tag+1));
 					//c_tag = runif(1);
-					offspring.tagF = c_tag; 
+					offspring.tagF = c_tag; //these aren't getting set for some reason
 					other.tagF = c_tag;
-					offspring.setValue("pop", i);
-					offspring.setValue("dip_index", mean(c(n_dip_muts_1/dip_lambda,n_dip_muts_2/dip_lambda)));				
+					offspring.setValue("pop", i);				
 					other.setValue("pop", i);
 					offspring.setValue("mig", 0);
 				}
@@ -385,26 +393,11 @@ reproduction()
 	self.active = 0;
 }
 
-5001:6001 late()
+10000:10011 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
 	}
-}
-
-// need to set tags for new individuals after selection induced mortality
-early(){
-
-	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
-	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
-	inds.tag = tag;
-}
-
-2: late() {
-
-	inds = sim.subpopulations[seq(from = 1, to = (size(sim.subpopulations)-1), by = 1)].individuals;
-	tag = match(inds.tagF, sim.subpopulations[0].individuals.tagF);
-	inds.tag = tag;
 }
 
 //do a quick check to make sure tags are right every 100 gens
@@ -436,11 +429,15 @@ early(){
 				stop("late(): error for individual " + ind.index);
 	}
 }
-5001:6001 late()
-{
-	outDir_pre = paste0(c(out_dir,"/diploidization-",dip_model,"_dipLambda-",dip_lambda,"_remDipMuts-",remove_dip_muts,"_",dom_pattern,s_dist,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_u_dip-",u_dip,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
 
+10001:10011 late()
+{
+
+	outDir_pre = paste0(c(out_dir,"/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
+	
 	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
+
 	if(match(community.tick, output_ticks) >= 0)
-		source("src/output_dip_dom.slim");
+		source("src/output_reg.slim");
+
 }

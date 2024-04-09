@@ -27,7 +27,7 @@ for(file in file_list){
         print(i)
     }
 
-    auto_mean <- apply(edge_mat, 1, mean, na.rm = TRUE)
+    auto_mean <- apply(edge_mat, 1, mean, na.rm = TRUE) 
     auto_sd <- apply(edge_mat, 1, sd, na.rm = TRUE)
 
 

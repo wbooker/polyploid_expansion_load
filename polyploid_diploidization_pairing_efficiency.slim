@@ -17,7 +17,11 @@ initialize()
 	//defineConstant("b_s", 0.000); // beneficial selection coefficient
 	//defineConstant("d_s", -0.005); // deleterious selection coefficient
 	//defineConstant("g_size", 999999); // genome size
+	//defineConstant("rho", 1e-6); //recombination rate
+	//defineConstant("s_dist", "exp"); //distribution type for d_s
 	//defineConstant("dip_lambda", 100); // number of loci tracking diploidization mutations
+	//defineConstant("pe_inflection", 85); //inflection point for pe model
+	//defineConstant("pe_slope", 1); //slope for pe model
 
 
 	if(dip_model == "diff")
@@ -48,7 +52,7 @@ initialize()
 	}
 
 	//tick to start expanding
-	defineConstant("start_exp_tick", 2501); //make sure to change the 2 tick events triggered here if this changes too
+	defineConstant("start_exp_tick", 5001); //make sure to change the 2 tick events triggered here if this changes too
 
 
 	//set as nonWF model
@@ -88,8 +92,10 @@ initialize()
 	m4.convertToSubstitution = F;
 	m3.mutationStackPolicy = "f";
 
-	if(b_s > 0)
+	if(b_s > 0){
 		initializeGenomicElementType("g1", c(m1, m2), c((u_ben/u_t),(u_del/u_t)));
+		initializeGenomicElementType("g2", c(m3,m4), c(1,1));
+	}
 	else{
 		initializeGenomicElementType("g1", c(m2), 1);
 		initializeGenomicElementType("g2", c(m3,m4), c(1,1));
@@ -98,6 +104,8 @@ initialize()
 	//need to create custom mutation rate map so that dip mutations are independent of reg mutations
 	mut_map = 0;
 	mut_rate = u_del;
+	mut_rate_0 = u_del;
+
 	// uniform chromosome of length g_size+dip_lambda kb with uniform recombination
 	for(pos in 0:(size(dip_positions)-1)){
 		if(pos==0)
@@ -106,6 +114,7 @@ initialize()
 				initializeGenomicElement(g2, dip_positions[pos], dip_positions[pos]);
 				mut_map = c(dip_positions[pos]-1, dip_positions[pos]);
 				mut_rate = c(mut_rate, u_dip);
+				mut_rate_0 = c(mut_rate_0, 0);
 		}
 		else{
 			if(pos==(size(dip_positions)-1)){
@@ -116,10 +125,12 @@ initialize()
 					mut_map[size(mut_map)-1] = mut_map[size(mut_map)-1]+1;
 					mut_map = c(mut_map,(g_size+dip_lambda));
 					mut_rate = c(mut_rate, u_del);
+					mut_rate_0 = c(mut_rate_0, u_del);
 				}
 				else
 				{
 					mut_rate = c(mut_rate, u_del,u_dip,u_del);
+					mut_rate_0 = c(mut_rate_0, u_del,0,u_del);
 					mut_map = c(mut_map, dip_positions[pos]-1, dip_positions[pos],(g_size+dip_lambda));
 					initializeGenomicElement(g1, dip_positions[pos-1]+1, (dip_positions[pos]-1));
 					initializeGenomicElement(g2, dip_positions[pos], dip_positions[pos]);
@@ -140,15 +151,25 @@ initialize()
 					initializeGenomicElement(g1, dip_positions[pos-1]+1, (dip_positions[pos]-1));
 					initializeGenomicElement(g2, dip_positions[pos], dip_positions[pos]);
 					mut_rate = c(mut_rate, u_del,u_dip);
+					mut_rate_0 = c(mut_rate_0, u_del,0);
 					mut_map = c(mut_map, dip_positions[pos]-1, dip_positions[pos]);		
 				}
 			}
 		}
 	}
+	defineGlobal("mut_rate", mut_rate);
+	defineGlobal("mut_map", mut_map);
 	print(dip_positions);
 	print(mut_rate);
 	print(mut_map);
-	initializeMutationRate(mut_rate,mut_map);
+	if(remove_dip_muts == 1)
+	{
+		initializeMutationRate(mut_rate_0,mut_map);
+	}
+	else
+	{
+		initializeMutationRate(mut_rate,mut_map);	
+	}
 	//initializeGenomicElement(g1, 0, g_size);
 	initializeRecombinationRate(rho);
 
@@ -158,48 +179,68 @@ initialize()
 	source("src/model_functions.slim");
 
 	// define heterozygote coefficients depending on inheritance and dominance pattern, if not DFE
+	
+	if(inheritance == "diploid"){
+    	defineGlobal("h_m1", c(0.0, 0.5, 1.0)); // additive default
+		if(dom_pattern == "recessive")
+			defineGlobal("h_m1", c(0.0, 0.0, 1.0));
+		if(dom_pattern == "overdominance_1")
+			defineGlobal("h_m1", c(0.0, 1.0, 0.0));
+		if(dom_pattern == "overdominance_2")
+			defineGlobal("h_m1", c(0.0, 1.0, 0.8));
+		if(dom_pattern == "overdominance_3")
+			defineGlobal("h_m1", c(0.0, 1.0, 0.5)); 
+		if(dom_pattern == "underdominance_1")
+			defineGlobal("h_m1", c(0.0, -0.5, 1.0)); 
+		if(dom_pattern == "underdominance_2")
+			defineGlobal("h_m1", c(0.0, -1.0, 1.0));
 
-	if(dom_pattern == "additive")
-		defineGlobal("h_m1", c(0.0, 0.25, 0.5, 0.75, 1.0));
-	if(dom_pattern == "recessive")
-		defineGlobal("h_m1", c(0.0, 0.0, 0.0, 0.0, 1.0));
-	if(dom_pattern == "duplex")
-		defineGlobal("h_m1", c(0.0, 0.0, 0.0, 1.0, 1.0));
-	if(dom_pattern == "br_dd")
-		defineGlobal("h_m1", c(0.0, 0.0, 0.0, 0.0, 1.0));
-	if(dom_pattern == "bd_dr")
-		defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 1.0));
-	if(dom_pattern == "overdominance_1")
-		defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 0.0));
-	if(dom_pattern == "overdominance_2")
-		defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 0.8));
-	if(dom_pattern == "overdominance_3")
-		defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 0.5)); 
-	if(dom_pattern == "underdominance_1")
-		defineGlobal("h_m1", c(0.0, -0.5, -0.5, -0.5, 0.0)); 
-	if(dom_pattern == "underdominance_2")
-		defineGlobal("h_m1", c(0.0, -1.0, -1.0, -1.0, 0.0)); 
+        defineGlobal("h_m2", h_m1);
 
-	if(dom_pattern == "additive")
-		defineGlobal("h_m2", c(0.0, 0.25, 0.5, 0.75, 1.0));
-	if(dom_pattern == "recessive")
-		defineGlobal("h_m2", c(0.0, 0.0, 0.0, 0.0, 1.0));
-	if(dom_pattern == "duplex")
-		defineGlobal("h_m2", c(0.0, 0.0, 0.0, 1.0, 1.0));
-	if(dom_pattern == "br_dd")
-		defineGlobal("h_m2", c(0.0, 1.0, 1.0, 1.0, 1.0));
-	if(dom_pattern == "bd_dr")
-		defineGlobal("h_m2", c(0.0, 0.0, 0.0, 0.0, 1.0));
-	if(dom_pattern == "overdominance_1")
-		defineGlobal("h_m2", c(0.0, 1.0, 1.0, 1.0, 0.0));
-	if(dom_pattern == "overdominance_2")
-		defineGlobal("h_m2", c(0.0, 1.0, 1.0, 1.0, 0.8));
-	if(dom_pattern == "overdominance_3")
-		defineGlobal("h_m2", c(0.0, 1.0, 1.0, 1.0, 0.5));
-	if(dom_pattern == "underdominance_1")
-		defineGlobal("h_m2", c(0.0, -0.5, -0.5, -0.5, 1.0));
-	if(dom_pattern == "underdominance_2")
-		defineGlobal("h_m2", c(0.0, -1.0, -1.0, -1.0, 1.0)); 
+		if(dom_pattern == "br_dd"){
+			defineGlobal("h_m1", c(0.0, 0.0, 1.0));
+			defineGlobal("h_m2", c(0.0, 1.0, 1.0));
+        }
+		if(dom_pattern == "bd_dr"){
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0));
+			defineGlobal("h_m2", c(0.0, 0.0, 1.0));
+		}
+		if(dom_pattern == "DFE"){
+			//beneficial are dominant here
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0));
+		}
+    }
+	else
+	{
+		defineGlobal("h_m1", c(0.0, 0.25, 0.5, 0.75, 1.0)); // additive default
+		if(dom_pattern == "recessive")
+			defineGlobal("h_m1", c(0.0, 0.0, 0.0, 0.0, 1.0));
+		if(dom_pattern == "duplex")
+			defineGlobal("h_m1", c(0.0, 0.0, 0.0, 1.0, 1.0));
+		if(dom_pattern == "overdominance_1")
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 0.0));
+		if(dom_pattern == "overdominance_2")
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 0.8));
+		if(dom_pattern == "overdominance_3")
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 0.5)); 
+		if(dom_pattern == "underdominance_1")
+			defineGlobal("h_m1", c(0.0, -0.5, -0.5, -0.5, 0.0)); 
+		if(dom_pattern == "underdominance_2")
+			defineGlobal("h_m1", c(0.0, -1.0, -1.0, -1.0, 0.0)); 
+        defineGlobal("h_m2", h_m1);        
+		if(dom_pattern == "br_dd"){
+			defineGlobal("h_m1", c(0.0, 0.0, 0.0, 0.0, 1.0));
+			defineGlobal("h_m2", c(0.0, 1.0, 1.0, 1.0, 1.0));
+        }
+		if(dom_pattern == "bd_dr"){
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 1.0));
+			defineGlobal("h_m2", c(0.0, 0.0, 0.0, 0.0, 1.0));
+        }
+		if(dom_pattern == "DFE"){
+			//beneficial are dominant here
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 1.0));
+		}
+	}
 
 }
 
@@ -214,29 +255,11 @@ mutation(m1)
 			mut.setValue("exp_mutation_1", 1);
 	}
 
-	//DFE currently doesn't do anything with beneficial alleles
-	if(dom_pattern=="DFE"){
-		mut.setValue("s", 0.000);
-		mut.setValue("h_m",c(0.0, 0.25, 0.5, 0.75, 1.0));
-		/*
-		if(inheritance=="diploid")
-		{
-			mut.setValue("dom", calc_h_from_s(mut.selectionCoeff, 0.978, 50328));
-			mut.setValue("h_m",c(0,mut.getValue("dom"),1.0));
-		}
-		else
-		{
-			mut.setValue("dom", calc_h_from_s(mut.selectionCoeff, 0.978, 50328));
-			mut.setValue("h_m",get_tetraploid_h_vector(1-mut.getValue("dom")));
-		}
-		*/
-	}
-	else{
-		mut.setValue("s", b_s);
-		mut.setValue("h_m",h_m1);
-	}
+	//currently all beneficials are fixed, even for DFE
+	mut.setValue("s", b_s);
+	mut.setValue("h_m",h_m1);
+	mut.setValue("dom",0.0);
 	return T;
-
 }
 
 mutation(m2)
@@ -265,11 +288,20 @@ mutation(m2)
 		}
 	}
 	else{
-		mut.setValue("s", d_s);
+		mut_s = d_s;
+		if(s_dist=="gamma"){
+			mut_s = rgamma(1,d_s,0.16);
+		}
+		if(s_dist=="exp"){
+			mut_s = rexp(1,d_s);
+		}		
+		mut.setValue("s", mut_s);
 		mut.setValue("h_m",h_m2);
+		mut.setValue("dom",0.0);
 	}
 	return T;
 }
+
 fitnessEffect()
 {
 	if(individual.subpopulation == p1)
@@ -347,6 +379,8 @@ late() {
 		stop("late(): error for dominance " + dom_pattern);
 	if(match(inheritance, c("auto", "allo", "diploid")) == -1)
 		stop("late(): error for inheritance " + inheritance);
+	if(match(s_dist, c("gamma", "fixed", "exp")) == -1)
+		stop("late(): error for s distribution " + s_dist);
 
 	print(inheritance);
 	print(dom_pattern);
@@ -396,14 +430,11 @@ survival(p1) {
  return NULL;
 }
 
-1:2500 early()
+5000 early()
 {
 	if(remove_dip_muts == 1)
 	{
-		dip_muts = sim.mutationsOfType(m3);
-		neut_muts = sim.mutationsOfType(m4);
-		sim.subpopulations.genomes.removeMutations(dip_muts);
-		sim.subpopulations.genomes.removeMutations(neut_muts);
+		sim.chromosome.setMutationRate(mut_rate,mut_map);
 	}
 }
 
@@ -508,12 +539,22 @@ reproduction()
 							p_cd = dip_lambda - size(get_same_position_m3(p1_chroms[2], p1_chroms[3], dip_positions));
 
 							//calculate pairing efficiency
+							/*
 							p_ab = 	get_pairing_efficiency(p_ab / dip_lambda * 100);
 							p_ac = 	get_pairing_efficiency(p_ac / dip_lambda * 100);
 							p_ad = 	get_pairing_efficiency(p_ad / dip_lambda * 100);
 							p_bc = 	get_pairing_efficiency(p_bc / dip_lambda * 100);
 							p_bd = 	get_pairing_efficiency(p_bd / dip_lambda * 100);
 							p_cd = 	get_pairing_efficiency(p_cd / dip_lambda * 100);
+							*/
+							
+							//for original equation params, use pe_inflection=85 and pe_slope=1
+							p_ab = 	get_pairing_efficiency_modified((p_ab / dip_lambda * 100), pe_inflection, pe_slope);
+							p_ac = 	get_pairing_efficiency_modified((p_ac / dip_lambda * 100), pe_inflection, pe_slope);
+							p_ad = 	get_pairing_efficiency_modified((p_ad / dip_lambda * 100), pe_inflection, pe_slope);
+							p_bc = 	get_pairing_efficiency_modified((p_bc / dip_lambda * 100), pe_inflection, pe_slope);
+							p_bd = 	get_pairing_efficiency_modified((p_bd / dip_lambda * 100), pe_inflection, pe_slope);
+							p_cd = 	get_pairing_efficiency_modified((p_cd / dip_lambda * 100), pe_inflection, pe_slope);
 
 							//choose pairs weighted on pairing efficiency
 							p_abcd = mean(c(p_ab, p_cd));
@@ -555,6 +596,7 @@ reproduction()
 							p_bd = dip_lambda - size(get_same_position_m3(p2_chroms[1], p2_chroms[3], dip_positions));
 							p_cd = dip_lambda - size(get_same_position_m3(p2_chroms[2], p2_chroms[3], dip_positions));
 
+							/*
 							//calculate pairing efficiency
 							p_ab = 	get_pairing_efficiency(p_ab / dip_lambda * 100);
 							p_ac = 	get_pairing_efficiency(p_ac / dip_lambda * 100);
@@ -562,6 +604,16 @@ reproduction()
 							p_bc = 	get_pairing_efficiency(p_bc / dip_lambda * 100);
 							p_bd = 	get_pairing_efficiency(p_bd / dip_lambda * 100);
 							p_cd = 	get_pairing_efficiency(p_cd / dip_lambda * 100);
+							*/
+							
+							//for original equation params, use pe_inflection=85 and pe_slope=1
+							p_ab = 	get_pairing_efficiency_modified((p_ab / dip_lambda * 100), pe_inflection, pe_slope);
+							p_ac = 	get_pairing_efficiency_modified((p_ac / dip_lambda * 100), pe_inflection, pe_slope);
+							p_ad = 	get_pairing_efficiency_modified((p_ad / dip_lambda * 100), pe_inflection, pe_slope);
+							p_bc = 	get_pairing_efficiency_modified((p_bc / dip_lambda * 100), pe_inflection, pe_slope);
+							p_bd = 	get_pairing_efficiency_modified((p_bd / dip_lambda * 100), pe_inflection, pe_slope);
+							p_cd = 	get_pairing_efficiency_modified((p_cd / dip_lambda * 100), pe_inflection, pe_slope);
+							
 
 							//choose pairs weighted on pairing efficiency
 							p_abcd = mean(c(p_ab, p_cd));
@@ -638,6 +690,10 @@ reproduction()
 							parents1[j] = sample(inds, 1, replace=F);
 							parents2[j] = sample(inds, 1, replace=F);
 						}
+						//need to get out of the loop if pairing efficiency is so low and gets stuck
+						if(repro_fail > 100){
+							break;
+						}
 					}
 				}
 			}
@@ -686,7 +742,7 @@ reproduction()
 	self.active = 0;
 }
 
-2500:3501 late()
+5000:6001 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
@@ -737,15 +793,15 @@ early(){
 				stop("late(): error for individual " + ind.index);
 	}
 }
-2501:3501 late()
+5001:6001 late()
 {
-	outDir_pre = paste0(c(out_dir,"/diploidization-",dip_model,"_dipLambda-",dip_lambda,"_remDipMuts-",remove_dip_muts,"_meioticfFitness-",meiotic_fitness,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_u_dip-",u_dip,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
+	outDir_pre = paste0(c(out_dir,"/diploidization-",dip_model,"_dipLambda-",dip_lambda,"_remDipMuts-",remove_dip_muts,"_meioticfFitness-",meiotic_fitness,"_pe_inflection-",pe_inflection,"_pe_slope-",pe_slope,"_",dom_pattern,"_",s_dist,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_u_dip-",u_dip,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
 
 	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
 	if(match(community.tick, output_ticks) >= 0){
-		if(d_s == 0.0)
-			source("src/output_test.slim");
-		else
-			source("src/output_dip.slim");
+		//if(d_s == 0.0)
+		//	source("src/output_test.slim");
+		//else
+		source("src/output_dip.slim");
 	}
 }

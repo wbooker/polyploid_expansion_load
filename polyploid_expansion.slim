@@ -2,7 +2,7 @@ initialize()
 {
 	//defineGlobal("inheritance", "diploid");
 	//defineGlobal("dom_pattern", "additive");
-
+	//defineGlobal("s_dist", "fixed");
 	//set population parameters
 	//defineConstant("K", 100); // carrying-capacity density
 	//defineConstant("mig_rate", 0.05); //mig rate
@@ -14,7 +14,7 @@ initialize()
 	//defineConstant("d_s", -0.005); // deleterious selection coefficient
 	//defineConstant("g_size", 999999); // genome size
 
-	defineConstant("start_exp_tick", 2501); //make sure to change the 2 tick events triggered here if this changes too
+	defineConstant("start_exp_tick", 5001); //make sure to change the 2 tick events triggered here if this changes too
 
 	//set as nonWF model
 	initializeSLiMModelType("nonWF");
@@ -83,14 +83,16 @@ initialize()
 			defineGlobal("h_m1", c(0.0, 1.0, 1.0));
 			defineGlobal("h_m2", c(0.0, 0.0, 1.0));
 		}
+		if(dom_pattern == "DFE"){
+			//beneficial are dominant here
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0));
+		}
     }
 	else
 	{
 		defineGlobal("h_m1", c(0.0, 0.25, 0.5, 0.75, 1.0)); // additive default
 		if(dom_pattern == "recessive")
 			defineGlobal("h_m1", c(0.0, 0.0, 0.0, 0.0, 1.0));
-		if(dom_pattern == "duplex")
-			defineGlobal("h_m1", c(0.0, 0.0, 0.0, 1.0, 1.0));
 		if(dom_pattern == "overdominance_1")
 			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 0.0));
 		if(dom_pattern == "overdominance_2")
@@ -110,6 +112,14 @@ initialize()
 			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 1.0));
 			defineGlobal("h_m2", c(0.0, 0.0, 0.0, 0.0, 1.0));
         }
+		if(dom_pattern == "DFE"){
+			//beneficial are dominant here
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 1.0));
+		}
+		if(dom_pattern == "duplex"){
+			defineGlobal("h_m1", c(0.0, 1.0, 1.0, 1.0, 1.0));
+			defineGlobal("h_m2", c(0.0, 0.0, 0.0, 1.0, 1.0));
+		}
 	}
 
 }
@@ -125,30 +135,11 @@ mutation(m1)
 			mut.setValue("exp_mutation_1", 1);
 	}
 
-	//DFE currently doesn't do anything with beneficial alleles
-	if(dom_pattern=="DFE"){
-		mut.setValue("s", 0.000);
-		mut.setValue("h_m",h_m1);
-		/*
-		if(inheritance=="diploid")
-		{
-			mut.setValue("dom", calc_h_from_s(mut.selectionCoeff, 0.978, 50328));
-			mut.setValue("h_m",c(0,mut.getValue("dom"),1.0));
-		}
-		else
-		{
-			mut.setValue("dom", calc_h_from_s(mut.selectionCoeff, 0.978, 50328));
-			mut.setValue("h_m",get_tetraploid_h_vector(1-mut.getValue("dom")));
-		}
-		*/
-	}
-	else{
-		mut.setValue("s", b_s);
-		mut.setValue("h_m",h_m1);
-		mut.setValue("dom",0.0);
-	}
+	//currently all beneficials are fixed, even for DFE
+	mut.setValue("s", b_s);
+	mut.setValue("h_m",h_m1);
+	mut.setValue("dom",0.0);
 	return T;
-
 }
 
 mutation(m2)
@@ -177,14 +168,20 @@ mutation(m2)
 		}
 	}
 	else{
-		//mut_s = rgamma(1,d_s,0.16);
-		//mut.setValue("s", mut_s);
-		mut.setValue("s", d_s);
+		mut_s = d_s;
+		if(s_dist=="gamma"){
+			mut_s = rgamma(1,d_s,0.16);
+		}
+		if(s_dist=="exp"){
+			mut_s = rexp(1,d_s);
+		}		
+		mut.setValue("s", mut_s);
 		mut.setValue("h_m",h_m2);
 		mut.setValue("dom",0.0);
 	}
 	return T;
 }
+
 fitnessEffect()
 {
 	if(individual.subpopulation == p1)
@@ -209,6 +206,8 @@ fitnessEffect()
 		stop("late(): error for dominance " + dom_pattern);
 	if(match(inheritance, c("auto", "allo", "diploid")) == -1)
 		stop("late(): error for inheritance " + inheritance);
+	if(match(s_dist, c("gamma", "fixed", "exp")) == -1)
+		stop("late(): error for s distribution " + s_dist);
 
 	print(inheritance);
 	print(dom_pattern);
@@ -399,7 +398,7 @@ reproduction()
 	self.active = 0;
 }
 
-2500:12501 late()
+5000:7001 late()
 {
 	if (sim.subpopulations[size(sim.subpopulations)-1].individualCount > 0){
 		sim.addSubpop(size(sim.subpopulations)+1, 0);
@@ -436,10 +435,10 @@ reproduction()
 	}
 }
 
-2501:12501 late()
+5001:7001 late()
 {
 
-	outDir_pre = paste0(c(out_dir,"/",inheritance,"_",dom_pattern,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
+	outDir_pre = paste0(c(out_dir,"/",inheritance,"_",dom_pattern,"_",s_dist,"_K-",K,"_m-",mig_rate,"_r-",r,"_u_del-",u_del,"_u_ben-",u_ben,"_rho-",rho,"_bs-",b_s,"_ds-",d_s,"_g-",g_size,"_start-",start_exp_tick,"/"));
 	
 	output_ticks = seq(from=start_exp_tick,to=200001,by=10);
 

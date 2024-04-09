@@ -145,8 +145,8 @@ for (i in 2:(current_deme+1)){
     temp_pop_size = size(sim.subpopulations[i-1].individuals);
     //fitness_exp_load = c(0.0,0.0,0.0);
     fitness_exp_load = calc_fitness_exp_load(sim.subpopulations[i-1]);
-    temp_mean_diploidization_mutations = get_mutation_per_ind_type(sim.subpopulations[i-1], m3);
-    temp_mean_neutral_mutations = get_mutation_per_ind_type(sim.subpopulations[i-1], m4);
+    temp_mean_diploidization_mutations = get_mutation_per_ind_type(sim.subpopulations[i-1], m3); //dont trust this, unsure why it's wrong
+    temp_mean_neutral_mutations = get_mutation_per_ind_type(sim.subpopulations[i-1], m4); //dont trust this, unsure why it's wrong (also not using neut now)
     temp_mean_dip_index = get_dip_index_robust(sim.subpopulations[i-1]);
     temp_mean_pair_efficiency = get_average_value(sim.subpopulations[i-1], "initial_efficiency");
     temp_prev_fst = get_fst_to_previous(i-1);

@@ -68,6 +68,12 @@ function(float)get_pairing_efficiency(lifso x)
 	return asFloat(8/(0.08 + 80*exp((78 - x))));
 }
 
+function(float)get_pairing_efficiency_modified(lifso x, lifso inflection, lifso slope)
+{
+	return asFloat(100/(1+exp(-slope*(x-inflection))));
+}
+
+
 function (float)get_selection_frequency_spectrum(lifso x)
 {
 	//gets selection coefficient frequency spectrum of the focal clade and the two clades surrounding
@@ -244,7 +250,10 @@ function (float)calc_fitness_exp_load(lifso<Subpopulation> x)
 			all_counts = genomes.mutationCountsInGenomes(mutations);
  			//s_all = rep(1,size(mutations)) + (mutations[0:(size(mutations)-1)].getValue("h_m")[all_counts[0:(size(mutations)-1)]] * mutations[0:(size(mutations)-1)].getValue("s"));
 			fit_vector = sapply(seqAlong(mutations), "mut = mutations[applyValue]; count = all_counts[applyValue]; 1 + mut.getValue('h_m')[count] * mut.getValue('s');");
-			s_all = product(fit_vector);
+			if(isNULL(fit_vector))
+				s_all = 1;
+			else
+				s_all = product(fit_vector);
 			
 			if(ind_flag == 0)
 			{
